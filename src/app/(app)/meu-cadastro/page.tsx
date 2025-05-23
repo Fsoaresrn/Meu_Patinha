@@ -192,7 +192,7 @@ export default function MeuCadastroPage() {
             <p className="text-sm text-muted-foreground">
               O Meu Patinha utiliza cookies e outras tecnologias semelhantes para
               melhorar a sua experiência. Consulte o nosso{" "}
-              <Link href="/terms" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+              <Link href="/aviso-de-privacidade" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                 Aviso de Privacidade
               </Link>{" "}
               para saber mais.

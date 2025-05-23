@@ -145,5 +145,3 @@ const checkSymptomsFlow = ai.defineFlow(
     return output!;
   }
 );
-
-```

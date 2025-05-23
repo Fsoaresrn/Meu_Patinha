@@ -1,3 +1,4 @@
+
 // src/components/shared/rgb-paw-icon.tsx
 import type { SVGProps } from 'react';
 import { cn } from '@/lib/utils';
@@ -25,16 +26,16 @@ export function RgbPawIcon({ size = 28, className, ...props }: SVGProps<SVGSVGEl
       className={cn(className)}
       {...props}
     >
-      {/* Contorno Azul (mais externo) */}
-      <g fill="none" stroke="#0000FF" strokeWidth="5.5">
+      {/* Contorno Azul (mais externo) - Inspirado no azul da imagem do calendário */}
+      <g fill="none" stroke="#3B7CF3" strokeWidth="5.5">
         {lucidePawPrintPaths}
       </g>
-      {/* Contorno Verde (intermediário) */}
-      <g fill="none" stroke="#00FF00" strokeWidth="4">
+      {/* Contorno Verde (intermediário) - Inspirado no verde da imagem do calendário */}
+      <g fill="none" stroke="#7DBB42" strokeWidth="4">
         {lucidePawPrintPaths}
       </g>
-      {/* Contorno Vermelho (mais interno) */}
-      <g fill="none" stroke="#FF0000" strokeWidth="2.5">
+      {/* Contorno Laranja (mais interno) - Inspirado no laranja da imagem do calendário */}
+      <g fill="none" stroke="#F47D20" strokeWidth="2.5">
         {lucidePawPrintPaths}
       </g>
       

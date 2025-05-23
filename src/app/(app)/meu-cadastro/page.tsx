@@ -21,6 +21,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { calculatePasswordStrength, type PasswordStrengthResult } from "@/lib/password-utils";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import Link from "next/link";
 
 
 const profileSchema = z.object({
@@ -46,6 +48,8 @@ const passwordSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
+const PRIVACY_NOTICE_STORAGE_KEY = "meu-patinha-privacy-notice-seen";
+
 export default function MeuCadastroPage() {
   const { user, updateUser, logout, clearTempPasswordFlag, tempPasswordForcedReset } = useAuthStore();
   const { toast } = useToast();
@@ -53,8 +57,21 @@ export default function MeuCadastroPage() {
   const searchParams = useSearchParams();
   const [registeredUsers, setRegisteredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
   const [newPasswordStrength, setNewPasswordStrength] = useState<PasswordStrengthResult | null>(null);
+  const [showPrivacyNoticeModal, setShowPrivacyNoticeModal] = useState(false);
 
   const forcePasswordChange = searchParams.get('forcePasswordChange') === 'true' && tempPasswordForcedReset;
+
+  useEffect(() => {
+    const noticeSeen = localStorage.getItem(PRIVACY_NOTICE_STORAGE_KEY);
+    if (!noticeSeen) {
+      setShowPrivacyNoticeModal(true);
+    }
+  }, []);
+
+  const handlePrivacyNoticeAccept = () => {
+    localStorage.setItem(PRIVACY_NOTICE_STORAGE_KEY, 'true');
+    setShowPrivacyNoticeModal(false);
+  };
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -160,138 +177,164 @@ export default function MeuCadastroPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-8 py-8">
-      {forcePasswordChange && (
-        <div className="p-4 mb-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-md">
-          <p className="font-bold">Redefinição de Senha Obrigatória</p>
-          <p>Por favor, defina uma nova senha para continuar.</p>
-        </div>
-      )}
-      <Card>
-        <CardHeader>
-          <CardTitle>Meu Cadastro</CardTitle>
-          <CardDescription>Visualize e edite suas informações pessoais. Seu CPF ({user.cpf}) e Perfis da Conta não podem ser alterados aqui.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...profileForm}>
-            <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField control={profileForm.control} name="nome" render={({ field }) => (
-                  <FormItem><FormLabel>Nome Completo<span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={profileForm.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>E-mail<span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
-              
-              <FormItem>
-                <FormLabel>Perfis da Conta</FormLabel>
-                <div className="flex flex-wrap gap-2 p-2 rounded-md border bg-muted/50">
-                  {user.tipoResponsabilidade && user.tipoResponsabilidade.length > 0 ? (
-                    user.tipoResponsabilidade.map(perfil => (
-                      <Badge key={perfil} variant="secondary" className="text-sm">{perfil}</Badge>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Nenhum perfil definido.</p>
-                  )}
+    <>
+      <Dialog open={showPrivacyNoticeModal} onOpenChange={setShowPrivacyNoticeModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Aviso de Privacidade</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              O Meu Patinha utiliza cookies e outras tecnologias semelhantes para
+              melhorar a sua experiência. Consulte o nosso{" "}
+              <Link href="/terms" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                Aviso de Privacidade
+              </Link>{" "}
+              para saber mais.
+            </p>
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button type="button" onClick={handlePrivacyNoticeAccept}>
+              Ok, entendi
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div className="container mx-auto space-y-8 py-8">
+        {forcePasswordChange && (
+          <div className="p-4 mb-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-md">
+            <p className="font-bold">Redefinição de Senha Obrigatória</p>
+            <p>Por favor, defina uma nova senha para continuar.</p>
+          </div>
+        )}
+        <Card>
+          <CardHeader>
+            <CardTitle>Meu Cadastro</CardTitle>
+            <CardDescription>Visualize e edite suas informações pessoais. Seu CPF ({user.cpf}) e Perfis da Conta não podem ser alterados aqui.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...profileForm}>
+              <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <FormField control={profileForm.control} name="nome" render={({ field }) => (
+                    <FormItem><FormLabel>Nome Completo<span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={profileForm.control} name="email" render={({ field }) => (
+                    <FormItem><FormLabel>E-mail<span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
                 </div>
-                <FormDescription className="text-xs">
-                  Os perfis da conta só podem ser alterados por um administrador do sistema.
-                </FormDescription>
-              </FormItem>
-
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField control={profileForm.control} name="uf" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>UF<span className="text-destructive">*</span></FormLabel>
-                    <Select onValueChange={(value) => { field.onChange(value); profileForm.setValue("cidade", ""); }} value={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
-                      <SelectContent>{ufsBrasil.map(uf => <SelectItem key={uf.sigla} value={uf.sigla}>{uf.nome}</SelectItem>)}</SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={profileForm.control} name="cidade" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cidade<span className="text-destructive">*</span></FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUf}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
-                      <SelectContent>{(cidadesPorUF[selectedUf as keyof typeof cidadesPorUF] || []).map(cidade => <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>)}</SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
-              <FormField control={profileForm.control} name="endereco" render={({ field }) => (
-                <FormItem><FormLabel>Endereço Completo (Rua, Nº, Bairro, etc.)</FormLabel><FormControl><Input placeholder="Opcional" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField control={profileForm.control} name="cep" render={({ field }) => (
-                  <FormItem><FormLabel>CEP</FormLabel><FormControl><Input placeholder="xxxxx-xxx" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={profileForm.control} name="telefone" render={({ field }) => (
-                  <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input placeholder="(XX) XXXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
-              <Button type="submit" disabled={profileForm.formState.isSubmitting || forcePasswordChange}>Salvar Alterações</Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Alterar Senha</CardTitle>
-          <CardDescription>Crie uma nova senha para sua conta.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...passwordForm}>
-            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
-               <FormField control={passwordForm.control} name="senhaAtual" render={({ field }) => (
-                <FormItem><FormLabel>{forcePasswordChange ? "Senha Provisória" : "Senha Atual"}<span className="text-destructive">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={passwordForm.control} name="novaSenha" render={({ field }) => (
+                
                 <FormItem>
-                  <FormLabel>Nova Senha<span className="text-destructive">*</span></FormLabel>
-                  <FormControl><Input type="password" {...field} /></FormControl>
-                  <FormMessage />
-                  {newPasswordStrength && newPasswordStrength.label && newPasswordStrength.score > 0 && (
-                    <div className="mt-2 space-y-1">
-                       <Progress
-                        value={newPasswordStrength.score * 25}
-                        className={cn(
-                          "h-2",
-                          {
-                            "[&>div]:!bg-destructive": newPasswordStrength.score === 1, // Fraca
-                            "[&>div]:!bg-orange-500": newPasswordStrength.score === 2, // Média
-                            "[&>div]:!bg-green-500": newPasswordStrength.score === 3, // Forte
-                            "[&>div]:!bg-green-700": newPasswordStrength.score === 4, // Muito Forte
-                          }
-                        )}
-                        aria-label={`Força da senha: ${newPasswordStrength.label}`}
-                      />
-                      <p className={`text-xs ${newPasswordStrength.colorClass}`}>
-                        Força da senha: {newPasswordStrength.label}
-                      </p>
-                    </div>
-                  )}
-                  {newPasswordStrength && newPasswordStrength.score === 0 && newPasswordStrength.label && (
-                      <p className={`text-xs mt-1 ${newPasswordStrength.colorClass}`}>
-                        Força da senha: {newPasswordStrength.label}
-                      </p>
-                  )}
+                  <FormLabel>Perfis da Conta</FormLabel>
+                  <div className="flex flex-wrap gap-2 p-2 rounded-md border bg-muted/50">
+                    {user.tipoResponsabilidade && user.tipoResponsabilidade.length > 0 ? (
+                      user.tipoResponsabilidade.map(perfil => (
+                        <Badge key={perfil} variant="secondary" className="text-sm">{perfil}</Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Nenhum perfil definido.</p>
+                    )}
+                  </div>
+                  <FormDescription className="text-xs">
+                    Os perfis da conta só podem ser alterados por um administrador do sistema.
+                  </FormDescription>
                 </FormItem>
-              )} />
-              <FormField control={passwordForm.control} name="confirmarNovaSenha" render={({ field }) => (
-                <FormItem><FormLabel>Confirmar Nova Senha<span className="text-destructive">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <Button type="submit" disabled={passwordForm.formState.isSubmitting}>Alterar Senha</Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <FormField control={profileForm.control} name="uf" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>UF<span className="text-destructive">*</span></FormLabel>
+                      <Select onValueChange={(value) => { field.onChange(value); profileForm.setValue("cidade", ""); }} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
+                        <SelectContent>{ufsBrasil.map(uf => <SelectItem key={uf.sigla} value={uf.sigla}>{uf.nome}</SelectItem>)}</SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={profileForm.control} name="cidade" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cidade<span className="text-destructive">*</span></FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUf}>
+                        <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
+                        <SelectContent>{(cidadesPorUF[selectedUf as keyof typeof cidadesPorUF] || []).map(cidade => <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>)}</SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+                <FormField control={profileForm.control} name="endereco" render={({ field }) => (
+                  <FormItem><FormLabel>Endereço Completo (Rua, Nº, Bairro, etc.)</FormLabel><FormControl><Input placeholder="Opcional" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <FormField control={profileForm.control} name="cep" render={({ field }) => (
+                    <FormItem><FormLabel>CEP</FormLabel><FormControl><Input placeholder="xxxxx-xxx" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={profileForm.control} name="telefone" render={({ field }) => (
+                    <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input placeholder="(XX) XXXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                </div>
+                <Button type="submit" disabled={profileForm.formState.isSubmitting || forcePasswordChange}>Salvar Alterações</Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Alterar Senha</CardTitle>
+            <CardDescription>Crie uma nova senha para sua conta.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...passwordForm}>
+              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
+                 <FormField control={passwordForm.control} name="senhaAtual" render={({ field }) => (
+                  <FormItem><FormLabel>{forcePasswordChange ? "Senha Provisória" : "Senha Atual"}<span className="text-destructive">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={passwordForm.control} name="novaSenha" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nova Senha<span className="text-destructive">*</span></FormLabel>
+                    <FormControl><Input type="password" {...field} /></FormControl>
+                    <FormMessage />
+                    {newPasswordStrength && newPasswordStrength.label && newPasswordStrength.score > 0 && (
+                      <div className="mt-2 space-y-1">
+                         <Progress
+                          value={newPasswordStrength.score * 25}
+                          className={cn(
+                            "h-2",
+                            {
+                              "[&>div]:!bg-destructive": newPasswordStrength.score === 1, // Fraca
+                              "[&>div]:!bg-orange-500": newPasswordStrength.score === 2, // Média
+                              "[&>div]:!bg-green-500": newPasswordStrength.score === 3, // Forte
+                              "[&>div]:!bg-green-700": newPasswordStrength.score === 4, // Muito Forte
+                            }
+                          )}
+                          aria-label={`Força da senha: ${newPasswordStrength.label}`}
+                        />
+                        <p className={`text-xs ${newPasswordStrength.colorClass}`}>
+                          Força da senha: {newPasswordStrength.label}
+                        </p>
+                      </div>
+                    )}
+                    {newPasswordStrength && newPasswordStrength.score === 0 && newPasswordStrength.label && (
+                        <p className={`text-xs mt-1 ${newPasswordStrength.colorClass}`}>
+                          Força da senha: {newPasswordStrength.label}
+                        </p>
+                    )}
+                  </FormItem>
+                )} />
+                <FormField control={passwordForm.control} name="confirmarNovaSenha" render={({ field }) => (
+                  <FormItem><FormLabel>Confirmar Nova Senha<span className="text-destructive">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <Button type="submit" disabled={passwordForm.formState.isSubmitting}>Alterar Senha</Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
+    
 
     

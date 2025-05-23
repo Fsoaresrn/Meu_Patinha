@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -7,8 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Pet } from "@/types";
 import { cn } from "@/lib/utils";
-import { calculateAge, parseDateSafe, formatDateToBrasil } from "@/lib/date-utils";
-import { PawPrint,cake } from "lucide-react";
+import { calculateAge } from "@/lib/date-utils";
+import { PawPrint, Edit3, Trash2, AlertTriangle } from "lucide-react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 
 interface PetCardProps {
@@ -16,26 +31,77 @@ interface PetCardProps {
 }
 
 export function PetCard({ pet }: PetCardProps) {
-  const ageDisplay = pet.dataNascimento ? calculateAge(pet.dataNascimento).display : (pet.idade ? `${pet.idade} anos (aprox.)` : "Idade desconhecida");
+  const [allPets, setAllPets] = useLocalStorage<Pet[]>("all-pets-data", []);
+  const { toast } = useToast();
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+
+  const ageDisplay = pet.dataNascimento 
+    ? calculateAge(pet.dataNascimento).display 
+    : (pet.idade ? `${pet.idade} ${pet.idade === 1 ? 'ano' : 'anos'} (aprox.)` : "Idade desconhecida");
   
   const cardThemeClasses = () => {
-    if (pet.status.value !== 'ativo') return "opacity-60 bg-muted/50";
-    switch (pet.sexo) {
-      case "Macho":
-        return "border-blue-500 hover:shadow-blue-500/20";
-      case "Fêmea":
-        return "border-pink-500 hover:shadow-pink-500/20";
-      default:
-        return "border-gray-400 hover:shadow-gray-500/20";
-    }
+    if (pet.status.value !== 'ativo') return "opacity-70 bg-muted/30";
+    // Você pode reintroduzir temas baseados em sexo aqui se desejar
+    // switch (pet.sexo) {
+    //   case "Macho":
+    //     return "border-blue-500 hover:shadow-blue-500/20";
+    //   case "Fêmea":
+    //     return "border-pink-500 hover:shadow-pink-500/20";
+    //   default:
+    //     return "border-border hover:shadow-md";
+    // }
+    return "border-border hover:shadow-lg";
   };
 
+  const handleDeletePet = () => {
+    try {
+      const updatedPets = allPets.filter(p => p.id !== pet.id);
+      setAllPets(updatedPets);
+      toast({
+        title: "Pet Removido!",
+        description: `${pet.nome} foi removido(a) com sucesso.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao remover pet",
+        description: "Não foi possível remover o pet. Tente novamente.",
+      });
+    }
+    setIsAlertOpen(false);
+  };
+
+  const getStatusBadgeVariant = (statusValue: Pet['status']['value']): "default" | "secondary" | "destructive" | "outline" => {
+    switch (statusValue) {
+      case 'ativo':
+        return 'default'; // Usará a cor primária para "Ativo"
+      case 'falecido':
+      case 'perdido':
+        return 'destructive';
+      case 'doado':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+  
+  const getStatusDisplay = (statusValue: Pet['status']['value']): string => {
+    switch (statusValue) {
+      case 'ativo': return 'Ativo';
+      case 'falecido': return 'Falecido';
+      case 'doado': return 'Doado';
+      case 'perdido': return 'Perdido';
+      case 'outro': return 'Outro';
+      default: return 'Desconhecido';
+    }
+  }
+
   return (
-    <Card className={cn("flex flex-col transition-all duration-300 ease-in-out hover:shadow-xl", cardThemeClasses())}>
+    <Card className={cn("flex flex-col transition-all duration-300 ease-in-out", cardThemeClasses())}>
       <CardHeader className="p-0 relative">
-        <Link href={`/pets/${pet.id}`} className="block aspect-square w-full relative overflow-hidden rounded-t-lg">
+        <Link href={`/pets/${pet.id}`} className="block aspect-[4/3] w-full relative overflow-hidden rounded-t-lg group">
           <Image
-            src={pet.fotoUrl || `https://placehold.co/400x400.png?text=${encodeURIComponent(pet.nome.charAt(0))}`}
+            src={pet.fotoUrl || `https://placehold.co/400x300.png?text=${encodeURIComponent(pet.nome.charAt(0))}`}
             alt={`Foto de ${pet.nome}`}
             layout="fill"
             objectFit="cover"
@@ -43,34 +109,67 @@ export function PetCard({ pet }: PetCardProps) {
             data-ai-hint={`${pet.especie} ${pet.raca}`}
           />
         </Link>
-        {pet.status.value !== 'ativo' && (
-            <Badge variant="destructive" className="absolute top-2 right-2">
-              {pet.status.value === 'falecido' ? 'Falecido' : 
-               pet.status.value === 'doado' ? 'Doado' :
-               pet.status.value === 'perdido' ? 'Perdido' :
-               'Inativo'}
-            </Badge>
-        )}
       </CardHeader>
-      <CardContent className="p-4 flex-grow">
-        <CardTitle className="text-xl font-semibold mb-1 truncate">
-          <Link href={`/pets/${pet.id}`} className="hover:text-primary transition-colors">{pet.nome}</Link>
-        </CardTitle>
-        <CardDescription className="text-sm text-muted-foreground mb-1 truncate">{pet.raca}</CardDescription>
-        <div className="text-sm text-muted-foreground flex items-center gap-1">
-         <PawPrint className="h-4 w-4 inline-block" /> {pet.especie}
+      <CardContent className="p-4 flex-grow space-y-1.5">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg font-semibold mb-0 truncate leading-tight">
+              <Link href={`/pets/${pet.id}`} className="hover:text-primary transition-colors">{pet.nome}</Link>
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground truncate leading-tight">{pet.raca}</CardDescription>
+          </div>
+          <PawPrint className="h-6 w-6 text-primary/70 mt-0.5" />
         </div>
-        <div className="text-sm text-muted-foreground flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cake"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h16c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2"/><path d="M16 16V8a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v8"/><path d="M12 21v-8"/><path d="M12 8V4"/><path d="M12 4h.01"/><path d="M16 8h.01"/><path d="M8 8h.01"/></svg>
-          {ageDisplay}
+        
+        <p className="text-xs text-muted-foreground"><strong className="font-medium text-foreground">Registro PET:</strong> PET-{pet.id}</p>
+        <p className="text-xs text-muted-foreground"><strong className="font-medium text-foreground">Sexo:</strong> {pet.sexo}</p>
+        <p className="text-xs text-muted-foreground"><strong className="font-medium text-foreground">Idade:</strong> {ageDisplay}</p>
+        {pet.porte && <p className="text-xs text-muted-foreground"><strong className="font-medium text-foreground">Porte:</strong> {pet.porte}</p>}
+        {pet.peso !== undefined && pet.peso !== null && <p className="text-xs text-muted-foreground"><strong className="font-medium text-foreground">Peso:</strong> {String(pet.peso).replace('.',',')} kg</p>}
+        
+        <div className="flex items-center text-xs text-muted-foreground">
+          <strong className="font-medium text-foreground mr-1">Status:</strong> 
+          <Badge variant={getStatusBadgeVariant(pet.status.value)} className="text-xs py-0.5 px-1.5 h-auto">
+            {getStatusDisplay(pet.status.value)}
+          </Badge>
         </div>
+
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <Link href={`/pets/${pet.id}`} className="w-full" passHref>
-          <Button variant="outline" className="w-full">
-            Ver Perfil
+      <CardFooter className="p-3 border-t mt-auto">
+        <div className="flex w-full gap-2">
+          <Button variant="outline" size="sm" className="flex-1" asChild>
+            <Link href={`/pets/${pet.id}/edit`}> {/* Atualize para o link de edição correto */}
+              <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Editar
+            </Link>
           </Button>
-        </Link>
+          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="flex-1">
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Excluir
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
+                  <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                </div>
+              </AlertDialogHeader>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir o perfil de <strong>{pet.nome}</strong>? Esta ação não poderá ser desfeita.
+              </AlertDialogDescription>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeletePet}
+                  className={cn(buttonVariants({variant: "destructive"}))}
+                >
+                  Sim, Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </CardFooter>
     </Card>
   );

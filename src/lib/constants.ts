@@ -262,8 +262,8 @@ export const hygieneTypes: string[] = ["Banho", "Tosa", "Escovação de Dentes",
 
 export const petIdGenerator = (): string => {
   const year = new Date().getFullYear();
-  // Generates a 9-character random string
-  const randomPart = Math.random().toString(36).substring(2, 11).toUpperCase();
+  // Generates an 11-character random alphanumeric string
+  const randomPart = Math.random().toString(36).substring(2, 13).toUpperCase();
   return `${year}-${randomPart}`;
 };
 

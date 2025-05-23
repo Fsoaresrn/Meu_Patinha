@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useAuthStore } from "@/stores/auth.store";
-import type { Pet, SymptomLog } from "@/types";
+import type { Pet, SymptomLog, Vaccination, DewormerLog } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, AlertTriangle, Lightbulb, Activity, ShieldCheck, Sparkles, Loader2, Info } from "lucide-react";
 import Image from "next/image";
 import { checkSymptoms, type CheckSymptomsInput, type CheckSymptomsOutput } from "@/ai/flows/ai-symptom-checker";
-import { formatDateToBrasil, formatDateTimeToBrasil } from "@/lib/date-utils";
+import { formatDateToBrasil, formatDateTimeToBrasil, calculateAge } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 
 const symptomSchema = z.object({
@@ -38,8 +38,13 @@ export default function PetSintomasPage() {
 
   const [allPets] = useLocalStorage<Pet[]>("all-pets-data", []);
   const [symptomLogs, setSymptomLogs] = useLocalStorage<SymptomLog[]>(`symptom-logs-${user?.cpf || 'geral'}`, []);
+  const [allVaccinations] = useLocalStorage<Vaccination[]>("vaccinations-data", []);
+  const [allDewormerLogs] = useLocalStorage<DewormerLog[]>("dewormer-logs-data", []);
   
   const [pet, setPet] = useState<Pet | null>(null);
+  const [petVaccinations, setPetVaccinations] = useState<Vaccination[]>([]);
+  const [petDewormingRecords, setPetDewormingRecords] = useState<DewormerLog[]>([]);
+
   const [isLoadingPet, setIsLoadingPet] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<CheckSymptomsOutput | null>(null);
@@ -55,8 +60,8 @@ export default function PetSintomasPage() {
   });
 
   useEffect(() => {
-    if (petId) {
-      const foundPet = allPets.find(p => p.id === petId && (p.ownerId === user?.cpf || p.secondaryTutorId === user?.cpf));
+    if (petId && user) {
+      const foundPet = allPets.find(p => p.id === petId && (p.ownerId === user.cpf || p.secondaryTutorId === user.cpf));
       if (foundPet) {
         if (foundPet.status.value !== 'ativo') {
             toast({
@@ -68,6 +73,10 @@ export default function PetSintomasPage() {
             router.push("/saude");
         } else {
             setPet(foundPet);
+            const petVaccs = allVaccinations.filter(vac => vac.petId === petId);
+            setPetVaccinations(petVaccs);
+            const petDeworms = allDewormerLogs.filter(deworm => deworm.petId === petId);
+            setPetDewormingRecords(petDeworms);
         }
       } else {
         toast({
@@ -78,8 +87,10 @@ export default function PetSintomasPage() {
         router.push("/saude");
       }
       setIsLoadingPet(false);
+    } else if (!user) {
+        router.push("/login"); // Should be handled by AuthGuard, but good to have
     }
-  }, [petId, allPets, user, router, toast]);
+  }, [petId, allPets, user, router, toast, allVaccinations, allDewormerLogs]);
 
   const handleFollowUpAnswer = (symptom: string, answer: FollowUpAnswer) => {
     setFollowUpAnswers(prev => ({ ...prev, [symptom]: answer }));
@@ -92,43 +103,38 @@ export default function PetSintomasPage() {
     }
 
     setIsSubmitting(true);
-    setAnalysisResult(null); 
+    // Não resetar analysisResult aqui para manter a interface de acompanhamento visível
+    // setAnalysisResult(null); 
 
     const formattedFollowUpResponses = Object.entries(followUpAnswers)
       .filter(([, response]) => response !== null)
       .map(([symptom, response]) => ({
         symptom,
-        response: response as "Sim" | "Não" | "Não tenho certeza", // Type assertion after filter
+        response: response as "Sim" | "Não" | "Não tenho certeza", 
       }));
+
+    const ageInfo = pet.dataNascimento ? calculateAge(pet.dataNascimento) : { years: pet.idade || 0, months: 0, display: `${pet.idade || 0} anos (aprox.)` };
 
     const inputForAI: CheckSymptomsInput = {
       petName: pet.nome,
       species: pet.especie,
       breed: pet.raca,
-      age: pet.idade || (pet.dataNascimento ? new Date().getFullYear() - new Date(pet.dataNascimento).getFullYear() : 0),
+      age: ageInfo.years,
+      weightKm: pet.peso,
+      sex: pet.sexo,
       symptoms: data.symptomsDescription,
       followUpResponses: formattedFollowUpResponses.length > 0 ? formattedFollowUpResponses : undefined,
+      vaccineHistory: petVaccinations.length > 0 
+        ? petVaccinations.map(v => ({ name: v.vaccineName, date: v.administrationDate })) 
+        : undefined,
+      dewormingHistory: petDewormingRecords.length > 0
+        ? petDewormingRecords.map(d => ({ productName: d.productName, date: d.administrationDate }))
+        : undefined,
     };
 
     try {
       const result = await checkSymptoms(inputForAI);
       setAnalysisResult(result);
-
-      if (result.needsMoreInfo && result.suggestedFollowUpSymptoms && result.suggestedFollowUpSymptoms.length > 0) {
-        setCurrentFollowUpSymptoms(result.suggestedFollowUpSymptoms);
-        setFollowUpAnswers({}); // Limpa respostas para próxima rodada
-        toast({
-          title: "Mais informações necessárias",
-          description: "A IA precisa de mais detalhes. Responda às perguntas abaixo e analise novamente.",
-          duration: 7000,
-        });
-      } else {
-        setCurrentFollowUpSymptoms([]); 
-        toast({
-          title: "Análise Concluída",
-          description: "A IA processou os sintomas. Veja os resultados abaixo.",
-        });
-      }
 
       const newLog: SymptomLog = {
         id: new Date().toISOString(),
@@ -143,6 +149,23 @@ export default function PetSintomasPage() {
         aiSuggestedFollowUp: result.suggestedFollowUpSymptoms,
       };
       setSymptomLogs(prevLogs => [...prevLogs, newLog]);
+
+      if (result.needsMoreInfo && result.suggestedFollowUpSymptoms && result.suggestedFollowUpSymptoms.length > 0) {
+        setCurrentFollowUpSymptoms(result.suggestedFollowUpSymptoms);
+        setFollowUpAnswers({}); 
+        toast({
+          title: "Mais informações necessárias",
+          description: "A IA precisa de mais detalhes. Responda às perguntas abaixo e analise novamente.",
+          duration: 7000,
+        });
+      } else {
+        setCurrentFollowUpSymptoms([]); 
+         form.reset({ symptomsDescription: data.symptomsDescription }); // Mantém a descrição original
+        toast({
+          title: "Análise Concluída",
+          description: "A IA processou os sintomas. Veja os resultados abaixo.",
+        });
+      }
 
     } catch (error) {
       console.error("Erro ao verificar sintomas:", error);
@@ -169,6 +192,9 @@ export default function PetSintomasPage() {
   if (!pet) {
     return null; 
   }
+  
+  const petAgeDisplay = pet.dataNascimento ? calculateAge(pet.dataNascimento).display : (pet.idade !== undefined ? `${pet.idade} ${pet.idade === 1 ? 'ano' : 'anos'} (aprox.)` : 'Idade não informada');
+
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -196,7 +222,7 @@ export default function PetSintomasPage() {
             <div>
               <CardTitle className="text-2xl font-bold text-primary">Análise de Sintomas para {pet.nome}</CardTitle>
               <CardDescription className="text-md text-muted-foreground">
-                {pet.especie} - {pet.raca} - {pet.dataNascimento ? formatDateToBrasil(pet.dataNascimento) : (pet.idade !== undefined ? `${pet.idade} anos (aprox.)` : 'Idade não informada')}
+                {pet.especie} - {pet.raca} - {petAgeDisplay}
               </CardDescription>
             </div>
           </div>
@@ -257,7 +283,7 @@ export default function PetSintomasPage() {
                               variant={followUpAnswers[symptomQuestion] === answerOption ? "default" : "outline"}
                               onClick={() => handleFollowUpAnswer(symptomQuestion, answerOption)}
                               className={cn("text-xs h-8 px-3", {
-                                "bg-primary text-primary-foreground": followUpAnswers[symptomQuestion] === answerOption,
+                                "bg-primary text-primary-foreground hover:bg-primary/90": followUpAnswers[symptomQuestion] === answerOption,
                               })}
                               disabled={isSubmitting}
                             >
@@ -274,7 +300,7 @@ export default function PetSintomasPage() {
 
             </CardContent>
             <CardFooter className="flex flex-col items-stretch gap-4">
-              <Button type="submit" disabled={isSubmitting || !form.formState.isValid} className="w-full">
+              <Button type="submit" disabled={isSubmitting || (!form.formState.isValid && (!analysisResult || !analysisResult.needsMoreInfo))} className="w-full">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -345,3 +371,5 @@ export default function PetSintomasPage() {
     </div>
   );
 }
+
+```

@@ -13,18 +13,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { UserResponsibility, AuthUser } from "@/types";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { ufsBrasil, cidadesPorUF } from "@/lib/constants";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useRouter, useSearchParams } from "next/navigation";
+import { calculatePasswordStrength, type PasswordStrengthResult } from "@/lib/password-utils";
 
 
 const profileSchema = z.object({
   nome: z.string().min(3, "Nome é obrigatório"),
   email: z.string().email("E-mail inválido"),
-  // tipoResponsabilidade não é editável aqui pelo usuário comum, mas precisa estar no schema para consistência de tipo.
-  // A validação aqui pode ser mais frouxa ou simplesmente garantir que é um array.
   tipoResponsabilidade: z.array(z.enum(["Tutor(a)", "Cuidador(a)", "Veterinário(a)"])).optional(),
   uf: z.string().min(2, "UF é obrigatória"),
   cidade: z.string().min(1, "Cidade é obrigatória"),
@@ -35,7 +34,7 @@ const profileSchema = z.object({
 
 const passwordSchema = z.object({
   senhaAtual: z.string().min(1, "Senha atual é obrigatória"),
-  novaSenha: z.string().min(8, "Nova senha deve ter no mínimo 8 caracteres"),
+  novaSenha: z.string().min(6, "Nova senha deve ter no mínimo 6 caracteres"),
   confirmarNovaSenha: z.string(),
 }).refine(data => data.novaSenha === data.confirmarNovaSenha, {
   message: "As novas senhas não coincidem",
@@ -51,6 +50,7 @@ export default function MeuCadastroPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [registeredUsers, setRegisteredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
+  const [newPasswordStrength, setNewPasswordStrength] = useState<PasswordStrengthResult | null>(null);
 
   const forcePasswordChange = searchParams.get('forcePasswordChange') === 'true' && tempPasswordForcedReset;
 
@@ -63,14 +63,24 @@ export default function MeuCadastroPage() {
     defaultValues: { senhaAtual: "", novaSenha: "", confirmarNovaSenha: "" },
   });
 
+  const watchedNewPassword = passwordForm.watch("novaSenha");
+
+  useEffect(() => {
+    if (watchedNewPassword) {
+      setNewPasswordStrength(calculatePasswordStrength(watchedNewPassword));
+    } else {
+      setNewPasswordStrength(null);
+    }
+  }, [watchedNewPassword]);
+
   useEffect(() => {
     if (user) {
       profileForm.reset({
         nome: user.nome,
         email: user.email,
-        tipoResponsabilidade: user.tipoResponsabilidade, // Agora é um array
-        uf: user.uf,
-        cidade: user.cidade,
+        tipoResponsabilidade: user.tipoResponsabilidade, 
+        uf: user.uf || "", // Default to empty string if not present
+        cidade: user.cidade || "", // Default to empty string if not present
         endereco: user.endereco || "",
         cep: user.cep || "",
         telefone: user.telefone || "",
@@ -83,11 +93,10 @@ export default function MeuCadastroPage() {
   const onProfileSubmit = (data: ProfileFormValues) => {
     if (!user) return;
     
-    // tipoResponsabilidade não é alterado aqui pelo usuário. Mantemos o valor existente.
     const updatedUserFields = {
         nome: data.nome,
         email: data.email,
-        tipoResponsabilidade: user.tipoResponsabilidade, // Mantém o valor existente do store
+        tipoResponsabilidade: user.tipoResponsabilidade, 
         uf: data.uf,
         cidade: data.cidade,
         endereco: data.endereco,
@@ -103,7 +112,7 @@ export default function MeuCadastroPage() {
             ...updatedUsers[userIndex], 
             ...updatedUserFields, 
             acceptedTerms: user.acceptedTerms, 
-            tipoResponsabilidade: user.tipoResponsabilidade // Garante que o tipo correto (array) seja salvo
+            tipoResponsabilidade: user.tipoResponsabilidade 
         };
         setRegisteredUsers(updatedUsers);
     }
@@ -137,6 +146,7 @@ export default function MeuCadastroPage() {
     
     toast({ title: "Senha Alterada", description: "Sua senha foi alterada com sucesso." });
     passwordForm.reset();
+    setNewPasswordStrength(null); // Reset strength indicator
     if (forcePasswordChange) {
         router.push('/'); 
     }
@@ -193,8 +203,8 @@ export default function MeuCadastroPage() {
                   <FormItem>
                     <FormLabel>UF</FormLabel>
                     <Select onValueChange={(value) => { field.onChange(value); profileForm.setValue("cidade", ""); }} value={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent><mrow ufsBrasil.map(uf => <SelectItem key={uf.sigla} value={uf.sigla}>{uf.nome}</SelectItem>)}</SelectContent>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
+                      <SelectContent>{ufsBrasil.map(uf => <SelectItem key={uf.sigla} value={uf.sigla}>{uf.nome}</SelectItem>)}</SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
@@ -203,7 +213,7 @@ export default function MeuCadastroPage() {
                   <FormItem>
                     <FormLabel>Cidade</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUf}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
                       <SelectContent>{(cidadesPorUF[selectedUf as keyof typeof cidadesPorUF] || []).map(cidade => <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>)}</SelectContent>
                     </Select>
                     <FormMessage />
@@ -239,7 +249,16 @@ export default function MeuCadastroPage() {
                 <FormItem><FormLabel>{forcePasswordChange ? "Senha Provisória" : "Senha Atual"}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={passwordForm.control} name="novaSenha" render={({ field }) => (
-                <FormItem><FormLabel>Nova Senha</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel>Nova Senha</FormLabel>
+                  <FormControl><Input type="password" {...field} /></FormControl>
+                  <FormMessage />
+                  {newPasswordStrength && newPasswordStrength.label && (
+                    <p className={`text-xs mt-1 ${newPasswordStrength.colorClass}`}>
+                      Força da senha: {newPasswordStrength.label}
+                    </p>
+                  )}
+                </FormItem>
               )} />
               <FormField control={passwordForm.control} name="confirmarNovaSenha" render={({ field }) => (
                 <FormItem><FormLabel>Confirmar Nova Senha</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>

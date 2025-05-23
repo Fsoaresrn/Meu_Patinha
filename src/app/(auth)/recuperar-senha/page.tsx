@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -8,7 +9,7 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuthStore } from "@/stores/auth.store"; // Needed for setTempPassword simulation
+import { useAuthStore } from "@/stores/auth.store"; 
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { AuthUser } from "@/types";
@@ -25,8 +26,6 @@ type RecoveryFormValues = z.infer<typeof recoverySchema>;
 export default function RecoverPasswordPage() {
   const router = useRouter();
   const { toast } = useToast();
-  // In a real app, setTempPassword would be an API call. Here we simulate it.
-  // We need to find the user in localStorage and update their temporaryPassword field.
   const [registeredUsers, setRegisteredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
 
   const form = useForm<RecoveryFormValues>({
@@ -42,18 +41,17 @@ export default function RecoverPasswordPage() {
     const userIndex = registeredUsers.findIndex(u => u.cpf === formattedCpf && u.email === data.email);
 
     if (userIndex !== -1) {
-      const tempPassword = Math.random().toString().slice(2, 10); // 8-digit random string
+      // Gera senha alfanumérica de 8 caracteres
+      const tempPassword = Math.random().toString(36).slice(2, 10);
       
-      // Update the user in the registeredUsers array
       const updatedUsers = [...registeredUsers];
-      updatedUsers[userIndex] = { ...updatedUsers[userIndex], temporaryPassword: tempPassword, acceptedTerms: updatedUsers[userIndex].acceptedTerms || false }; // Ensure acceptedTerms is present
+      updatedUsers[userIndex] = { ...updatedUsers[userIndex], temporaryPassword: tempPassword, acceptedTerms: updatedUsers[userIndex].acceptedTerms || false };
       setRegisteredUsers(updatedUsers);
 
-      // For this demo, we show the temp password in a toast. In reality, it would be "sent" via email.
       toast({
         title: "Senha Provisória Gerada",
         description: `Uma senha provisória foi gerada: ${tempPassword}. Use-a para fazer login e redefinir sua senha.`,
-        duration: 10000, // Longer duration for user to see it
+        duration: 10000, 
       });
       router.push("/login");
     } else {

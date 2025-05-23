@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TermsContent } from "@/components/terms/terms-content";
+import { calculatePasswordStrength, type PasswordStrengthResult } from "@/lib/password-utils";
 
 
 const responsabilidadesDisponiveis: { id: UserResponsibility; label: string }[] = [
@@ -32,7 +34,7 @@ const signupSchema = z.object({
   tipoResponsabilidade: z.array(z.enum(["Tutor(a)", "Cuidador(a)", "Veterinário(a)"]))
     .min(1, "Selecione ao menos um tipo de responsabilidade."),
   email: z.string().email("E-mail inválido"),
-  senha: z.string().min(8, "Senha deve ter no mínimo 8 caracteres"),
+  senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
   confirmarSenha: z.string(),
   telefoneDdd: z.string().optional(),
   telefoneNumero: z.string().optional(),
@@ -51,6 +53,7 @@ export default function SignupPage() {
   const loginUser = useAuthStore((state) => state.login);
   const { toast } = useToast();
   const [registeredUsers, setRegisteredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrengthResult | null>(null);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -66,6 +69,16 @@ export default function SignupPage() {
       telefoneNumero: "",
     },
   });
+
+  const watchedPassword = form.watch("senha");
+
+  useEffect(() => {
+    if (watchedPassword) {
+      setPasswordStrength(calculatePasswordStrength(watchedPassword));
+    } else {
+      setPasswordStrength(null);
+    }
+  }, [watchedPassword]);
 
   const onSubmit = (data: SignupFormValues) => {
     const { nomeCompleto, cpf, tipoResponsabilidade, email, senha, telefoneDdd, telefoneNumero } = data;
@@ -88,9 +101,8 @@ export default function SignupPage() {
       nome: nomeCompleto,
       email,
       tipoResponsabilidade: tipoResponsabilidade,
-      // uf e cidade serão opcionais e preenchidos no Meu Cadastro
-      // uf: "", 
-      // cidade: "", 
+      uf: "", // Será preenchido em "Meu Cadastro"
+      cidade: "", // Será preenchido em "Meu Cadastro"
       telefone: (telefoneDdd && telefoneNumero) ? `(${telefoneDdd}) ${telefoneNumero}` : undefined,
       acceptedTerms: false, 
     };
@@ -188,6 +200,11 @@ export default function SignupPage() {
                 <FormLabel>Senha</FormLabel>
                 <FormControl><Input type="password" placeholder="Crie uma senha" {...field} /></FormControl>
                 <FormMessage />
+                 {passwordStrength && passwordStrength.label && (
+                  <p className={`text-xs mt-1 ${passwordStrength.colorClass}`}>
+                    Força da senha: {passwordStrength.label}
+                  </p>
+                )}
               </FormItem>
             )} />
             <FormField control={form.control} name="confirmarSenha" render={({ field }) => (
@@ -257,5 +274,3 @@ export default function SignupPage() {
     </>
   );
 }
-
-    

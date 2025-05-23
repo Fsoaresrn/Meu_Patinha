@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -15,14 +16,19 @@ import { useToast } from "@/hooks/use-toast";
 import type { AuthUser, UserResponsibility } from "@/types";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { ufsBrasil, cidadesPorUF } from "@/lib/constants"; // Assuming these are defined
+import { ufsBrasil, cidadesPorUF } from "@/lib/constants";
+
+const responsabilidadesDisponiveis: { id: UserResponsibility; label: string }[] = [
+  { id: "Tutor(a)", label: "Tutor(a) de Pet" },
+  { id: "Cuidador(a)", label: "Cuidador(a) Profissional" },
+  { id: "Veterinário(a)", label: "Profissional Veterinário(a)" },
+];
 
 const signupSchema = z.object({
   nomeCompleto: z.string().min(3, "Nome completo é obrigatório"),
   cpf: z.string().regex(/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/, "CPF inválido. Use o formato xxx.xxx.xxx-xx ou xxxxxxxxxxx"),
-  tipoResponsabilidade: z.enum(["Tutor(a)", "Cuidador(a)", "Veterinário(a)"], {
-    required_error: "Tipo de responsabilidade é obrigatório.",
-  }),
+  tipoResponsabilidade: z.array(z.enum(["Tutor(a)", "Cuidador(a)", "Veterinário(a)"]))
+    .min(1, "Selecione ao menos um tipo de responsabilidade."),
   email: z.string().email("E-mail inválido"),
   senha: z.string().min(8, "Senha deve ter no mínimo 8 caracteres"),
   confirmarSenha: z.string(),
@@ -61,6 +67,7 @@ export default function SignupPage() {
       confirmarSenha: "",
       uf: "",
       cidade: "",
+      tipoResponsabilidade: [],
       acceptTerms: false,
     },
   });
@@ -87,7 +94,7 @@ export default function SignupPage() {
       cpf: formattedCpf,
       nome: nomeCompleto,
       email,
-      tipoResponsabilidade: tipoResponsabilidade as UserResponsibility,
+      tipoResponsabilidade: tipoResponsabilidade, // Agora é um array
       uf,
       cidade,
       endereco: `${enderecoRua || ''}${enderecoNumero ? ', ' + enderecoNumero : ''}${enderecoComplemento ? ' - ' + enderecoComplemento : ''}${enderecoBairro ? '. Bairro: ' + enderecoBairro : ''}`.trim() || undefined,
@@ -96,15 +103,12 @@ export default function SignupPage() {
       acceptedTerms: false, // Terms accepted on first login after signup
     };
 
-    // Simulate saving password securely (e.g., hash it and store on backend)
-    // For demo, store in localStorage (NOT FOR PRODUCTION)
     localStorage.setItem(`password-${newUser.cpf}`, senha);
-
     setRegisteredUsers([...registeredUsers, newUser]);
     
     toast({ title: "Cadastro realizado com sucesso!", description: "Você já pode fazer login." });
-    loginUser(newUser); // Log in the user directly
-    router.push("/terms"); // Redirect to terms page first
+    loginUser(newUser);
+    router.push("/terms"); 
   };
 
   return (
@@ -128,20 +132,57 @@ export default function SignupPage() {
               <FormMessage />
             </FormItem>
           )} />
-          <FormField control={form.control} name="tipoResponsabilidade" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tipo de Responsabilidade</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
-                <SelectContent>
-                  <SelectItem value="Tutor(a)">Tutor(a)</SelectItem>
-                  <SelectItem value="Cuidador(a)">Cuidador(a)</SelectItem>
-                  <SelectItem value="Veterinário(a)">Veterinário(a)</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} />
+
+          <FormField
+            control={form.control}
+            name="tipoResponsabilidade"
+            render={() => (
+              <FormItem>
+                <div className="mb-2">
+                  <FormLabel className="text-base">Perfis da Conta</FormLabel>
+                  <FormDescription>
+                    Selecione um ou mais perfis. Isso definirá funcionalidades disponíveis.
+                  </FormDescription>
+                </div>
+                {responsabilidadesDisponiveis.map((item) => (
+                  <FormField
+                    key={item.id}
+                    control={form.control}
+                    name="tipoResponsabilidade"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={item.id}
+                          className="flex flex-row items-center space-x-3 space-y-0 mb-2 p-3 border rounded-md hover:bg-muted/50"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(item.id)}
+                              onCheckedChange={(checked) => {
+                                const currentValue = field.value || [];
+                                return checked
+                                  ? field.onChange([...currentValue, item.id])
+                                  : field.onChange(
+                                      currentValue.filter(
+                                        (value) => value !== item.id
+                                      )
+                                    );
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal cursor-pointer flex-1">
+                            {item.label}
+                          </FormLabel>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                ))}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField control={form.control} name="email" render={({ field }) => (
             <FormItem>
               <FormLabel>E-mail</FormLabel>
@@ -169,7 +210,7 @@ export default function SignupPage() {
             <FormField control={form.control} name="uf" render={({ field }) => (
               <FormItem>
                 <FormLabel>UF</FormLabel>
-                <Select onValueChange={(value) => { field.onChange(value); form.setValue("cidade", ""); }} defaultValue={field.value}>
+                <Select onValueChange={(value) => { field.onChange(value); form.setValue("cidade", ""); }} value={field.value || ""}>
                   <FormControl><SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger></FormControl>
                   <SelectContent>
                     {ufsBrasil.map(uf => <SelectItem key={uf.sigla} value={uf.sigla}>{uf.nome}</SelectItem>)}
@@ -181,7 +222,7 @@ export default function SignupPage() {
             <FormField control={form.control} name="cidade" render={({ field }) => (
               <FormItem>
                 <FormLabel>Cidade</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUf}>
+                <Select onValueChange={field.onChange} value={field.value || ""} disabled={!selectedUf}>
                   <FormControl><SelectTrigger><SelectValue placeholder="Cidade" /></SelectTrigger></FormControl>
                   <SelectContent>
                     {(cidadesPorUF[selectedUf as keyof typeof cidadesPorUF] || []).map(cidade => <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>)}
@@ -192,7 +233,6 @@ export default function SignupPage() {
             )} />
           </div>
           
-          {/* Optional address fields could be in an Accordion or hidden by default */}
           <FormDescription>Informações de endereço (opcional):</FormDescription>
            <FormField control={form.control} name="enderecoRua" render={({ field }) => (
             <FormItem><FormLabel className="text-sm">Rua</FormLabel><FormControl><Input placeholder="Nome da rua" {...field} /></FormControl><FormMessage /></FormItem>

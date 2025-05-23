@@ -1,3 +1,4 @@
+
 // Tipos de Responsabilidade do Usuário
 export type UserResponsibility = "Tutor(a)" | "Cuidador(a)" | "Veterinário(a)";
 
@@ -38,7 +39,7 @@ export interface AuthUser {
   nome: string;
   email: string; // editável
   // Senha não é armazenada aqui após autenticação
-  tipoResponsabilidade: UserResponsibility;
+  tipoResponsabilidade: UserResponsibility[]; // Alterado para array
   uf: string; // Estado (Unidade Federativa)
   cidade: string;
   endereco?: string; // Rua, Número, Complemento, Bairro

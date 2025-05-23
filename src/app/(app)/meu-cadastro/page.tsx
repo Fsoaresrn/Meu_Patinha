@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { UserResponsibility, AuthUser } from "@/types";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -21,7 +23,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 const profileSchema = z.object({
   nome: z.string().min(3, "Nome é obrigatório"),
   email: z.string().email("E-mail inválido"),
-  tipoResponsabilidade: z.enum(["Tutor(a)", "Cuidador(a)", "Veterinário(a)"]),
+  // tipoResponsabilidade não é editável aqui pelo usuário comum, mas precisa estar no schema para consistência de tipo.
+  // A validação aqui pode ser mais frouxa ou simplesmente garantir que é um array.
+  tipoResponsabilidade: z.array(z.enum(["Tutor(a)", "Cuidador(a)", "Veterinário(a)"])).optional(),
   uf: z.string().min(2, "UF é obrigatória"),
   cidade: z.string().min(1, "Cidade é obrigatória"),
   endereco: z.string().optional(),
@@ -30,7 +34,7 @@ const profileSchema = z.object({
 });
 
 const passwordSchema = z.object({
-  senhaAtual: z.string().min(1, "Senha atual é obrigatória"), // Simplified, no min length check for current
+  senhaAtual: z.string().min(1, "Senha atual é obrigatória"),
   novaSenha: z.string().min(8, "Nova senha deve ter no mínimo 8 caracteres"),
   confirmarNovaSenha: z.string(),
 }).refine(data => data.novaSenha === data.confirmarNovaSenha, {
@@ -64,7 +68,7 @@ export default function MeuCadastroPage() {
       profileForm.reset({
         nome: user.nome,
         email: user.email,
-        tipoResponsabilidade: user.tipoResponsabilidade,
+        tipoResponsabilidade: user.tipoResponsabilidade, // Agora é um array
         uf: user.uf,
         cidade: user.cidade,
         endereco: user.endereco || "",
@@ -79,10 +83,11 @@ export default function MeuCadastroPage() {
   const onProfileSubmit = (data: ProfileFormValues) => {
     if (!user) return;
     
+    // tipoResponsabilidade não é alterado aqui pelo usuário. Mantemos o valor existente.
     const updatedUserFields = {
         nome: data.nome,
         email: data.email,
-        tipoResponsabilidade: data.tipoResponsabilidade as UserResponsibility,
+        tipoResponsabilidade: user.tipoResponsabilidade, // Mantém o valor existente do store
         uf: data.uf,
         cidade: data.cidade,
         endereco: data.endereco,
@@ -91,11 +96,15 @@ export default function MeuCadastroPage() {
     };
     updateUser(updatedUserFields);
 
-    // Also update in the persisted list of all users
     const userIndex = registeredUsers.findIndex(u => u.cpf === user.cpf);
     if (userIndex !== -1) {
         const updatedUsers = [...registeredUsers];
-        updatedUsers[userIndex] = { ...updatedUsers[userIndex], ...updatedUserFields, acceptedTerms: user.acceptedTerms };
+        updatedUsers[userIndex] = { 
+            ...updatedUsers[userIndex], 
+            ...updatedUserFields, 
+            acceptedTerms: user.acceptedTerms, 
+            tipoResponsabilidade: user.tipoResponsabilidade // Garante que o tipo correto (array) seja salvo
+        };
         setRegisteredUsers(updatedUsers);
     }
 
@@ -115,27 +124,25 @@ export default function MeuCadastroPage() {
     }
 
     localStorage.setItem(`password-${user.cpf}`, data.novaSenha);
-    // Clear temporary password if it was used
     if (isTempPasswordMatch) {
-      updateUser({ temporaryPassword: undefined }); // Clear from Zustand state
+      updateUser({ temporaryPassword: undefined }); 
       const userIndex = registeredUsers.findIndex(u => u.cpf === user.cpf);
         if (userIndex !== -1) {
             const updatedUsers = [...registeredUsers];
             updatedUsers[userIndex] = { ...updatedUsers[userIndex], temporaryPassword: undefined };
             setRegisteredUsers(updatedUsers);
         }
-      clearTempPasswordFlag(); // Clear the force reset flag in Zustand
+      clearTempPasswordFlag(); 
     }
     
     toast({ title: "Senha Alterada", description: "Sua senha foi alterada com sucesso." });
     passwordForm.reset();
     if (forcePasswordChange) {
-        router.push('/'); // Redirect to home after forced password change
+        router.push('/'); 
     }
   };
 
   if (!user) {
-    // AuthGuard should prevent this, but as a fallback
     router.push('/login');
     return <div className="flex h-screen items-center justify-center"><p>Redirecionando...</p></div>;
   }
@@ -151,7 +158,7 @@ export default function MeuCadastroPage() {
       <Card>
         <CardHeader>
           <CardTitle>Meu Cadastro</CardTitle>
-          <CardDescription>Visualize e edite suas informações pessoais. Seu CPF ({user.cpf}) não pode ser alterado.</CardDescription>
+          <CardDescription>Visualize e edite suas informações pessoais. Seu CPF ({user.cpf}) e Perfis da Conta não podem ser alterados aqui.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...profileForm}>
@@ -164,20 +171,23 @@ export default function MeuCadastroPage() {
                   <FormItem><FormLabel>E-mail</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
-              <FormField control={profileForm.control} name="tipoResponsabilidade" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Responsabilidade</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      <SelectItem value="Tutor(a)">Tutor(a)</SelectItem>
-                      <SelectItem value="Cuidador(a)">Cuidador(a)</SelectItem>
-                      <SelectItem value="Veterinário(a)">Veterinário(a)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
+              
+              <FormItem>
+                <FormLabel>Perfis da Conta</FormLabel>
+                <div className="flex flex-wrap gap-2 p-2 rounded-md border bg-muted/50">
+                  {user.tipoResponsabilidade && user.tipoResponsabilidade.length > 0 ? (
+                    user.tipoResponsabilidade.map(perfil => (
+                      <Badge key={perfil} variant="secondary" className="text-sm">{perfil}</Badge>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Nenhum perfil definido.</p>
+                  )}
+                </div>
+                <FormDescription className="text-xs">
+                  Os perfis da conta só podem ser alterados por um administrador do sistema.
+                </FormDescription>
+              </FormItem>
+
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <FormField control={profileForm.control} name="uf" render={({ field }) => (
                   <FormItem>

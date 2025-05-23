@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { TermsContent } from "@/components/terms/terms-content";
 import { calculatePasswordStrength, type PasswordStrengthResult } from "@/lib/password-utils";
 import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
+import { cn, formatPhoneNumberForDisplay } from "@/lib/utils";
 
 
 const responsabilidadesDisponiveis: { id: UserResponsibility; label: string }[] = [
@@ -38,10 +38,18 @@ const signupSchema = z.object({
   email: z.string().email("E-mail inválido"),
   senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
   confirmarSenha: z.string(),
-  telefoneDdd: z.string().optional(),
-  telefoneNumero: z.string().optional(),
+  telefoneDdd: z.string()
+    .refine(val => val === undefined || val === "" || /^\d{2}$/.test(val), {
+      message: "DDD deve conter 2 dígitos numéricos ou ser deixado em branco",
+    })
+    .optional(),
+  telefoneNumero: z.string()
+    .refine(val => val === undefined || val === "" || /^\d{8}$/.test(val), {
+      message: "Número deve conter 8 dígitos numéricos ou ser deixado em branco",
+    })
+    .optional(),
   acceptTerms: z.boolean().refine(val => val === true, {
-    message: "Você deve aceitar os termos e condições.",
+    message: "Você deve aceitar os Termos de Uso e Responsabilidade e Política de Privacidade.",
   }),
 }).refine(data => data.senha === data.confirmarSenha, {
   message: "As senhas não coincidem",
@@ -105,7 +113,7 @@ export default function SignupPage() {
       tipoResponsabilidade: tipoResponsabilidade,
       uf: "", 
       cidade: "", 
-      telefone: (telefoneDdd && telefoneNumero) ? `(${telefoneDdd}) ${telefoneNumero}` : undefined,
+      telefone: (telefoneDdd && telefoneNumero) ? `(${telefoneDdd}) ${formatPhoneNumberForDisplay(telefoneNumero)}` : undefined,
       acceptedTerms: false, 
     };
 
@@ -240,12 +248,48 @@ export default function SignupPage() {
           
           <FormDescription>Telefone:</FormDescription>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <FormField control={form.control} name="telefoneDdd" render={({ field }) => (
-              <FormItem><FormLabel className="text-sm">DDD</FormLabel><FormControl><Input placeholder="XX" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="telefoneNumero" render={({ field }) => (
-              <FormItem><FormLabel className="text-sm">Número</FormLabel><FormControl><Input placeholder="xxxxxxxxx" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
-            )} />
+            <FormField 
+              control={form.control} 
+              name="telefoneDdd" 
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">DDD</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="XX" 
+                      {...field} 
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/\D/g, "").slice(0, 2);
+                        field.onChange(numericValue);
+                      }}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} 
+            />
+            <FormField 
+              control={form.control} 
+              name="telefoneNumero" 
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Número</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="XXXXX-XXX" 
+                      {...field} 
+                      value={formatPhoneNumberForDisplay(field.value)}
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/\D/g, "").slice(0, 8);
+                        field.onChange(numericValue);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} 
+            />
           </div>
 
           <FormField control={form.control} name="acceptTerms" render={({ field }) => (

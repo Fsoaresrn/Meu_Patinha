@@ -51,7 +51,7 @@ const petFormSchema = z.object({
   castrado: z.enum(yesNoOptions, { required_error: "Informar se é castrado é obrigatório." }),
   tipoAquisicao: z.enum(acquisitionTypes as [string, ...string[]]).optional(),
   finalidade: z.enum(petPurposes as [string, ...string[]]).optional(),
-  fotoUrl: z.string().optional(), // Armazenará o Data URL da imagem
+  fotoUrl: z.string().optional(), 
   tipoPelagem: z.string().optional(),
   corPelagem: z.string().optional(),
   peso: z.preprocess(
@@ -110,7 +110,8 @@ export default function AdicionarPetPage() {
   const [isBreedPopoverOpen, setIsBreedPopoverOpen] = useState(false);
   const [breedSearchValue, setBreedSearchValue] = useState("");
   
-  const [furColorSearch, setFurColorSearch] = useState("");
+  const [isFurColorPopoverOpen, setIsFurColorPopoverOpen] = useState(false);
+  const [furColorSearchValue, setFurColorSearchValue] = useState("");
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isSimPatinhasCalendarOpen, setIsSimPatinhasCalendarOpen] = useState(false);
@@ -128,7 +129,7 @@ export default function AdicionarPetPage() {
       castrado: undefined,
       tipoAquisicao: undefined,
       finalidade: undefined,
-      fotoUrl: "", // Será o Data URL
+      fotoUrl: "", 
       sinaisObservacoes: "",
       birthDateUnknown: false,
       dataNascimento: undefined,
@@ -204,7 +205,7 @@ export default function AdicionarPetPage() {
     setImagePreview(null);
     form.setValue("fotoUrl", "");
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // Limpa o input de arquivo
+      fileInputRef.current.value = ""; 
     }
   };
 
@@ -216,10 +217,7 @@ export default function AdicionarPetPage() {
         setDateInputString(formattedDate);
       }
     } else if (!watchedDataNascimento && dateInputString !== "") {
-      // Se a data se tornar inválida ou undefined, mas o input ainda tiver algo, limpe o input.
-      // Isso pode acontecer se o usuário apagar a data no calendário, por exemplo.
-      // No entanto, se o usuário estiver digitando, não queremos limpar o input.
-      // O onBlur cuidará da validação final do que foi digitado.
+      // Comportamento similar ao watchedDataNascimento
     }
   }, [watchedDataNascimento, dateInputString]);
 
@@ -292,7 +290,7 @@ export default function AdicionarPetPage() {
       castrado: data.castrado,
       tipoAquisicao: data.tipoAquisicao as PetAcquisitionType | undefined,
       finalidade: data.finalidade as PetPurpose | undefined,
-      fotoUrl: data.fotoUrl || undefined, // Agora é um Data URL
+      fotoUrl: data.fotoUrl || undefined, 
       tipoPelagem: data.tipoPelagem || "",
       corPelagem: data.corPelagem || "",
       peso: data.peso,
@@ -344,12 +342,12 @@ export default function AdicionarPetPage() {
     return especieSelecionada ? furColorsBySpecies[especieSelecionada] : [];
   }, [especieSelecionada]);
 
-  const coresPelagemDisponiveis = useMemo(() => {
-    if (furColorSearch.length >= 3) {
-      return baseCoresPelagem.filter(cor => cor.toLowerCase().startsWith(furColorSearch.toLowerCase()));
-    }
-    return baseCoresPelagem;
-  }, [baseCoresPelagem, furColorSearch]);
+  const filteredCoresPelagem = useMemo(() => {
+    if (!furColorSearchValue) return baseCoresPelagem;
+    return baseCoresPelagem.filter(cor => 
+      cor.toLowerCase().includes(furColorSearchValue.toLowerCase())
+    );
+  }, [baseCoresPelagem, furColorSearchValue]);
 
 
   useEffect(() => {
@@ -357,7 +355,7 @@ export default function AdicionarPetPage() {
     setBreedSearchValue("");
     form.setValue("tipoPelagem", "");
     form.setValue("corPelagem", "");
-    setFurColorSearch("");
+    setFurColorSearchValue("");
   }, [especieSelecionada, form]);
 
   const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: "dataNascimento" | "simPatinhasEmissionDate") => {
@@ -368,32 +366,25 @@ export default function AdicionarPetPage() {
       setSimPatinhasDateInputString(typedValue);
     }
 
-    // Regex para permitir apenas dd, dd/mm, dd/mm/aaaa e suas variações durante a digitação
     const dateFormatRegex = /^(?:\d{1,2}(?:\/(?:\d{1,2}(?:\/\d{0,4})?)?)?)?$/;
 
-    if (typedValue.length <= 10) { // Permite até 10 caracteres (dd/mm/aaaa)
+    if (typedValue.length <= 10) { 
         if (typedValue === "" || dateFormatRegex.test(typedValue)) { 
-            // Se a data digitada tem o formato completo e é válida, atualiza o form
             if (typedValue.length === 10 && typedValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
                  const parsedDate = parseDateFn(typedValue, "dd/MM/yyyy", new Date());
                  if (isValidDate(parsedDate)) {
-                    // Compara com a data atual no RHF para evitar atualizações desnecessárias
                     const currentRHFDate = form.getValues(fieldName);
                     if (!currentRHFDate || currentRHFDate.getTime() !== parsedDate.getTime()) {
                         form.setValue(fieldName, parsedDate, { shouldValidate: true });
                     }
                  } else {
-                    // Se o formato é completo mas a data é inválida (ex: 30/02/2023), 
-                    // o RHF não será atualizado com uma data inválida, mas o erro será mostrado.
-                    form.setValue(fieldName, undefined, { shouldValidate: true }); // Força a validação do Zod
+                    form.setValue(fieldName, undefined, { shouldValidate: true }); 
                  }
             } else if (typedValue === "") {
-                // Se o campo for limpo, define como undefined no RHF
                 form.setValue(fieldName, undefined, { shouldValidate: true });
             }
-             // Se não está completo ou válido, não atualiza o RHF ainda, espera o onBlur
         }
-    } else if (typedValue === "") { // Caso o usuário apague tudo
+    } else if (typedValue === "") { 
         form.setValue(fieldName, undefined, { shouldValidate: true });
     }
   };
@@ -403,26 +394,21 @@ export default function AdicionarPetPage() {
     const currentRHFDate = form.getValues(fieldName);
 
     if (isValidDate(parsedDate)) {
-      // Se a data parseada for válida e diferente da que está no RHF, atualiza
       if (!currentRHFDate || currentRHFDate.getTime() !== parsedDate.getTime()) {
         form.setValue(fieldName, parsedDate, { shouldValidate: true });
       }
-      // Garante que o input string reflita a data formatada corretamente
       if (fieldName === "dataNascimento") {
         setDateInputString(formatDateToBrasil(parsedDate));
       } else {
         setSimPatinhasDateInputString(formatDateToBrasil(parsedDate));
       }
     } else {
-      // Se a string não representa uma data válida (e não está vazia)
-      if (dateString === "") { // Se o usuário apagou o campo
-        if (currentRHFDate !== undefined) { // E havia uma data válida antes
+      if (dateString === "") { 
+        if (currentRHFDate !== undefined) { 
             form.setValue(fieldName, undefined, { shouldValidate: true });
         }
-      } else { // Se o usuário deixou um texto inválido
-        // Mantém o texto inválido no input para o usuário corrigir
-        // e define o valor do RHF como undefined para acionar a validação do Zod
-        if (currentRHFDate !== undefined) { // Limpa o valor do RHF se havia algo válido
+      } else { 
+        if (currentRHFDate !== undefined) { 
             form.setValue(fieldName, undefined, { shouldValidate: true });
         }
          if (fieldName === "dataNascimento") {
@@ -618,7 +604,7 @@ export default function AdicionarPetPage() {
                               if (date && isValidDate(date)) {
                                 setDateInputString(formatDateToBrasil(date));
                               } else {
-                                setDateInputString(""); // Limpa se a data for undefined/null
+                                setDateInputString(""); 
                               }
                               setIsCalendarOpen(false); 
                             }}
@@ -799,41 +785,71 @@ export default function AdicionarPetPage() {
                     </FormItem>
                   )}
                 />
-                <div> 
-                    <FormLabel htmlFor="fur-color-search">Cor da Pelagem</FormLabel>
-                    <div className="relative mt-2">
-                        <Input
-                        id="fur-color-search"
-                        placeholder="Digite min. 3 letras para buscar"
-                        value={furColorSearch}
-                        onChange={(e) => setFurColorSearch(e.target.value)}
-                        disabled={!especieSelecionada}
-                        className="pr-10"
-                        />
-                        <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
-                    </div>
-                    <FormField
-                        control={form.control}
-                        name="corPelagem"
-                        render={({ field }) => (
-                        <FormItem className="mt-2">
-                            <Select onValueChange={field.onChange} value={field.value} disabled={!especieSelecionada || coresPelagemDisponiveis.length === 0 && furColorSearch.length < 3}>
-                            <FormControl><SelectTrigger><SelectValue placeholder={especieSelecionada ? "Selecione a cor" : "Escolha a espécie"} /></SelectTrigger></FormControl>
-                            <SelectContent>
-                                {coresPelagemDisponiveis.length > 0 ? (
-                                coresPelagemDisponiveis.map(color => <SelectItem key={color} value={color}>{color}</SelectItem>)
-                                ) : (
-                                <div className="p-2 text-sm text-muted-foreground">
-                                    {furColorSearch.length >= 3 ? "Nenhuma cor encontrada." : (especieSelecionada ? "Digite para buscar." : "Escolha a espécie.")}
-                                </div>
-                                )}
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="corPelagem"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Cor da Pelagem</FormLabel>
+                      <Popover open={isFurColorPopoverOpen} onOpenChange={setIsFurColorPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={isFurColorPopoverOpen}
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              disabled={!especieSelecionada}
+                            >
+                              {field.value
+                                ? baseCoresPelagem.find(
+                                    (cor) => cor.toLowerCase() === field.value.toLowerCase()
+                                  ) || (especieSelecionada ? "Selecione ou digite a cor" : "Primeiro escolha a espécie")
+                                : (especieSelecionada ? "Selecione ou digite a cor" : "Primeiro escolha a espécie")}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command shouldFilter={false}>
+                            <CommandInput
+                              placeholder="Buscar cor da pelagem..."
+                              value={furColorSearchValue}
+                              onValueChange={setFurColorSearchValue}
+                              disabled={!especieSelecionada}
+                            />
+                            <CommandEmpty>{especieSelecionada ? "Nenhuma cor encontrada." : "Escolha uma espécie primeiro."}</CommandEmpty>
+                            <CommandList>
+                              {especieSelecionada && filteredCoresPelagem.map((cor) => (
+                                <CommandItem
+                                  value={cor}
+                                  key={cor}
+                                  onSelect={() => {
+                                    form.setValue("corPelagem", cor);
+                                    setIsFurColorPopoverOpen(false);
+                                    setFurColorSearchValue(""); 
+                                  }}
+                                >
+                                  <CheckIcon
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      cor.toLowerCase() === field.value?.toLowerCase() ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {cor}
+                                </CommandItem>
+                              ))}
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1076,5 +1092,3 @@ export default function AdicionarPetPage() {
     </div>
   );
 }
-
-    

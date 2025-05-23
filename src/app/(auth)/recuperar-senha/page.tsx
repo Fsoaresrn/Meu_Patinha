@@ -9,7 +9,7 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuthStore } from "@/stores/auth.store"; 
+// import { useAuthStore } from "@/stores/auth.store"; // Not directly used here, user data from localStorage
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { AuthUser } from "@/types";
@@ -41,7 +41,6 @@ export default function RecoverPasswordPage() {
     const userIndex = registeredUsers.findIndex(u => u.cpf === formattedCpf && u.email === data.email);
 
     if (userIndex !== -1) {
-      // Gera senha alfanumérica de 8 caracteres
       const tempPassword = Math.random().toString(36).slice(2, 10);
       
       const updatedUsers = [...registeredUsers];
@@ -78,7 +77,7 @@ export default function RecoverPasswordPage() {
             name="cpf"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>CPF</FormLabel>
+                <FormLabel>CPF<span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input placeholder="Seu CPF" {...field} />
                 </FormControl>
@@ -91,7 +90,7 @@ export default function RecoverPasswordPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>E-mail</FormLabel>
+                <FormLabel>E-mail<span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="seu@email.com" {...field} />
                 </FormControl>
@@ -114,3 +113,5 @@ export default function RecoverPasswordPage() {
     </>
   );
 }
+
+    

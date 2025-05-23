@@ -79,8 +79,8 @@ export default function MeuCadastroPage() {
         nome: user.nome,
         email: user.email,
         tipoResponsabilidade: user.tipoResponsabilidade, 
-        uf: user.uf || "", // Default to empty string if not present
-        cidade: user.cidade || "", // Default to empty string if not present
+        uf: user.uf || "", 
+        cidade: user.cidade || "", 
         endereco: user.endereco || "",
         cep: user.cep || "",
         telefone: user.telefone || "",
@@ -146,7 +146,7 @@ export default function MeuCadastroPage() {
     
     toast({ title: "Senha Alterada", description: "Sua senha foi alterada com sucesso." });
     passwordForm.reset();
-    setNewPasswordStrength(null); // Reset strength indicator
+    setNewPasswordStrength(null); 
     if (forcePasswordChange) {
         router.push('/'); 
     }
@@ -175,10 +175,10 @@ export default function MeuCadastroPage() {
             <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <FormField control={profileForm.control} name="nome" render={({ field }) => (
-                  <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Nome Completo<span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={profileForm.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>E-mail</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>E-mail<span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               
@@ -201,7 +201,7 @@ export default function MeuCadastroPage() {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <FormField control={profileForm.control} name="uf" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>UF</FormLabel>
+                    <FormLabel>UF<span className="text-destructive">*</span></FormLabel>
                     <Select onValueChange={(value) => { field.onChange(value); profileForm.setValue("cidade", ""); }} value={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
                       <SelectContent>{ufsBrasil.map(uf => <SelectItem key={uf.sigla} value={uf.sigla}>{uf.nome}</SelectItem>)}</SelectContent>
@@ -211,7 +211,7 @@ export default function MeuCadastroPage() {
                 )} />
                 <FormField control={profileForm.control} name="cidade" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cidade</FormLabel>
+                    <FormLabel>Cidade<span className="text-destructive">*</span></FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUf}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
                       <SelectContent>{(cidadesPorUF[selectedUf as keyof typeof cidadesPorUF] || []).map(cidade => <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>)}</SelectContent>
@@ -225,10 +225,10 @@ export default function MeuCadastroPage() {
               )} />
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <FormField control={profileForm.control} name="cep" render={({ field }) => (
-                  <FormItem><FormLabel>CEP</FormLabel><FormControl><Input placeholder="Opcional: xxxxx-xxx" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>CEP</FormLabel><FormControl><Input placeholder="xxxxx-xxx" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={profileForm.control} name="telefone" render={({ field }) => (
-                  <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input placeholder="Opcional: (XX) XXXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input placeholder="(XX) XXXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <Button type="submit" disabled={profileForm.formState.isSubmitting || forcePasswordChange}>Salvar Alterações</Button>
@@ -246,11 +246,11 @@ export default function MeuCadastroPage() {
           <Form {...passwordForm}>
             <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
                <FormField control={passwordForm.control} name="senhaAtual" render={({ field }) => (
-                <FormItem><FormLabel>{forcePasswordChange ? "Senha Provisória" : "Senha Atual"}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{forcePasswordChange ? "Senha Provisória" : "Senha Atual"}<span className="text-destructive">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={passwordForm.control} name="novaSenha" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nova Senha</FormLabel>
+                  <FormLabel>Nova Senha<span className="text-destructive">*</span></FormLabel>
                   <FormControl><Input type="password" {...field} /></FormControl>
                   <FormMessage />
                   {newPasswordStrength && newPasswordStrength.label && (
@@ -261,7 +261,7 @@ export default function MeuCadastroPage() {
                 </FormItem>
               )} />
               <FormField control={passwordForm.control} name="confirmarNovaSenha" render={({ field }) => (
-                <FormItem><FormLabel>Confirmar Nova Senha</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Confirmar Nova Senha<span className="text-destructive">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <Button type="submit" disabled={passwordForm.formState.isSubmitting}>Alterar Senha</Button>
             </form>
@@ -271,3 +271,5 @@ export default function MeuCadastroPage() {
     </div>
   );
 }
+
+    

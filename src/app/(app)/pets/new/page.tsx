@@ -42,7 +42,7 @@ const petFormSchema = z.object({
       .min(0, "Idade não pode ser negativa.")
       .optional()
   ),
-  sexo: z.enum(petGendersList as [PetGender, ...PetGender[]], { required_error: "Sexo é obrigatória." }),
+  sexo: z.enum(petGendersList as [PetGender, ...PetGender[]], { required_error: "Sexo é obrigatório." }),
   castrado: z.enum(yesNoOptions, { required_error: "Informar se é castrado é obrigatório." }),
   tipoAquisicao: z.enum(acquisitionTypes as [string, ...string[]]).optional(),
   finalidade: z.enum(petPurposes as [string, ...string[]]).optional(),
@@ -55,7 +55,6 @@ const petFormSchema = z.object({
   ),
   porte: z.enum(petSizesList as [PetSize, ...PetSize[]]).optional(),
   sinaisObservacoes: z.string().optional(),
-  // Campos SimPatinhas
   hasSimPatinhas: z.enum(["Sim", "Não"], { errorMap: () => ({ message: "Selecione Sim ou Não." }) }).optional(),
   simPatinhasId: z.string().optional(),
   simPatinhasEmissionDate: z.date().optional(),
@@ -71,7 +70,7 @@ const petFormSchema = z.object({
   return true;
 }, {
   message: "Informe a data de nascimento ou a idade estimada em meses.",
-  path: ["dataNascimento"], // Ou path: ["ageInMonths"] dependendo do contexto do erro
+  path: ["dataNascimento"], 
 }).superRefine((data, ctx) => {
   if (data.hasSimPatinhas === "Sim") {
     if (!data.simPatinhasId || data.simPatinhasId.trim() === "") {
@@ -168,8 +167,9 @@ export default function AdicionarPetPage() {
     if (isBirthDateUnknown) {
       form.setValue("dataNascimento", undefined);
       setCalculatedAgeDisplay(null);
+      setDateInputString(""); 
     } else {
-      form.setValue("ageInMonths", undefined);
+      form.setValue("ageInMonths", undefined, { shouldValidate: true });
     }
   }, [isBirthDateUnknown, form]);
 
@@ -293,7 +293,7 @@ export default function AdicionarPetPage() {
     }
 
     if (typedValue.length <= 10) {
-        if (typedValue === "" || /^(?:\d{1,2}\/?\d{0,2}\/?\d{0,4})?$/.test(typedValue)) { // Allow partial input
+        if (typedValue === "" || /^(?:\d{1,2}\/?\d{0,2}\/?\d{0,4})?$/.test(typedValue)) { 
             if (typedValue.length === 10 && typedValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
                  const parsedDate = parseDateFn(typedValue, "dd/MM/yyyy", new Date());
                  if (isValidDate(parsedDate)) {
@@ -301,13 +301,11 @@ export default function AdicionarPetPage() {
                     if (!currentRHFDate || currentRHFDate.getTime() !== parsedDate.getTime()) {
                         form.setValue(fieldName, parsedDate, { shouldValidate: true });
                     }
-                 } else {
-                    // form.setValue(fieldName, undefined, { shouldValidate: true }); // Or keep invalid for Zod
                  }
             } else if (typedValue === "") {
                 form.setValue(fieldName, undefined, { shouldValidate: true });
             }
-        } // If not matching regex or empty, do nothing, let blur handle
+        }
     } else if (typedValue === "") {
         form.setValue(fieldName, undefined, { shouldValidate: true });
     }
@@ -334,6 +332,11 @@ export default function AdicionarPetPage() {
       } else { 
         if (currentRHFDate !== undefined) {
             form.setValue(fieldName, undefined, { shouldValidate: true });
+        }
+         if (fieldName === "dataNascimento") {
+            setDateInputString(dateString); // Keep invalid input string for user to see
+        } else {
+            setSimPatinhasDateInputString(dateString); // Keep invalid input string for user to see
         }
       }
     }
@@ -364,7 +367,7 @@ export default function AdicionarPetPage() {
                 name="nome"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome do Pet</FormLabel>
+                    <FormLabel>Nome do Pet<span className="text-destructive">*</span></FormLabel>
                     <FormControl><Input placeholder="Ex: Rex, Luna" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -377,7 +380,7 @@ export default function AdicionarPetPage() {
                   name="especie"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Espécie</FormLabel>
+                      <FormLabel>Espécie<span className="text-destructive">*</span></FormLabel>
                       <Select 
                         onValueChange={(value) => { 
                           field.onChange(value as PetSpecies);
@@ -398,7 +401,7 @@ export default function AdicionarPetPage() {
                   name="raca"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Raça</FormLabel>
+                      <FormLabel>Raça<span className="text-destructive">*</span></FormLabel>
                       <Popover open={isBreedPopoverOpen} onOpenChange={setIsBreedPopoverOpen}>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -490,7 +493,7 @@ export default function AdicionarPetPage() {
                   name="dataNascimento"
                   render={({ field }) => ( 
                     <FormItem className="flex flex-col">
-                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormLabel>Data de Nascimento<span className="text-destructive">*</span></FormLabel>
                       <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                         <PopoverTrigger asChild>
                            <FormControl>
@@ -551,7 +554,7 @@ export default function AdicionarPetPage() {
                   name="ageInMonths"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Idade Estimada (em meses)</FormLabel>
+                      <FormLabel>Idade Estimada (em meses)<span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -576,7 +579,7 @@ export default function AdicionarPetPage() {
                   name="sexo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Sexo</FormLabel>
+                      <FormLabel>Sexo<span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione o sexo" /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -592,7 +595,7 @@ export default function AdicionarPetPage() {
                   name="castrado"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Castrado?</FormLabel>
+                      <FormLabel>Castrado?<span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -611,7 +614,7 @@ export default function AdicionarPetPage() {
                   name="tipoAquisicao"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo de Aquisição (Opcional)</FormLabel>
+                      <FormLabel>Tipo de Aquisição</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione o tipo de aquisição" /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -627,7 +630,7 @@ export default function AdicionarPetPage() {
                   name="finalidade"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Finalidade (Opcional)</FormLabel>
+                      <FormLabel>Finalidade</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione a finalidade" /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -645,7 +648,7 @@ export default function AdicionarPetPage() {
                 name="fotoUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL da Foto (Opcional)</FormLabel>
+                    <FormLabel>URL da Foto</FormLabel>
                     <FormControl><Input placeholder="https://exemplo.com/foto.png" {...field} /></FormControl>
                     <FormDescription>Cole a URL de uma imagem para o perfil do pet.</FormDescription>
                     <FormMessage />
@@ -659,7 +662,7 @@ export default function AdicionarPetPage() {
                   name="tipoPelagem"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo de Pelagem (Opcional)</FormLabel>
+                      <FormLabel>Tipo de Pelagem</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value} disabled={!especieSelecionada || tiposPelagemDisponiveis.length === 0}>
                         <FormControl><SelectTrigger><SelectValue placeholder={especieSelecionada ? "Selecione o tipo" : "Escolha a espécie"} /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -671,11 +674,11 @@ export default function AdicionarPetPage() {
                   )}
                 />
                 <div> 
-                    <FormLabel htmlFor="fur-color-search">Buscar Cor da Pelagem (Opcional)</FormLabel>
-                    <div className="relative">
+                    <FormLabel htmlFor="fur-color-search">Cor da Pelagem</FormLabel>
+                    <div className="relative mt-2">
                         <Input
                         id="fur-color-search"
-                        placeholder="Digite min. 3 letras"
+                        placeholder="Digite min. 3 letras para buscar"
                         value={furColorSearch}
                         onChange={(e) => setFurColorSearch(e.target.value)}
                         disabled={!especieSelecionada}
@@ -713,7 +716,7 @@ export default function AdicionarPetPage() {
                   name="peso"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Peso (kg) (Opcional)</FormLabel>
+                      <FormLabel>Peso (kg)</FormLabel>
                       <FormControl><Input type="number" step="0.1" placeholder="Ex: 5.5" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.value)} value={field.value ?? ''} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -724,7 +727,7 @@ export default function AdicionarPetPage() {
                   name="porte"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Porte (Opcional)</FormLabel>
+                      <FormLabel>Porte</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione o porte" /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -742,7 +745,7 @@ export default function AdicionarPetPage() {
                 name="sinaisObservacoes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sinais Particulares / Observações (Opcional)</FormLabel>
+                    <FormLabel>Sinais Particulares / Observações</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Alguma marca distinta, alergia conhecida, comportamento especial, etc."
@@ -760,7 +763,7 @@ export default function AdicionarPetPage() {
                 <CardHeader className="pb-2 pt-0">
                   <div className="flex items-center gap-2">
                     <QrCode className="h-6 w-6 text-primary" />
-                    <CardTitle className="text-xl">Cadastro SimPatinhas (Opcional)</CardTitle>
+                    <CardTitle className="text-xl">Cadastro SimPatinhas</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -813,7 +816,7 @@ export default function AdicionarPetPage() {
                         name="simPatinhasId"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Registro Geral SimPatinhas</FormLabel>
+                            <FormLabel>Registro Geral SimPatinhas<span className="text-destructive">*</span></FormLabel>
                             <FormControl><Input placeholder="ID do registro" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
@@ -824,7 +827,7 @@ export default function AdicionarPetPage() {
                         name="simPatinhasEmissionDate"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
-                            <FormLabel>Data de Emissão do SimPatinhas</FormLabel>
+                            <FormLabel>Data de Emissão do SimPatinhas<span className="text-destructive">*</span></FormLabel>
                              <Popover open={isSimPatinhasCalendarOpen} onOpenChange={setIsSimPatinhasCalendarOpen}>
                               <PopoverTrigger asChild>
                                 <FormControl>
@@ -869,7 +872,7 @@ export default function AdicionarPetPage() {
                           name="simPatinhasEmissionCity"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Cidade de Emissão (Opcional)</FormLabel>
+                              <FormLabel>Cidade de Emissão</FormLabel>
                               <FormControl><Input placeholder="Ex: Brasília" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
@@ -880,7 +883,7 @@ export default function AdicionarPetPage() {
                           name="simPatinhasEmissionUF"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>UF de Emissão (Opcional)</FormLabel>
+                              <FormLabel>UF de Emissão</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecione a UF" /></SelectTrigger></FormControl>
                                 <SelectContent>
@@ -911,3 +914,5 @@ export default function AdicionarPetPage() {
     </div>
   );
 }
+
+    

@@ -101,8 +101,8 @@ export default function SignupPage() {
       nome: nomeCompleto,
       email,
       tipoResponsabilidade: tipoResponsabilidade,
-      uf: "", // Será preenchido em "Meu Cadastro"
-      cidade: "", // Será preenchido em "Meu Cadastro"
+      uf: "", 
+      cidade: "", 
       telefone: (telefoneDdd && telefoneNumero) ? `(${telefoneDdd}) ${telefoneNumero}` : undefined,
       acceptedTerms: false, 
     };
@@ -124,14 +124,14 @@ export default function SignupPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField control={form.control} name="nomeCompleto" render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome Completo</FormLabel>
+              <FormLabel>Nome Completo<span className="text-destructive">*</span></FormLabel>
               <FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />
           <FormField control={form.control} name="cpf" render={({ field }) => (
             <FormItem>
-              <FormLabel>CPF</FormLabel>
+              <FormLabel>CPF<span className="text-destructive">*</span></FormLabel>
               <FormControl><Input placeholder="xxx.xxx.xxx-xx" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
@@ -143,7 +143,7 @@ export default function SignupPage() {
             render={() => (
               <FormItem>
                 <div className="mb-2">
-                  <FormLabel className="text-base">Perfis da Conta</FormLabel>
+                  <FormLabel className="text-base">Perfis da Conta<span className="text-destructive">*</span></FormLabel>
                   <FormDescription>
                     Selecione um ou mais perfis. Isso definirá funcionalidades disponíveis.
                   </FormDescription>
@@ -189,7 +189,7 @@ export default function SignupPage() {
 
           <FormField control={form.control} name="email" render={({ field }) => (
             <FormItem>
-              <FormLabel>E-mail</FormLabel>
+              <FormLabel>E-mail<span className="text-destructive">*</span></FormLabel>
               <FormControl><Input type="email" placeholder="seu@email.com" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
@@ -197,7 +197,7 @@ export default function SignupPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField control={form.control} name="senha" render={({ field }) => (
               <FormItem>
-                <FormLabel>Senha</FormLabel>
+                <FormLabel>Senha<span className="text-destructive">*</span></FormLabel>
                 <FormControl><Input type="password" placeholder="Crie uma senha" {...field} /></FormControl>
                 <FormMessage />
                  {passwordStrength && passwordStrength.label && (
@@ -209,14 +209,14 @@ export default function SignupPage() {
             )} />
             <FormField control={form.control} name="confirmarSenha" render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirmar Senha</FormLabel>
+                <FormLabel>Confirmar Senha<span className="text-destructive">*</span></FormLabel>
                 <FormControl><Input type="password" placeholder="Confirme sua senha" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
           </div>
           
-          <FormDescription>Telefone (opcional):</FormDescription>
+          <FormDescription>Telefone:</FormDescription>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField control={form.control} name="telefoneDdd" render={({ field }) => (
               <FormItem><FormLabel className="text-sm">DDD</FormLabel><FormControl><Input placeholder="XX" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
@@ -252,6 +252,7 @@ export default function SignupPage() {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
+                  <span className="text-destructive">*</span>
                 </FormLabel>
                 <FormMessage />
               </div>
@@ -274,3 +275,5 @@ export default function SignupPage() {
     </>
   );
 }
+
+    

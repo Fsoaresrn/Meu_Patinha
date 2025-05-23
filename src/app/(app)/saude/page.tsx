@@ -2,99 +2,134 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Stethoscope, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Stethoscope, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import type { Pet } from "@/types";
 import { useAuthStore } from "@/stores/auth.store";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
+
+// Componente de Card de Pet Simplificado para Seleção
+function PetSelectionCard({ pet }: { pet: Pet }) {
+  const cardThemeClasses = () => {
+    if (pet.status.value !== 'ativo') return "opacity-70 bg-muted/30 hover:bg-muted/40";
+    switch (pet.sexo) {
+      case "Macho":
+        return "theme-male hover:bg-blue-100/80 dark:hover:bg-blue-900/60";
+      case "Fêmea":
+        return "theme-female hover:bg-pink-100/80 dark:hover:bg-pink-900/60";
+      default:
+        return "theme-neutral-gender hover:bg-green-100/80 dark:hover:bg-green-900/60";
+    }
+  };
+
+  return (
+    <Link href={`/saude/${pet.id}/sintomas`} className="block group">
+      <Card className={cn("transition-all duration-200 ease-in-out shadow-md hover:shadow-xl", cardThemeClasses())}>
+        <CardContent className="p-4 flex items-center space-x-4">
+          <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-background group-hover:border-primary transition-colors">
+            <Image
+              src={pet.fotoUrl || `https://placehold.co/100x100.png?text=${encodeURIComponent(pet.nome.charAt(0))}`}
+              alt={`Foto de ${pet.nome}`}
+              layout="fill"
+              objectFit="cover"
+              data-ai-hint={`${pet.especie} ${pet.raca}`}
+            />
+          </div>
+          <div className="flex-1">
+            <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors">{pet.nome}</CardTitle>
+            <CardDescription className="text-sm">{pet.especie} - {pet.raca}</CardDescription>
+            {pet.status.value !== 'ativo' && (
+                 <p className="text-xs text-destructive font-semibold mt-1">Status: {pet.status.value}</p>
+            )}
+          </div>
+          <ChevronRight className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
 
 export default function SaudePage() {
   const { user } = useAuthStore();
   const [allPets] = useLocalStorage<Pet[]>("all-pets-data", []);
   const userPets = allPets.filter(pet => pet.ownerId === user?.cpf || pet.secondaryTutorId === user?.cpf);
+  const activeUserPets = userPets.filter(pet => pet.status.value === 'ativo');
 
-  // TODO: Implementar a lógica de seleção de pet e formulário de sintomas.
-  // Por enquanto, esta página serve como placeholder e introdução ao módulo.
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <Card className="max-w-3xl mx-auto shadow-lg">
+      <Card className="max-w-3xl mx-auto shadow-lg border-primary/20">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <Stethoscope className="h-16 w-16 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold text-primary">Módulo de Saúde Pet</CardTitle>
+          <CardTitle className="text-3xl font-bold text-primary">Verificador de Sintomas com IA</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Ferramentas e informações para auxiliar no acompanhamento da saúde do seu companheiro.
+            Selecione um dos seus pets ativos abaixo para registrar os sintomas e obter uma análise preliminar.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="p-4 border-l-4 border-primary bg-primary/10 rounded-md">
-            <h3 className="text-xl font-semibold text-primary mb-2">Verificador de Sintomas (Em Breve)</h3>
-            <p className="text-foreground mb-3">
-              Em breve, você poderá usar nossa ferramenta de IA para uma análise preliminar dos sintomas do seu pet.
-              Isso ajudará a entender possíveis causas e a decidir os próximos passos.
+          <div className="flex items-start space-x-3 p-4 rounded-md border border-destructive/50 bg-destructive/10 text-sm">
+            <AlertTriangle className="h-6 w-6 text-destructive mt-0.5 flex-shrink-0" />
+            <p className="text-destructive-foreground">
+              <strong>Atenção:</strong> As sugestões fornecidas pela IA são para fins informativos e
+              <strong>não substituem</strong> o diagnóstico e aconselhamento de um médico veterinário.
+              Consulte sempre um profissional para questões de saúde do seu pet.
             </p>
-            <div className="flex items-start space-x-2 p-3 rounded-md border bg-background text-sm">
-              <AlertTriangle className="h-5 w-5 text-destructive mt-0.5" />
-              <p className="text-muted-foreground">
-                <strong>Importante:</strong> As sugestões fornecidas pela IA são para fins informativos e 
-                <strong>não substituem</strong> o diagnóstico e aconselhamento de um médico veterinário.
-                Consulte sempre um profissional para questões de saúde do seu pet.
-              </p>
-            </div>
           </div>
 
           {userPets.length === 0 ? (
-            <div className="text-center p-6 border rounded-md bg-muted/50">
-              <Image 
-                src="https://placehold.co/150x150.png?text=🐾" 
-                alt="Nenhum pet cadastrado" 
-                width={100} 
-                height={100} 
+            <div className="text-center p-6 border-2 border-dashed rounded-lg bg-muted/20">
+              <Image
+                src="https://placehold.co/150x150.png?text=🐾"
+                alt="Nenhum pet cadastrado"
+                width={100}
+                height={100}
                 className="mx-auto mb-4 rounded-full opacity-80"
                 data-ai-hint="cute animal"
               />
               <p className="text-foreground mb-2">Você ainda não cadastrou nenhum pet.</p>
               <p className="text-muted-foreground mb-4">
-                Para utilizar as funcionalidades de saúde, primeiro adicione um perfil para seu pet.
+                Para utilizar o verificador de sintomas, primeiro adicione um perfil para seu pet.
               </p>
-              <Button asChild>
+              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 <Link href="/pets/new">Cadastrar Pet</Link>
               </Button>
             </div>
-          ) : (
-            <div className="text-center p-6 border rounded-md bg-muted/50">
-               <Image 
-                src="https://placehold.co/150x150.png?text=🩺" 
-                alt="Funcionalidade em desenvolvimento" 
+          ) : activeUserPets.length === 0 ? (
+             <div className="text-center p-6 border rounded-md bg-muted/50">
+              <Image 
+                src="https://placehold.co/150x150.png?text=🤕" 
+                alt="Nenhum pet ativo" 
                 width={100} 
                 height={100} 
                 className="mx-auto mb-4 rounded-full opacity-80"
-                data-ai-hint="health care"
+                data-ai-hint="sad pet"
               />
-              <p className="text-foreground mb-2">
-                A funcionalidade completa do Verificador de Sintomas está em desenvolvimento.
-              </p>
+              <p className="text-foreground mb-2">Você não possui pets com status "ativo".</p>
               <p className="text-muted-foreground">
-                Em breve, você poderá selecionar um dos seus pets abaixo para iniciar uma análise:
+                O verificador de sintomas só pode ser usado para pets ativos. Verifique o status dos seus pets em "Meus Pets".
               </p>
-              <ul className="mt-3 text-left max-w-xs mx-auto">
-                {userPets.map(pet => (
-                  <li key={pet.id} className="text-foreground p-1 border-b border-border last:border-b-0">
-                    {pet.nome} ({pet.especie})
-                  </li>
-                ))}
-              </ul>
             </div>
+          ) : (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-foreground mb-3">Seus Pets Ativos:</h3>
+              {activeUserPets.map(pet => (
+                <PetSelectionCard key={pet.id} pet={pet} />
+              ))}
+            </div>
+          )}
+          
+          {userPets.length > 0 && activeUserPets.length < userPets.length && (
+            <p className="text-sm text-muted-foreground text-center mt-4">
+              Pets com status diferente de "ativo" não são listados aqui para verificação de sintomas.
+            </p>
           )}
 
           <div className="text-center mt-8">
-            <p className="text-sm text-muted-foreground">
-              Enquanto isso, explore outras funcionalidades do Meu Patinha!
-            </p>
             <Button variant="outline" className="mt-2" asChild>
               <Link href="/">Voltar para a Casinha</Link>
             </Button>

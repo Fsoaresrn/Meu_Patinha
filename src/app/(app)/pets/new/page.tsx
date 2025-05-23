@@ -22,7 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList, acquisitionTypes, petPurposes, ufsBrasil } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
-import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon, Link as LinkIcon, QrCode } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon, Link as LinkIcon, QrCode, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect, useMemo } from "react";
@@ -60,6 +60,8 @@ const petFormSchema = z.object({
   simPatinhasEmissionDate: z.date().optional(),
   simPatinhasEmissionCity: z.string().optional(),
   simPatinhasEmissionUF: z.string().optional(),
+  secondaryTutorName: z.string().optional(),
+  secondaryTutorEmail: z.string().email({ message: "E-mail do 2º tutor inválido." }).optional().or(z.literal("")),
 }).refine(data => {
   if (data.birthDateUnknown && data.ageInMonths === undefined) {
     return false;
@@ -128,6 +130,8 @@ export default function AdicionarPetPage() {
       simPatinhasEmissionDate: undefined,
       simPatinhasEmissionCity: "",
       simPatinhasEmissionUF: "",
+      secondaryTutorName: "",
+      secondaryTutorEmail: "",
     },
   });
 
@@ -235,6 +239,8 @@ export default function AdicionarPetPage() {
       simPatinhasEmissionDate: data.hasSimPatinhas === "Sim" && data.simPatinhasEmissionDate ? formatDate(data.simPatinhasEmissionDate, "dd/MM/yyyy") : undefined,
       simPatinhasEmissionCity: data.hasSimPatinhas === "Sim" ? data.simPatinhasEmissionCity : undefined,
       simPatinhasEmissionUF: data.hasSimPatinhas === "Sim" ? data.simPatinhasEmissionUF : undefined,
+      secondaryTutorName: data.secondaryTutorName || undefined,
+      secondaryTutorEmail: data.secondaryTutorEmail || undefined,
     };
 
     if (data.birthDateUnknown && typeof data.ageInMonths === 'number') {
@@ -758,6 +764,42 @@ export default function AdicionarPetPage() {
                 )}
               />
 
+              {/* Seção 2º Tutor */}
+              <Card className="pt-4">
+                <CardHeader className="pb-2 pt-0">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-6 w-6 text-primary" />
+                    <CardTitle className="text-xl">Informações do 2º Tutor</CardTitle>
+                  </div>
+                   <CardDescription>Preencha se houver um segundo responsável pelo pet.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                   <FormField
+                    control={form.control}
+                    name="secondaryTutorName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome Completo do 2º Tutor</FormLabel>
+                        <FormControl><Input placeholder="Nome do segundo tutor" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="secondaryTutorEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>E-mail do 2º Tutor</FormLabel>
+                        <FormControl><Input type="email" placeholder="email@exemplo.com" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+
               {/* Seção SimPatinhas */}
               <Card className="pt-4">
                 <CardHeader className="pb-2 pt-0">
@@ -914,5 +956,3 @@ export default function AdicionarPetPage() {
     </div>
   );
 }
-
-    

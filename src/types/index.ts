@@ -70,6 +70,8 @@ export interface Pet {
   id: string; // Formato ANO-XXXXXXXXXXX
   ownerId: string; // CPF do tutor principal
   secondaryTutorId?: string; // CPF do 2º tutor (opcional)
+  secondaryTutorName?: string; // Nome do 2º tutor (opcional)
+  secondaryTutorEmail?: string; // E-mail do 2º tutor (opcional)
   sharedWith?: PetShare[]; // Array para cuidadores/veterinários
   
   nome: string;

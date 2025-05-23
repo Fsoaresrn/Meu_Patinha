@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Siren, UserCircle, LogOut, ShieldQuestion, Menu } from 'lucide-react';
+import { Siren, UserCircle, LogOut, ShieldQuestion, Menu, Settings } from 'lucide-react'; // Adicionado Settings
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -78,6 +78,12 @@ export function AppHeader() {
                 <Link href="/meu-cadastro">
                   <UserCircle className="mr-2 h-4 w-4" />
                   <span>Meu Cadastro</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/configuracoes">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Configurações</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

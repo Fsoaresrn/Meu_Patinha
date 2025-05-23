@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Siren, UserCircle, LogOut, ShieldQuestion, Menu, Settings, MessageSquare } from 'lucide-react'; // Adicionado Settings e MessageSquare
+import { Siren, UserCircle, LogOut, ShieldQuestion, Menu, Settings, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,13 +15,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthStore } from '@/stores/auth.store';
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-
+import { useSidebar } from "@/components/ui/sidebar"; // Removed SidebarTrigger import as it's not used directly
 
 export function AppHeader() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
-  const { isMobile } = useSidebar();
+  const { isMobile, toggleSidebar } = useSidebar(); // Get toggleSidebar from useSidebar
 
   const handleEmergency = () => {
     window.open('https://www.google.com/maps/search/?api=1&query=clínicas+veterinárias+24h+próximas', '_blank');
@@ -33,7 +32,7 @@ export function AppHeader() {
   };
 
   const getInitials = (name: string | undefined) => {
-    if (!name) return 'P'; // Patinha default
+    if (!name) return 'P'; 
     const names = name.split(' ');
     if (names.length > 1) {
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
@@ -44,7 +43,11 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:px-6">
       <div className="flex items-center gap-2">
-        {isMobile && <SidebarTrigger asChild><Button variant="ghost" size="icon"><Menu /></Button></SidebarTrigger>}
+        {isMobile && (
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} aria-label="Toggle Sidebar">
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
         <span className="font-semibold text-lg hidden sm:block">Meu Patinha</span>
       </div>
       <div className="flex items-center gap-3">
@@ -56,8 +59,6 @@ export function AppHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-9 w-9">
-                  {/* Placeholder for user avatar image if available */}
-                  {/* <AvatarImage src={user.avatarUrl} alt={user.nome} /> */}
                   <AvatarFallback className="bg-primary text-primary-foreground">
                     {getInitials(user.nome)}
                   </AvatarFallback>

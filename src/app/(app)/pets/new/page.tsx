@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Pet, PetSpecies, PetGender, PetSize } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/label"; // Não usado diretamente, mas FormLabel usa
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -20,10 +20,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
-import { CalendarIcon, ArrowLeft, Search } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect, useMemo } from "react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 const petFormSchema = z.object({
   nome: z.string().min(2, { message: "Nome do pet é obrigatório (mínimo 2 caracteres)." }),
@@ -58,8 +59,11 @@ export default function AdicionarPetPage() {
   const { toast } = useToast();
   const [allPets, setAllPets] = useLocalStorage<Pet[]>("all-pets-data", []);
   const [calculatedAgeDisplay, setCalculatedAgeDisplay] = useState<string | null>(null);
-  const [breedSearch, setBreedSearch] = useState("");
-  const [furColorSearch, setFurColorSearch] = useState("");
+  
+  const [isBreedPopoverOpen, setIsBreedPopoverOpen] = useState(false);
+  const [breedSearchValue, setBreedSearchValue] = useState("");
+  
+  const [furColorSearch, setFurColorSearch] = useState(""); // Mantido como antes, pode ser atualizado para combobox depois se necessário
 
   const form = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
@@ -131,12 +135,12 @@ export default function AdicionarPetPage() {
     return especieSelecionada === "Cão" ? dogBreeds : especieSelecionada === "Gato" ? catBreeds : [];
   }, [especieSelecionada]);
 
-  const racasDisponiveis = useMemo(() => {
-    if (breedSearch.length >= 3) {
-      return baseRacas.filter(raca => raca.toLowerCase().startsWith(breedSearch.toLowerCase()));
-    }
-    return baseRacas;
-  }, [baseRacas, breedSearch]);
+  const filteredRacas = useMemo(() => {
+    if (!breedSearchValue) return baseRacas;
+    return baseRacas.filter(raca => 
+      raca.toLowerCase().includes(breedSearchValue.toLowerCase())
+    );
+  }, [baseRacas, breedSearchValue]);
 
   const tiposPelagemDisponiveis = useMemo(() => {
     return especieSelecionada ? furTypesBySpecies[especieSelecionada] : [];
@@ -156,9 +160,9 @@ export default function AdicionarPetPage() {
 
   useEffect(() => {
     form.setValue("raca", "");
+    setBreedSearchValue("");
     form.setValue("tipoPelagem", "");
     form.setValue("corPelagem", "");
-    setBreedSearch("");
     setFurColorSearch("");
   }, [especieSelecionada, form]);
 
@@ -214,42 +218,71 @@ export default function AdicionarPetPage() {
                     </FormItem>
                   )}
                 />
-                <div> {/* Container for breed search and select */}
-                  <FormLabel htmlFor="breed-search">Buscar Raça</FormLabel>
-                  <div className="relative">
-                    <Input 
-                      id="breed-search"
-                      placeholder="Digite min. 3 letras" 
-                      value={breedSearch} 
-                      onChange={(e) => setBreedSearch(e.target.value)} 
-                      disabled={!especieSelecionada}
-                      className="pr-10"
-                    />
-                    <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="raca"
-                    render={({ field }) => (
-                      <FormItem className="mt-2"> {/* Add margin top for spacing */}
-                        {/* <FormLabel>Raça</FormLabel> No longer needed as label is on search */}
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!especieSelecionada}>
-                          <FormControl><SelectTrigger><SelectValue placeholder={especieSelecionada ? "Selecione a raça" : "Primeiro escolha a espécie"} /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {racasDisponiveis.length > 0 ? (
-                              racasDisponiveis.map(breed => <SelectItem key={breed} value={breed}>{breed}</SelectItem>)
-                            ) : (
-                              <div className="p-2 text-sm text-muted-foreground">
-                                {breedSearch.length >= 3 ? "Nenhuma raça encontrada." : (especieSelecionada ? "Digite para buscar." : "Escolha a espécie.")}
-                              </div>
-                            )}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="raca"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Raça</FormLabel>
+                      <Popover open={isBreedPopoverOpen} onOpenChange={setIsBreedPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={isBreedPopoverOpen}
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              disabled={!especieSelecionada}
+                            >
+                              {field.value
+                                ? baseRacas.find(
+                                    (raca) => raca.toLowerCase() === field.value.toLowerCase()
+                                  ) || (especieSelecionada ? "Selecione ou digite a raça" : "Primeiro escolha a espécie")
+                                : (especieSelecionada ? "Selecione ou digite a raça" : "Primeiro escolha a espécie")}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command shouldFilter={false}> {/* Manual filtering */}
+                            <CommandInput
+                              placeholder="Buscar raça..."
+                              value={breedSearchValue}
+                              onValueChange={setBreedSearchValue}
+                              disabled={!especieSelecionada}
+                            />
+                            <CommandEmpty>{especieSelecionada ? "Nenhuma raça encontrada." : "Escolha uma espécie primeiro."}</CommandEmpty>
+                            <CommandList>
+                              {especieSelecionada && filteredRacas.map((raca) => (
+                                <CommandItem
+                                  value={raca}
+                                  key={raca}
+                                  onSelect={() => {
+                                    form.setValue("raca", raca);
+                                    setIsBreedPopoverOpen(false);
+                                    setBreedSearchValue(""); 
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      raca.toLowerCase() === field.value?.toLowerCase() ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {raca}
+                                </CommandItem>
+                              ))}
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -386,7 +419,7 @@ export default function AdicionarPetPage() {
                     </FormItem>
                   )}
                 />
-                <div> {/* Container for fur color search and select */}
+                <div> 
                     <FormLabel htmlFor="fur-color-search">Buscar Cor da Pelagem</FormLabel>
                     <div className="relative">
                         <Input
@@ -403,8 +436,7 @@ export default function AdicionarPetPage() {
                         control={form.control}
                         name="corPelagem"
                         render={({ field }) => (
-                        <FormItem className="mt-2"> {/* Add margin top for spacing */}
-                            {/* <FormLabel>Cor da Pelagem (Opcional)</FormLabel> No longer needed */}
+                        <FormItem className="mt-2">
                             <Select onValueChange={field.onChange} value={field.value} disabled={!especieSelecionada || coresPelagemDisponiveis.length === 0 && furColorSearch.length < 3}>
                             <FormControl><SelectTrigger><SelectValue placeholder={especieSelecionada ? "Selecione a cor" : "Escolha a espécie"} /></SelectTrigger></FormControl>
                             <SelectContent>

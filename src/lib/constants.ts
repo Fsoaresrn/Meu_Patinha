@@ -1,5 +1,5 @@
 
-import type { PetSpecies, VaccineProtocolInfo } from "@/types";
+import type { PetSpecies, VaccineProtocolInfo, VaccineBoosterFrequencySelected, VaccineCategory } from "@/types";
 
 export const ufsBrasil = [
   { sigla: "AC", nome: "Acre" },
@@ -203,7 +203,7 @@ export const furTypesBySpecies: Record<PetSpecies, string[]> = {
 
 export const furColorsBySpecies: Record<PetSpecies, string[]> = {
   Cão: [
-    "Abricot", "Areia", "Azul", "Bege", "Bicolor", "Branco", "Caramelo", "Cinza", "Cutia", 
+    "Abricot", "Areia", "Azul", "Bege", "Bicolor", "Branco", "Caramelo", "Cinza", "Cutia",
     "Fulvo", "Malhado", "Marrom", "Merle", "Preto", "Tigrado", "Tricolor", "Vermelho", "Zibelina", "Outra"
   ].sort((a,b) => {
     if (a === "Outra") return 1;
@@ -211,7 +211,7 @@ export const furColorsBySpecies: Record<PetSpecies, string[]> = {
     return a.localeCompare(b);
   }),
   Gato: [
-    "Âmbar", "Azul", "Bege", "Branco", "Canela", "Caramelo", "Chocolate", "Cinza", "Creme", 
+    "Âmbar", "Azul", "Bege", "Branco", "Canela", "Caramelo", "Chocolate", "Cinza", "Creme",
     "Dourado", "Lilás", "Prateado", "Preto", "Vermelho", "Zibelina", "Outra"
   ].sort((a,b) => {
     if (a === "Outra") return 1;
@@ -235,27 +235,153 @@ export const acquisitionTypes: string[] = [
 ];
 
 export const petPurposes: string[] = [
-  "Companhia", 
-  "Comércio", 
-  "Guia", 
-  "Lazer", 
-  "Segurança", 
-  "Terapia", 
+  "Companhia",
+  "Comércio",
+  "Guia",
+  "Lazer",
+  "Segurança",
+  "Terapia",
   "Outros"
 ];
 
 export const vaccineProtocols: VaccineProtocolInfo[] = [
-  // Cães
-  { id: "v8-v10", name: "V8/V10 (Polivalente Canina)", species: ["Cão"], description: "Protege contra cinomose, parvovirose, hepatite infecciosa, adenovirose, coronavirose, parainfluenza e leptospirose.", recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (10-12 semanas)", "3ª dose (14-16 semanas)"], boosterInfo: "Reforço anual." },
-  { id: "antirrabica-cao", name: "Antirrábica (Cães)", species: ["Cão"], description: "Protege contra a raiva.", recommendedDoses: ["Dose única (a partir de 12 semanas)"], boosterInfo: "Reforço anual." },
-  { id: "gripe-canina", name: "Gripe Canina (Tosse dos Canis)", species: ["Cão"], description: "Protege contra Bordetella bronchiseptica e/ou Parainfluenza.", recommendedDoses: ["Pode variar: 1 ou 2 doses iniciais"], boosterInfo: "Reforço anual, especialmente para cães com alto contato." },
-  { id: "giardia-cao", name: "Giárdia (Cães)", species: ["Cão"], description: "Protege contra a giardíase.", recommendedDoses: ["2 doses iniciais com intervalo de 2-4 semanas"], boosterInfo: "Reforço anual, dependendo do risco." },
-  { id: "leishmaniose", name: "Leishmaniose", species: ["Cão"], description: "Protege contra a leishmaniose visceral canina.", recommendedDoses: ["3 doses iniciais com intervalo de 21 dias"], boosterInfo: "Reforço anual. Teste sorológico prévio é necessário." },
-  // Gatos
-  { id: "v3-v4-v5", name: "V3/V4/V5 (Polivalente Felina)", species: ["Gato"], description: "V3: Panleucopenia, Calicivirose, Rinotraqueíte. V4 adiciona Clamidiose. V5 adiciona Leucemia Felina (FeLV).", recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (10-12 semanas)", "3ª dose (14-16 semanas, para V5/FeLV pode ser diferente)"], boosterInfo: "Reforço anual. Teste para FeLV/FIV recomendado antes da vacina de FeLV." },
-  { id: "antirrabica-gato", name: "Antirrábica (Gatos)", species: ["Gato"], description: "Protege contra a raiva.", recommendedDoses: ["Dose única (a partir de 12 semanas)"], boosterInfo: "Reforço anual." },
-  { id: "felv", name: "FeLV (Leucemia Felina)", species: ["Gato"], description: "Protege contra o vírus da leucemia felina. Apenas para gatos FeLV negativos.", recommendedDoses: ["2 doses iniciais (a partir de 8 semanas) com intervalo de 3-4 semanas"], boosterInfo: "Reforço anual para gatos em risco." },
+  // Vacinas para Cães
+  {
+    id: "v8_v10_canina",
+    name: "V8 / V10 (Polivalente Canina)",
+    species: ["Cão"],
+    preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose tipo II", "Parainfluenza", "Leptospirose (diversos sorovares dependendo da vacina V8 ou V10)"],
+    importance: "Essencial",
+    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "4ª dose (Opcional, 16-18 semanas)"],
+    primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
+    boosterFrequencySuggestion: "Anual",
+    notes: "O número de doses na primovacinação pode variar (3 a 4). A 4ª dose é frequentemente recomendada para raças de alto risco ou em áreas de alta prevalência de parvovirose. O veterinário definirá o melhor esquema.",
+    administrationNotes: "Via subcutânea."
+  },
+  {
+    id: "antirrabica_canina",
+    name: "Antirrábica (Cães)",
+    species: ["Cão"],
+    preventsDiseases: ["Raiva"],
+    importance: "Essencial",
+    recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)"],
+    isSingleDosePrimary: true,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Obrigatória por lei em muitas regiões. Fundamental para a saúde pública.",
+    administrationNotes: "Via subcutânea ou intramuscular."
+  },
+  {
+    id: "gripe_canina",
+    name: "Gripe Canina (Tosse dos Canis)",
+    species: ["Cão"],
+    preventsDiseases: ["Traqueobronquite Infecciosa Canina (causada por Bordetella bronchiseptica e/ou vírus da Parainfluenza Canina)"],
+    importance: "Complementar", // Ou Essencial dependendo do estilo de vida
+    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas, para algumas vacinas)"], // Vacinas intranasais podem ser dose única.
+    primarySeriesIntervalDays: 21,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Recomendada para cães que frequentam creches, hotéis, parques ou têm contato com outros cães. Versões injetável e intranasal disponíveis.",
+    administrationNotes: "Intranasal ou subcutânea, dependendo do produto."
+  },
+  {
+    id: "giardia_canina",
+    name: "Giárdia (Cães)",
+    species: ["Cão"],
+    preventsDiseases: ["Giardíase"],
+    importance: "Opcional",
+    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas)"],
+    primarySeriesIntervalDays: 21,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Recomendada para cães com maior risco de exposição. A eficácia pode variar.",
+    administrationNotes: "Via subcutânea."
+  },
+  {
+    id: "leishmaniose_canina",
+    name: "Leishmaniose Visceral Canina",
+    species: ["Cão"],
+    preventsDiseases: ["Leishmaniose Visceral"],
+    importance: "Complementar", // Essencial em áreas endêmicas
+    recommendedDoses: ["1ª dose (a partir de 4 meses, após teste sorológico negativo)", "2ª dose (21 dias após a 1ª)", "3ª dose (21 dias após a 2ª)"],
+    primarySeriesIntervalDays: 21,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Fundamental em áreas endêmicas. Teste sorológico negativo é pré-requisito. Não impede a infecção, mas reduz o risco de desenvolvimento da doença e a transmissibilidade.",
+    administrationNotes: "Via subcutânea."
+  },
+  // Vacinas para Gatos
+  {
+    id: "v3_v4_v5_felina",
+    name: "V3 / V4 / V5 (Polivalente Felina)",
+    species: ["Gato"],
+    preventsDiseases: [
+      "Panleucopenia Felina", "Calicivirose Felina", "Rinotraqueíte Felina",
+      "Clamidiose (na V4 e V5)", "Leucemia Felina - FeLV (na V5)"
+    ],
+    importance: "Essencial",
+    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)"],
+    primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
+    boosterFrequencySuggestion: "Anual",
+    notes: "V3 é o core. V4 adiciona proteção contra Clamidiose. V5 adiciona proteção contra FeLV (requer teste prévio negativo para FeLV). O veterinário indicará a melhor opção.",
+    administrationNotes: "Via subcutânea. Para FeLV, seguir recomendações de local de aplicação (ex: membro pélvico esquerdo)."
+  },
+  {
+    id: "antirrabica_felina",
+    name: "Antirrábica (Gatos)",
+    species: ["Gato"],
+    preventsDiseases: ["Raiva"],
+    importance: "Essencial",
+    recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)"],
+    isSingleDosePrimary: true,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Obrigatória por lei em muitas regiões. Fundamental para a saúde pública.",
+    administrationNotes: "Via subcutânea, preferencialmente no membro pélvico direito."
+  },
+  {
+    id: "felv_pura",
+    name: "FeLV (Leucemia Felina) - Isolada",
+    species: ["Gato"],
+    preventsDiseases: ["Leucemia Felina (FeLV)"],
+    importance: "Essencial", // Para gatos negativos com risco de exposição
+    recommendedDoses: ["1ª dose (a partir de 8 semanas, após teste FeLV/FIV negativo)", "2ª dose (3-4 semanas após a 1ª)"],
+    primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
+    boosterFrequencySuggestion: "Anual",
+    notes: "Apenas para gatos FeLV negativos. Gatos positivos não se beneficiam e não devem ser vacinados para FeLV. Testar antes de vacinar.",
+    administrationNotes: "Via subcutânea, seguir recomendações de local de aplicação (ex: membro pélvico esquerdo)."
+  },
+  // Vacina "Outra" genérica
+  {
+    id: "outra",
+    name: "Outra (Especificar)",
+    species: ["Cão", "Gato"],
+    preventsDiseases: [],
+    importance: "Opcional",
+    recommendedDoses: ["Dose Única", "1ª Dose", "2ª Dose", "3ª Dose", "Reforço"],
+    boosterFrequencySuggestion: "Não se aplica",
+    notes: "Use esta opção para vacinas não listadas ou específicas."
+  }
 ];
+
+export const vaccineBoosterFrequenciesConstants: VaccineBoosterFrequencySelected[] = [
+  "Dose Única",
+  "Reforço Semanal",
+  "Reforço Mensal",
+  "Reforço Anual",
+  "Reforço a cada 3 anos",
+  "Definir Próxima Data Manualmente",
+  "Não Aplicar Reforço",
+];
+
+export const vaccineCategoriesConstants: VaccineCategory[] = ["Essencial", "Complementar", "Opcional"];
+
+export const genericVaccineDosesConstants: string[] = [
+  "Dose Única",
+  "1ª Dose",
+  "2ª Dose",
+  "3ª Dose",
+  "4ª Dose",
+  "Reforço",
+  "Reforço Anual",
+  "Outra (Especificar no campo Dose)",
+];
+
 
 export const activityTypes: string[] = ["Passeio", "Alimentação", "Brincadeira", "Viagem", "Hospedagem", "Visita ao Veterinário", "Outro"];
 export const hygieneTypes: string[] = ["Banho", "Tosa", "Escovação de Dentes", "Corte de Unhas", "Limpeza de Orelhas", "Outro"];

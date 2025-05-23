@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Pet } from "@/types";
 import { cn } from "@/lib/utils";
-import { calculateAge, parseDateSafe, formatDateToBrésil } from "@/lib/date-utils";
+import { calculateAge, parseDateSafe, formatDateToBrasil } from "@/lib/date-utils";
 import { PawPrint,cake } from "lucide-react";
 
 

@@ -1,3 +1,4 @@
+
 import { 
   format as formatFn, 
   parse as parseFn, 
@@ -60,7 +61,7 @@ export function isValidDate(date: any): boolean {
   return isDateFn(date) && isValidFn(date);
 }
 
-export function formatDateTo Brésil(date: Date | number | string | undefined | null): string {
+export function formatDateToBrasil(date: Date | number | string | undefined | null): string {
   if (date === null || date === undefined) return "";
   const parsed = typeof date === 'string' ? parseDateSafe(date) : new Date(date);
   if (parsed && isValidDate(parsed)) {
@@ -69,7 +70,7 @@ export function formatDateTo Brésil(date: Date | number | string | undefined | 
   return typeof date === 'string' ? date : ""; // fallback
 }
 
-export function formatDateTimeToBrésil(date: Date | number | string | undefined | null): string {
+export function formatDateTimeToBrasil(date: Date | number | string | undefined | null): string {
   if (date === null || date === undefined) return "";
   const parsed = typeof date === 'string' ? parseDateSafe(date) : new Date(date);
    if (parsed && isValidDate(parsed)) {

@@ -4,7 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button"; // Added buttonVariants import
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Pet } from "@/types";
 import { cn } from "@/lib/utils";
@@ -41,16 +41,15 @@ export function PetCard({ pet }: PetCardProps) {
   
   const cardThemeClasses = () => {
     if (pet.status.value !== 'ativo') return "opacity-70 bg-muted/30";
-    // Você pode reintroduzir temas baseados em sexo aqui se desejar
-    // switch (pet.sexo) {
-    //   case "Macho":
-    //     return "border-blue-500 hover:shadow-blue-500/20";
-    //   case "Fêmea":
-    //     return "border-pink-500 hover:shadow-pink-500/20";
-    //   default:
-    //     return "border-border hover:shadow-md";
-    // }
-    return "border-border hover:shadow-lg";
+    
+    switch (pet.sexo) {
+      case "Macho":
+        return "theme-male";
+      case "Fêmea":
+        return "theme-female";
+      default: // "Não especificado" or any other value
+        return "theme-neutral-gender";
+    }
   };
 
   const handleDeletePet = () => {
@@ -74,7 +73,7 @@ export function PetCard({ pet }: PetCardProps) {
   const getStatusBadgeVariant = (statusValue: Pet['status']['value']): "default" | "secondary" | "destructive" | "outline" => {
     switch (statusValue) {
       case 'ativo':
-        return 'default'; // Usará a cor primária para "Ativo"
+        return 'default'; 
       case 'falecido':
       case 'perdido':
         return 'destructive';
@@ -138,7 +137,7 @@ export function PetCard({ pet }: PetCardProps) {
       <CardFooter className="p-3 border-t mt-auto">
         <div className="flex w-full gap-2">
           <Button variant="outline" size="sm" className="flex-1" asChild>
-            <Link href={`/pets/${pet.id}/edit`}> {/* Atualize para o link de edição correto */}
+            <Link href={`/pets/${pet.id}/edit`}>
               <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Editar
             </Link>
           </Button>

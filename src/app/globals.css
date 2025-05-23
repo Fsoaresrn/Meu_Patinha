@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    --background: 208 88% 94%;
+    --background: 190 20% 95%; /* Pale blue HSL(190, 20%, 95%) -> #f2fafa */
     --foreground: 207 60% 25%;
 
     --card: 0 0% 100%;
@@ -17,7 +17,7 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 207 60% 25%;
 
-    --primary: 207 87% 68%;
+    --primary: 190 70% 50%; /* Light HSL(190, 70%, 50%) -> #4dd1ff */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 208 80% 88%;
@@ -26,7 +26,7 @@ body {
     --muted: 208 80% 90%;
     --muted-foreground: 207 60% 45%;
 
-    --accent: 124 39% 64%;
+    --accent: 160 70% 40%; /* HSL(160, 70%, 40%) -> #39b373 */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,19 +34,19 @@ body {
 
     --border: 208 70% 80%;
     --input: 0 0% 100%;
-    --ring: 207 87% 68%;
+    --ring: 190 70% 50%; /* Primary color for ring */
 
     --radius: 0.5rem;
 
     /* Sidebar specific colors (Light) */
     --sidebar-background: 208 88% 90%;
     --sidebar-foreground: 207 70% 30%;
-    --sidebar-primary: 207 87% 68%;
+    --sidebar-primary: 190 70% 50%; /* Consistent with app primary */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 124 39% 64%;
-    --sidebar-accent-foreground: 120 80% 10%;
+    --sidebar-accent: 160 70% 40%; /* Consistent with app accent */
+    --sidebar-accent-foreground: 0 0% 100%; 
     --sidebar-border: 208 70% 75%;
-    --sidebar-ring: 207 87% 68%;
+    --sidebar-ring: 190 70% 50%;
 
     /* Chart Colors (Light) */
     --chart-1: 12 76% 61%;
@@ -66,8 +66,8 @@ body {
     --popover: 210 20% 15%;
     --popover-foreground: 210 40% 90%;
 
-    --primary: 207 70% 60%;
-    --primary-foreground: 207 70% 10%;
+    --primary: 190 60% 45%; /* Darker shade of primary HSL(190, 70%, 50%) */
+    --primary-foreground: 190 60% 90%;
 
     --secondary: 208 30% 25%;
     --secondary-foreground: 208 30% 85%;
@@ -75,25 +75,25 @@ body {
     --muted: 208 30% 22%;
     --muted-foreground: 208 30% 70%;
 
-    --accent: 124 40% 55%;
-    --accent-foreground: 124 40% 95%;
+    --accent: 160 60% 35%; /* Darker shade of accent HSL(160, 70%, 40%) */
+    --accent-foreground: 160 60% 85%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 210 20% 25%;
     --input: 210 20% 18%;
-    --ring: 207 70% 60%;
+    --ring: 190 60% 45%; /* Darker primary for ring */
 
     /* Sidebar specific colors (Dark) */
     --sidebar-background: 210 20% 10%;
     --sidebar-foreground: 210 40% 85%;
-    --sidebar-primary: 207 70% 60%;
-    --sidebar-primary-foreground: 210 30% 10%;
-    --sidebar-accent: 124 40% 55%;
-    --sidebar-accent-foreground: 120 60% 90%;
+    --sidebar-primary: 190 60% 45%; /* Consistent with dark app primary */
+    --sidebar-primary-foreground: 190 60% 90%;
+    --sidebar-accent: 160 60% 35%; /* Consistent with dark app accent */
+    --sidebar-accent-foreground: 160 60% 85%;
     --sidebar-border: 210 20% 20%;
-    --sidebar-ring: 207 70% 60%;
+    --sidebar-ring: 190 60% 45%;
 
     /* Chart Colors (Dark) */
     --chart-1: 12 76% 71%;
@@ -104,85 +104,96 @@ body {
   }
 }
 
-/* Pet-specific themes */
+/* Pet-specific themes for cards */
 .theme-male {
-  --background: 210 100% 96%;
-  --foreground: 210 70% 25%;
-  --primary: 210 90% 55%;
-  --primary-foreground: 0 0% 100%;
-  --accent: 190 80% 60%;
-  --accent-foreground: 190 80% 10%;
-  --border: 210 80% 85%;
-  --ring: 210 90% 55%;
-  --card: 0 0% 100%;
-  --card-foreground: 210 70% 25%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 210 70% 25%;
-  --input: 0 0% 100%;
+  --card: 210 100% 96%; /* Azul bem claro para o fundo do card */
+  --card-foreground: 210 70% 25%; /* Tom de azul para texto */
+  --primary: 210 90% 55%; /* Azul mais intenso para botões dentro do card */
+  --primary-foreground: 0 0% 100%; /* Branco para texto do botão */
   --secondary: 210 100% 92%;
   --secondary-foreground: 210 70% 25%;
   --muted: 210 100% 94%;
   --muted-foreground: 210 70% 40%;
+  --accent: 190 80% 60%; /* Verde azulado/ciano para acentos dentro do card */
+  --accent-foreground: 190 80% 10%;
+  --border: 210 80% 85%;
+  --ring: 210 90% 55%;
 }
 
 .dark .theme-male {
-  --background: 210 30% 18%;
-  --foreground: 210 70% 85%;
-  --primary: 210 70% 50%;
+  --card: 210 30% 22%; /* Azul escuro para o fundo do card */
+  --card-foreground: 210 70% 85%; /* Texto claro */
+  --primary: 210 70% 50%; /* Azul para botões */
   --primary-foreground: 210 70% 90%;
-  --accent: 190 60% 50%;
-  --accent-foreground: 190 60% 90%;
-  --border: 210 30% 30%;
-  --ring: 210 70% 50%;
-  --card: 210 30% 22%;
-  --card-foreground: 210 70% 85%;
-  --popover: 210 30% 22%;
-  --popover-foreground: 210 70% 85%;
-  --input: 210 30% 24%;
   --secondary: 210 30% 25%;
   --secondary-foreground: 210 70% 85%;
   --muted: 210 30% 28%;
   --muted-foreground: 210 70% 70%;
+  --accent: 190 60% 50%;
+  --accent-foreground: 190 60% 90%;
+  --border: 210 30% 30%;
+  --ring: 210 70% 50%;
 }
 
 .theme-female {
-  --background: 330 100% 97%;
-  --foreground: 330 60% 30%;
-  --primary: 330 80% 70%;
+  --card: 330 100% 97%; /* Rosa/Lilás muito claro para o fundo do card */
+  --card-foreground: 330 60% 30%; /* Tom de rosa/roxo escuro para texto */
+  --primary: 330 80% 70%; /* Rosa/Lilás suave para botões */
   --primary-foreground: 0 0% 100%;
-  --accent: 290 70% 75%;
-  --accent-foreground: 290 70% 15%;
-  --border: 330 80% 88%;
-  --ring: 330 80% 70%;
-  --card: 0 0% 100%;
-  --card-foreground: 330 60% 30%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 330 60% 30%;
-  --input: 0 0% 100%;
   --secondary: 330 100% 94%;
   --secondary-foreground: 330 60% 30%;
   --muted: 330 100% 96%;
   --muted-foreground: 330 60% 45%;
+  --accent: 290 70% 75%; /* Roxo/Magenta claro para acentos */
+  --accent-foreground: 290 70% 15%;
+  --border: 330 80% 88%;
+  --ring: 330 80% 70%;
 }
 
 .dark .theme-female {
-  --background: 330 30% 20%;
-  --foreground: 330 60% 88%;
-  --primary: 330 60% 65%;
+  --card: 330 30% 24%; /* Rosa/Lilás escuro para o fundo do card */
+  --card-foreground: 330 60% 88%; /* Texto claro */
+  --primary: 330 60% 65%; /* Rosa/Lilás para botões */
   --primary-foreground: 330 60% 95%;
-  --accent: 290 50% 65%;
-  --accent-foreground: 290 50% 92%;
-  --border: 330 30% 35%;
-  --ring: 330 60% 65%;
-  --card: 330 30% 24%;
-  --card-foreground: 330 60% 88%;
-  --popover: 330 30% 24%;
-  --popover-foreground: 330 60% 88%;
-  --input: 330 30% 26%;
   --secondary: 330 30% 28%;
   --secondary-foreground: 330 60% 88%;
   --muted: 330 30% 30%;
   --muted-foreground: 330 60% 75%;
+  --accent: 290 50% 65%;
+  --accent-foreground: 290 50% 92%;
+  --border: 330 30% 35%;
+  --ring: 330 60% 65%;
+}
+
+/* Green theme for neutral gender cards - using app's accent color HSL(160, 70%, 40%) */
+.theme-neutral-gender {
+  --card: 160 70% 92%; /* Light Green #d1f3e6 */
+  --card-foreground: 160 70% 20%; /* Dark Green text #135939 */
+  --primary: 160 70% 40%; /* Main Accent Green #39b373 */
+  --primary-foreground: 0 0% 100%; /* White */
+  --secondary: 160 70% 85%; 
+  --secondary-foreground: 160 70% 15%;
+  --muted: 160 70% 88%; 
+  --muted-foreground: 160 70% 35%;
+  --accent: 160 70% 50%; 
+  --accent-foreground: 0 0% 100%;
+  --border: 160 70% 80%;
+  --ring: 160 70% 40%;
+}
+
+.dark .theme-neutral-gender {
+  --card: 160 40% 20%; /* Dark Green background #1e4c39 */
+  --card-foreground: 160 70% 85%; /* Light Green text #b8e6d5 */
+  --primary: 160 70% 50%; 
+  --primary-foreground: 0 0% 100%; 
+  --secondary: 160 40% 25%;
+  --secondary-foreground: 160 70% 80%;
+  --muted: 160 40% 22%;
+  --muted-foreground: 160 70% 65%;
+  --accent: 160 70% 60%;
+  --accent-foreground: 0 0% 0%; 
+  --border: 160 40% 30%;
+  --ring: 160 70% 50%;
 }
 
 

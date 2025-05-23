@@ -19,16 +19,24 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList } from "@/lib/constants";
-import { formatDate, parseDateSafe, formatDateToBrasil } from "@/lib/date-utils";
+import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
 import { CalendarIcon, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
 
 const petFormSchema = z.object({
   nome: z.string().min(2, { message: "Nome do pet é obrigatório (mínimo 2 caracteres)." }),
   especie: z.enum(petSpeciesList as [PetSpecies, ...PetSpecies[]], { required_error: "Espécie é obrigatória." }),
   raca: z.string().min(1, { message: "Raça é obrigatória." }),
   dataNascimento: z.date().optional(),
+  ageInMonths: z.preprocess(
+    (val) => (val === "" || val === undefined || val === null ? undefined : parseInt(String(val), 10)),
+    z.number({ invalid_type_error: "Idade em meses deve ser um número." })
+      .int("Idade em meses deve ser um número inteiro.")
+      .min(0, "Idade não pode ser negativa.")
+      .optional()
+  ),
   sexo: z.enum(petGendersList as [PetGender, ...PetGender[]], { required_error: "Sexo é obrigatório." }),
   castrado: z.enum(yesNoOptions, { required_error: "Informar se é castrado é obrigatório." }),
   fotoUrl: z.string().url({ message: "URL da foto inválida." }).optional().or(z.literal("")),
@@ -49,6 +57,7 @@ export default function AdicionarPetPage() {
   const { user } = useAuthStore();
   const { toast } = useToast();
   const [allPets, setAllPets] = useLocalStorage<Pet[]>("all-pets-data", []);
+  const [calculatedAgeDisplay, setCalculatedAgeDisplay] = useState<string | null>(null);
 
   const form = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
@@ -60,10 +69,24 @@ export default function AdicionarPetPage() {
       castrado: undefined,
       fotoUrl: "",
       sinaisObservacoes: "",
+      ageInMonths: undefined,
     },
   });
 
   const especieSelecionada = form.watch("especie");
+  const watchedDataNascimento = form.watch("dataNascimento");
+
+  useEffect(() => {
+    if (watchedDataNascimento && isValidDate(watchedDataNascimento)) {
+      const age = calculateAge(watchedDataNascimento);
+      setCalculatedAgeDisplay(age.display);
+      if (form.getValues("ageInMonths") !== undefined) {
+        form.setValue("ageInMonths", undefined, { shouldValidate: false });
+      }
+    } else {
+      setCalculatedAgeDisplay(null);
+    }
+  }, [watchedDataNascimento, form]);
 
   const onSubmit = (data: PetFormValues) => {
     if (!user) {
@@ -77,7 +100,6 @@ export default function AdicionarPetPage() {
       nome: data.nome,
       especie: data.especie,
       raca: data.raca,
-      dataNascimento: data.dataNascimento ? formatDate(data.dataNascimento, "dd/MM/yyyy") : undefined,
       sexo: data.sexo,
       castrado: data.castrado,
       fotoUrl: data.fotoUrl || undefined,
@@ -86,12 +108,17 @@ export default function AdicionarPetPage() {
       peso: data.peso,
       porte: data.porte,
       sinaisObservacoes: data.sinaisObservacoes,
-      status: { value: "ativo" }, // Default status
-      // Initialize other optional fields as needed
+      status: { value: "ativo" },
       possuiDeficiencia: false,
       possuiMicrochip: "Não",
       possuiPedigree: "Não",
+      dataNascimento: data.dataNascimento ? formatDate(data.dataNascimento, "dd/MM/yyyy") : undefined,
+      idade: undefined,
     };
+
+    if (!data.dataNascimento && typeof data.ageInMonths === 'number') {
+      newPet.idade = Math.floor(data.ageInMonths / 12); // Salva idade em anos (aproximado)
+    }
 
     setAllPets([...allPets, newPet]);
     toast({ title: "Sucesso!", description: `${data.nome} foi adicionado(a) aos seus pets.` });
@@ -207,7 +234,7 @@ export default function AdicionarPetPage() {
                 name="dataNascimento"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Data de Nascimento (Opcional)</FormLabel>
+                    <FormLabel>Data de Nascimento</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -239,6 +266,33 @@ export default function AdicionarPetPage() {
                         />
                       </PopoverContent>
                     </Popover>
+                    {calculatedAgeDisplay && (
+                      <FormDescription className="mt-1 text-sm text-muted-foreground">
+                        Idade calculada: {calculatedAgeDisplay}
+                      </FormDescription>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="ageInMonths"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Idade (em meses)</FormLabel>
+                    <FormDescription>Preencha se a data de nascimento não for conhecida.</FormDescription>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Ex: 6"
+                        {...field}
+                        disabled={!!watchedDataNascimento}
+                        onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10))}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

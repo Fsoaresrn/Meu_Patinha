@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useAuthStore } from "@/stores/auth.store";
 import { useToast } from "@/hooks/use-toast";
-import type { Pet, PetSpecies, PetGender, PetSize, PetAcquisitionType } from "@/types";
+import type { Pet, PetSpecies, PetGender, PetSize, PetAcquisitionType, PetPurpose } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,7 +18,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList, acquisitionTypes } from "@/lib/constants";
+import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList, acquisitionTypes, petPurposes } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
 import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,6 +43,7 @@ const petFormSchema = z.object({
   sexo: z.enum(petGendersList as [PetGender, ...PetGender[]], { required_error: "Sexo é obrigatória." }),
   castrado: z.enum(yesNoOptions, { required_error: "Informar se é castrado é obrigatório." }),
   tipoAquisicao: z.enum(acquisitionTypes as [string, ...string[]]).optional(),
+  finalidade: z.enum(petPurposes as [string, ...string[]]).optional(),
   fotoUrl: z.string().url({ message: "URL da foto inválida." }).optional().or(z.literal("")),
   tipoPelagem: z.string().optional(),
   corPelagem: z.string().optional(),
@@ -90,6 +91,7 @@ export default function AdicionarPetPage() {
       sexo: undefined,
       castrado: undefined,
       tipoAquisicao: undefined,
+      finalidade: undefined,
       fotoUrl: "",
       sinaisObservacoes: "",
       birthDateUnknown: false,
@@ -164,6 +166,7 @@ export default function AdicionarPetPage() {
       sexo: data.sexo,
       castrado: data.castrado,
       tipoAquisicao: data.tipoAquisicao as PetAcquisitionType | undefined,
+      finalidade: data.finalidade as PetPurpose | undefined,
       fotoUrl: data.fotoUrl || undefined,
       tipoPelagem: data.tipoPelagem || "",
       corPelagem: data.corPelagem || "",
@@ -544,22 +547,40 @@ export default function AdicionarPetPage() {
                 />
               </div>
               
-              <FormField
-                control={form.control}
-                name="tipoAquisicao"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo de Aquisição (Opcional)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione o tipo de aquisição" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {acquisitionTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="tipoAquisicao"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Aquisição (Opcional)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue placeholder="Selecione o tipo de aquisição" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          {acquisitionTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="finalidade"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Finalidade (Opcional)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue placeholder="Selecione a finalidade" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          {petPurposes.map(purpose => <SelectItem key={purpose} value={purpose}>{purpose}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}

@@ -24,11 +24,12 @@ export type PetAcquisitionType =
 // Finalidade do Pet
 export type PetPurpose = 
   | "Companhia"
-  | "Guarda"
-  | "Trabalho (e.g., cão-guia, pastoreio)"
-  | "Esporte/Competição"
-  | "Reprodução"
-  | "Outro";
+  | "Comércio"
+  | "Guia"
+  | "Lazer"
+  | "Segurança"
+  | "Terapia"
+  | "Outros";
 
 // Status do Compartilhamento
 export type ShareStatus = "pending" | "accepted";

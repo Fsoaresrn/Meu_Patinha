@@ -235,8 +235,13 @@ export const acquisitionTypes: string[] = [
 ];
 
 export const petPurposes: string[] = [
-  "Companhia", "Guarda", "Trabalho (e.g., cão-guia, pastoreio)",
-  "Esporte/Competição", "Reprodução", "Outro"
+  "Companhia", 
+  "Comércio", 
+  "Guia", 
+  "Lazer", 
+  "Segurança", 
+  "Terapia", 
+  "Outros"
 ];
 
 export const vaccineProtocols: VaccineProtocolInfo[] = [

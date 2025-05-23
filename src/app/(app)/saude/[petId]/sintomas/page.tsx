@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -19,11 +19,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, AlertTriangle, Lightbulb, Activity, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { checkSymptoms, type CheckSymptomsInput, type CheckSymptomsOutput } from "@/ai/flows/ai-symptom-checker";
-import { formatDateToBrasil } from "@/lib/date-utils";
 
 const symptomSchema = z.object({
   symptomsDescription: z.string().min(10, { message: "Descreva os sintomas com pelo menos 10 caracteres." }).max(2000, {message: "Limite de 2000 caracteres atingido."}),
-  additionalSymptoms: z.array(z.string()).optional(),
 });
 
 type SymptomFormValues = z.infer<typeof symptomSchema>;
@@ -50,7 +48,6 @@ export default function PetSintomasPage() {
     resolver: zodResolver(symptomSchema),
     defaultValues: {
       symptomsDescription: "",
-      additionalSymptoms: [],
     },
   });
 
@@ -94,14 +91,13 @@ export default function PetSintomasPage() {
     }
 
     setIsSubmitting(true);
-    setAnalysisResult(null); // Limpa resultado anterior
-    // A linha abaixo que atualizava currentFollowUpSymptoms foi removida, pois os sintomas de acompanhamento são parte do input da IA.
+    setAnalysisResult(null); // Limpa resultado anterior para indicar nova análise
 
     const inputForAI: CheckSymptomsInput = {
       petName: pet.nome,
       species: pet.especie,
       breed: pet.raca,
-      age: pet.idade || 0, // TODO: Calcular idade em anos a partir de dataNascimento ou ageInMonths
+      age: pet.idade || (pet.dataNascimento ? new Date().getFullYear() - new Date(pet.dataNascimento).getFullYear() : 0),
       symptoms: data.symptomsDescription,
       additionalSymptoms: selectedFollowUpSymptoms.length > 0 ? selectedFollowUpSymptoms : undefined,
     };
@@ -109,29 +105,38 @@ export default function PetSintomasPage() {
     try {
       const result = await checkSymptoms(inputForAI);
       setAnalysisResult(result);
-      setCurrentFollowUpSymptoms(result.suggestedFollowUpSymptoms || []);
-      setSelectedFollowUpSymptoms([]); // Limpa selecionados para próxima rodada
+
+      if (result.needsMoreInfo && result.suggestedFollowUpSymptoms && result.suggestedFollowUpSymptoms.length > 0) {
+        setCurrentFollowUpSymptoms(result.suggestedFollowUpSymptoms);
+        setSelectedFollowUpSymptoms([]); // Limpa selecionados para próxima rodada de feedback
+        toast({
+          title: "Mais informações necessárias",
+          description: "A IA precisa de mais detalhes. Selecione os sintomas adicionais abaixo e analise novamente.",
+          duration: 7000,
+        });
+      } else {
+        setCurrentFollowUpSymptoms([]); // Limpa se não precisar de mais info
+        toast({
+          title: "Análise Concluída",
+          description: "A IA processou os sintomas. Veja os resultados abaixo.",
+        });
+      }
 
       // Salvar log do sintoma
       const newLog: SymptomLog = {
-        id: new Date().toISOString(), // Gerar ID único
+        id: new Date().toISOString(),
         petId: pet.id,
         date: new Date().toISOString(),
         symptomsDescription: data.symptomsDescription,
         additionalSymptomsSelected: inputForAI.additionalSymptoms,
         aiDiagnosis: result.potentialDiagnoses,
-        aiHomeTreatments: result.immediateCareSuggestions, // Ajustar conforme o output da IA
-        aiImmediateActions: result.immediateCareSuggestions, // Ou criar campo específico
+        aiImmediateActions: result.immediateCareSuggestions,
         aiDisclaimer: result.disclaimer,
         aiNeedsMoreInfo: result.needsMoreInfo,
         aiSuggestedFollowUp: result.suggestedFollowUpSymptoms,
       };
       setSymptomLogs(prevLogs => [...prevLogs, newLog]);
 
-      toast({
-        title: "Análise Concluída",
-        description: "A IA processou os sintomas. Veja os resultados abaixo.",
-      });
     } catch (error) {
       console.error("Erro ao verificar sintomas:", error);
       toast({
@@ -144,29 +149,6 @@ export default function PetSintomasPage() {
     }
   };
   
-  const handleRefineSymptoms = () => {
-    if (!analysisResult || !analysisResult.suggestedFollowUpSymptoms || analysisResult.suggestedFollowUpSymptoms.length === 0) return;
-    
-    // Prepara para uma nova submissão. O texto original é mantido.
-    // Os sintomas de acompanhamento selecionados serão usados na próxima chamada onSubmit.
-    // Limpa apenas o resultado da análise anterior para que o usuário veja que está "refinando".
-    setAnalysisResult(null); 
-    // A descrição dos sintomas não é limpa, permitindo ao usuário editá-la se desejar.
-    // form.resetField("symptomsDescription"); // Não resetar a descrição principal
-    form.setValue("additionalSymptoms", selectedFollowUpSymptoms); // Atualiza o form com os sintomas selecionados para a próxima submissão
-
-    // Re-chama onSubmit com os dados atuais do formulário, que agora incluem os additionalSymptoms selecionados
-    // O ideal é que o usuário clique em "Analisar Sintomas" novamente após selecionar os sintomas de acompanhamento.
-    // Esta função apenas prepara o estado.
-    // O usuário pode clicar em "Analisar Sintomas" novamente.
-    // Se quiser submeter automaticamente: form.handleSubmit(onSubmit)();
-    // Mas é melhor que o usuário confirme clicando no botão.
-    toast({
-      title: "Pronto para Refinar",
-      description: "Selecione os sintomas adicionais e clique em 'Analisar Sintomas' novamente.",
-    });
-  };
-
 
   if (isLoadingPet) {
     return (
@@ -178,7 +160,6 @@ export default function PetSintomasPage() {
   }
 
   if (!pet) {
-    // Mensagem de pet não encontrado já tratada no useEffect, router.push deve ter redirecionado
     return null; 
   }
 
@@ -208,7 +189,7 @@ export default function PetSintomasPage() {
             <div>
               <CardTitle className="text-2xl font-bold text-primary">Análise de Sintomas para {pet.nome}</CardTitle>
               <CardDescription className="text-md text-muted-foreground">
-                {pet.especie} - {pet.raca} - {pet.idade} anos
+                {pet.especie} - {pet.raca} - {pet.idade !== undefined ? `${pet.idade} anos` : (pet.dataNascimento ? `${new Date().getFullYear() - new Date(pet.dataNascimento).getFullYear()} anos` : 'Idade não informada')}
               </CardDescription>
             </div>
           </div>
@@ -247,11 +228,11 @@ export default function PetSintomasPage() {
                 )}
               />
               
-              {currentFollowUpSymptoms.length > 0 && !analysisResult?.potentialDiagnoses && (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold">Sintomas Adicionais (Se houver):</FormLabel>
-                  <FormDescription>A IA sugeriu verificar estes sintomas. Selecione os que se aplicam:</FormDescription>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+              {analysisResult && analysisResult.needsMoreInfo && currentFollowUpSymptoms.length > 0 && (
+                <FormItem className="p-4 border rounded-md bg-muted/50">
+                  <FormLabel className="text-lg font-semibold text-primary">Para um diagnóstico mais preciso, seu pet também apresenta algum destes sintomas?</FormLabel>
+                  <FormDescription>Selecione os sintomas aplicáveis abaixo e clique em "Analisar Sintomas" novamente.</FormDescription>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t">
                     {currentFollowUpSymptoms.map((symptom) => (
                       <Button
                         key={symptom}
@@ -285,17 +266,11 @@ export default function PetSintomasPage() {
                   </>
                 )}
               </Button>
-              {analysisResult?.needsMoreInfo && analysisResult.suggestedFollowUpSymptoms && analysisResult.suggestedFollowUpSymptoms.length > 0 && (
-                 <Button type="button" variant="outline" onClick={handleRefineSymptoms} disabled={isSubmitting || selectedFollowUpSymptoms.length === 0} className="w-full">
-                    <Lightbulb className="mr-2 h-4 w-4" />
-                    Refinar com Sintomas Adicionais Selecionados
-                </Button>
-              )}
             </CardFooter>
           </form>
         </Form>
 
-        {analysisResult && (
+        {analysisResult && !analysisResult.needsMoreInfo && analysisResult.potentialDiagnoses && (
           <CardContent className="mt-6 border-t pt-6 space-y-4">
             <h3 className="text-xl font-semibold text-primary mb-3 flex items-center">
               <Sparkles className="h-6 w-6 mr-2 text-yellow-400" /> Resultados da Análise da IA
@@ -336,30 +311,18 @@ export default function PetSintomasPage() {
                 <AlertDescription>{analysisResult.disclaimer}</AlertDescription>
               </Alert>
             )}
-            
-            {analysisResult.needsMoreInfo && analysisResult.suggestedFollowUpSymptoms && analysisResult.suggestedFollowUpSymptoms.length > 0 && (
-                 <Alert variant="default" className="bg-blue-50 border-blue-300">
-                    <Lightbulb className="h-5 w-5 text-blue-600" />
-                    <AlertTitle className="font-semibold text-blue-700">Mais Informações Necessárias</AlertTitle>
-                    <AlertDescription className="text-blue-600">
-                    A IA precisa de mais detalhes para uma análise mais precisa. Considere os seguintes sintomas. Se aplicável, selecione-os acima e clique em "Refinar com Sintomas Adicionais Selecionados" e depois em "Analisar Sintomas" novamente.
-                    <ul className="list-disc list-inside ml-4 mt-2">
-                        {analysisResult.suggestedFollowUpSymptoms.map((symptom, index) => (
-                        <li key={index}>{symptom}</li>
-                        ))}
-                    </ul>
-                    </AlertDescription>
-                </Alert>
-            )}
           </CardContent>
         )}
       </Card>
-      <div className="mt-6 text-center">
-        <Link href={`/pets/${pet.id}/symptom-history`} className="text-sm text-primary hover:underline">
-            Ver Histórico de Sintomas de {pet.nome}
-        </Link>
-      </div>
+      {pet && (
+        <div className="mt-6 text-center">
+            <Link href={`/pets/${pet.id}/symptom-history`} className="text-sm text-primary hover:underline">
+                Ver Histórico de Sintomas de {pet.nome}
+            </Link>
+        </div>
+      )}
     </div>
   );
 }
 
+    

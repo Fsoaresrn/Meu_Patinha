@@ -4,7 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button"; // Added buttonVariants import
 import { Badge } from "@/components/ui/badge";
 import type { Pet } from "@/types";
 import { cn } from "@/lib/utils";

@@ -1,3 +1,4 @@
+
 // 'use server'
 'use server';
 
@@ -14,7 +15,7 @@ import {z} from 'genkit';
 
 const CheckSymptomsInputSchema = z.object({
   petName: z.string().describe('The name of the pet.'),
-  species: z.enum(['Cachorro', 'Gato']).describe('The species of the pet (Cachorro or Gato).'),
+  species: z.enum(['Cão', 'Gato']).describe('The species of the pet (Cão or Gato).'),
   breed: z.string().describe('The breed of the pet.'),
   age: z.number().describe('The age of the pet in years.'),
   symptoms: z.string().describe('A detailed description of the pet\'s symptoms.'),

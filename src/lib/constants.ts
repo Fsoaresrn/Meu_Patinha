@@ -1,3 +1,4 @@
+
 import type { PetSpecies, VaccineProtocolInfo } from "@/types";
 
 export const ufsBrasil = [
@@ -39,7 +40,7 @@ export const cidadesPorUF: Record<string, string[]> = {
   // Add more as needed
 };
 
-export const petSpeciesList: PetSpecies[] = ["Cachorro", "Gato"];
+export const petSpeciesList: PetSpecies[] = ["Cão", "Gato"];
 
 export const dogBreeds = [
   "Labrador Retriever", "Golden Retriever", "Poodle", "Bulldog Francês", "Pastor Alemão", 
@@ -52,12 +53,12 @@ export const catBreeds = [
 ];
 
 export const furTypesBySpecies: Record<PetSpecies, string[]> = {
-  Cachorro: ["Curta", "Média", "Longa", "Dupla Camada", "Encaracolada", "Lisa", "Dura/Áspera", "Sem Pelo", "Outra"],
+  Cão: ["Curta", "Média", "Longa", "Dupla Camada", "Encaracolada", "Lisa", "Dura/Áspera", "Sem Pelo", "Outra"],
   Gato: ["Curta", "Média", "Longa", "Sem Pelo", "Outra"],
 };
 
 export const furColorsBySpecies: Record<PetSpecies, string[]> = {
-  Cachorro: ["Preto", "Branco", "Marrom (Chocolate, Fígado)", "Dourado", "Amarelo", "Creme", "Cinza (Azul)", "Vermelho", "Tricolor", "Bicolor", "Merle", "Tigrado", "Outra"],
+  Cão: ["Preto", "Branco", "Marrom (Chocolate, Fígado)", "Dourado", "Amarelo", "Creme", "Cinza (Azul)", "Vermelho", "Tricolor", "Bicolor", "Merle", "Tigrado", "Outra"],
   Gato: ["Preto", "Branco", "Cinza (Azul)", "Laranja (Vermelho)", "Creme", "Marrom (Chocolate)", "Lilás", "Tricolor (Cálico)", "Bicolor", "Escama (Tortoiseshell)", "Siamês (Pointed)", "Tigrado (Tabby)", "Outra"],
 };
 
@@ -77,11 +78,11 @@ export const petPurposes: string[] = [
 
 export const vaccineProtocols: VaccineProtocolInfo[] = [
   // Cães
-  { id: "v8-v10", name: "V8/V10 (Polivalente Canina)", species: ["Cachorro"], description: "Protege contra cinomose, parvovirose, hepatite infecciosa, adenovirose, coronavirose, parainfluenza e leptospirose.", recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (10-12 semanas)", "3ª dose (14-16 semanas)"], boosterInfo: "Reforço anual." },
-  { id: "antirrabica-cao", name: "Antirrábica (Cães)", species: ["Cachorro"], description: "Protege contra a raiva.", recommendedDoses: ["Dose única (a partir de 12 semanas)"], boosterInfo: "Reforço anual." },
-  { id: "gripe-canina", name: "Gripe Canina (Tosse dos Canis)", species: ["Cachorro"], description: "Protege contra Bordetella bronchiseptica e/ou Parainfluenza.", recommendedDoses: ["Pode variar: 1 ou 2 doses iniciais"], boosterInfo: "Reforço anual, especialmente para cães com alto contato." },
-  { id: "giardia-cao", name: "Giárdia (Cães)", species: ["Cachorro"], description: "Protege contra a giardíase.", recommendedDoses: ["2 doses iniciais com intervalo de 2-4 semanas"], boosterInfo: "Reforço anual, dependendo do risco." },
-  { id: "leishmaniose", name: "Leishmaniose", species: ["Cachorro"], description: "Protege contra a leishmaniose visceral canina.", recommendedDoses: ["3 doses iniciais com intervalo de 21 dias"], boosterInfo: "Reforço anual. Teste sorológico prévio é necessário." },
+  { id: "v8-v10", name: "V8/V10 (Polivalente Canina)", species: ["Cão"], description: "Protege contra cinomose, parvovirose, hepatite infecciosa, adenovirose, coronavirose, parainfluenza e leptospirose.", recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (10-12 semanas)", "3ª dose (14-16 semanas)"], boosterInfo: "Reforço anual." },
+  { id: "antirrabica-cao", name: "Antirrábica (Cães)", species: ["Cão"], description: "Protege contra a raiva.", recommendedDoses: ["Dose única (a partir de 12 semanas)"], boosterInfo: "Reforço anual." },
+  { id: "gripe-canina", name: "Gripe Canina (Tosse dos Canis)", species: ["Cão"], description: "Protege contra Bordetella bronchiseptica e/ou Parainfluenza.", recommendedDoses: ["Pode variar: 1 ou 2 doses iniciais"], boosterInfo: "Reforço anual, especialmente para cães com alto contato." },
+  { id: "giardia-cao", name: "Giárdia (Cães)", species: ["Cão"], description: "Protege contra a giardíase.", recommendedDoses: ["2 doses iniciais com intervalo de 2-4 semanas"], boosterInfo: "Reforço anual, dependendo do risco." },
+  { id: "leishmaniose", name: "Leishmaniose", species: ["Cão"], description: "Protege contra a leishmaniose visceral canina.", recommendedDoses: ["3 doses iniciais com intervalo de 21 dias"], boosterInfo: "Reforço anual. Teste sorológico prévio é necessário." },
   // Gatos
   { id: "v3-v4-v5", name: "V3/V4/V5 (Polivalente Felina)", species: ["Gato"], description: "V3: Panleucopenia, Calicivirose, Rinotraqueíte. V4 adiciona Clamidiose. V5 adiciona Leucemia Felina (FeLV).", recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (10-12 semanas)", "3ª dose (14-16 semanas, para V5/FeLV pode ser diferente)"], boosterInfo: "Reforço anual. Teste para FeLV/FIV recomendado antes da vacina de FeLV." },
   { id: "antirrabica-gato", name: "Antirrábica (Gatos)", species: ["Gato"], description: "Protege contra a raiva.", recommendedDoses: ["Dose única (a partir de 12 semanas)"], boosterInfo: "Reforço anual." },

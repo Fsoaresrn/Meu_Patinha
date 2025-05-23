@@ -6,7 +6,7 @@ export type UserResponsibility = "Tutor(a)" | "Cuidador(a)" | "Veterinário(a)";
 export type PetGender = "Macho" | "Fêmea" | "Não especificado";
 
 // Espécie do Pet
-export type PetSpecies = "Cachorro" | "Gato";
+export type PetSpecies = "Cão" | "Gato";
 
 // Porte do Pet
 export type PetSize = "Pequeno" | "Médio" | "Grande" | "Gigante";
@@ -39,9 +39,9 @@ export interface AuthUser {
   nome: string;
   email: string; // editável
   // Senha não é armazenada aqui após autenticação
-  tipoResponsabilidade: UserResponsibility[]; // Alterado para array
-  uf: string; // Estado (Unidade Federativa)
-  cidade: string;
+  tipoResponsabilidade?: UserResponsibility[]; 
+  uf?: string; // Estado (Unidade Federativa)
+  cidade?: string;
   endereco?: string; // Rua, Número, Complemento, Bairro
   cep?: string;
   telefone?: string; // DDD e Número

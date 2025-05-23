@@ -98,7 +98,7 @@ export default function AdicionarPetPage() {
     router.push("/pets");
   };
 
-  const racasDisponiveis = especieSelecionada === "Cachorro" ? dogBreeds : especieSelecionada === "Gato" ? catBreeds : [];
+  const racasDisponiveis = especieSelecionada === "Cão" ? dogBreeds : especieSelecionada === "Gato" ? catBreeds : [];
   const tiposPelagemDisponiveis = especieSelecionada ? furTypesBySpecies[especieSelecionada] : [];
   const coresPelagemDisponiveis = especieSelecionada ? furColorsBySpecies[especieSelecionada] : [];
 

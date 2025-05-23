@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect, useMemo } from "react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { parse as parseDateFn } from 'date-fns';
 
 const petFormSchema = z.object({
   nome: z.string().min(2, { message: "Nome do pet é obrigatório (mínimo 2 caracteres)." }),
@@ -39,7 +40,7 @@ const petFormSchema = z.object({
       .min(0, "Idade não pode ser negativa.")
       .optional()
   ),
-  sexo: z.enum(petGendersList as [PetGender, ...PetGender[]], { required_error: "Sexo é obrigatório." }),
+  sexo: z.enum(petGendersList as [PetGender, ...PetGender[]], { required_error: "Sexo é obrigatória." }),
   castrado: z.enum(yesNoOptions, { required_error: "Informar se é castrado é obrigatório." }),
   fotoUrl: z.string().url({ message: "URL da foto inválida." }).optional().or(z.literal("")),
   tipoPelagem: z.string().optional(),
@@ -52,19 +53,14 @@ const petFormSchema = z.object({
   sinaisObservacoes: z.string().optional(),
 }).refine(data => {
   if (data.birthDateUnknown && data.ageInMonths === undefined) {
-    return false; // Se data de nascimento é desconhecida, idade em meses é obrigatória
+    return false;
   }
   if (!data.birthDateUnknown && data.dataNascimento === undefined) {
-    return false; // Se data de nascimento é conhecida, a data é obrigatória
+    return false;
   }
   return true;
 }, {
   message: "Informe a data de nascimento ou a idade estimada em meses.",
-  // Não podemos direcionar para um path específico facilmente aqui, então uma mensagem geral é melhor.
-  // Ou podemos ter mensagens específicas se testarmos os campos individualmente.
-  // Por simplicidade, manteremos uma mensagem geral ou deixar a validação de campo individual cuidar disso
-  // se os campos fossem obrigatórios condicionalmente no Zod, o que é mais complexo.
-  // A UI deve guiar o usuário. A validação de schema aqui é um fallback.
 });
 
 
@@ -82,6 +78,8 @@ export default function AdicionarPetPage() {
   
   const [furColorSearch, setFurColorSearch] = useState("");
 
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    
   const form = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
     defaultValues: {
@@ -101,10 +99,29 @@ export default function AdicionarPetPage() {
   const especieSelecionada = form.watch("especie");
   const watchedDataNascimento = form.watch("dataNascimento");
   const isBirthDateUnknown = form.watch("birthDateUnknown");
+  
+  // State for the date input string
+  const [dateInputString, setDateInputString] = useState<string>("");
+
+  useEffect(() => {
+    // Sync RHF's field.value (Date object) to local dateInputString (string for display)
+    if (watchedDataNascimento && isValidDate(watchedDataNascimento)) {
+      const formattedDate = formatDateToBrasil(watchedDataNascimento);
+      // Only update if different to prevent caret jump or infinite loops if user is typing
+      if (dateInputString !== formattedDate) {
+        setDateInputString(formattedDate);
+      }
+    } else if (!watchedDataNascimento && dateInputString !== "") {
+      // If RHF date is cleared (e.g. "unknown" checked or invalid blur), clear input string
+      setDateInputString("");
+    }
+  }, [watchedDataNascimento]);
+
 
   useEffect(() => {
     if (isBirthDateUnknown) {
       form.setValue("dataNascimento", undefined);
+      // setDateInputString(""); // Already handled by watchedDataNascimento effect
       setCalculatedAgeDisplay(null);
     } else {
       form.setValue("ageInMonths", undefined);
@@ -115,7 +132,7 @@ export default function AdicionarPetPage() {
     if (!isBirthDateUnknown && watchedDataNascimento && isValidDate(watchedDataNascimento)) {
       const age = calculateAge(watchedDataNascimento);
       setCalculatedAgeDisplay(age.display);
-      form.setValue("ageInMonths", undefined, { shouldValidate: false }); // Clear ageInMonths if date is set
+      form.setValue("ageInMonths", undefined, { shouldValidate: false });
     } else if (!isBirthDateUnknown) {
       setCalculatedAgeDisplay(null);
     }
@@ -155,18 +172,15 @@ export default function AdicionarPetPage() {
       possuiMicrochip: "Não",
       possuiPedigree: "Não",
       dataNascimento: !data.birthDateUnknown && data.dataNascimento ? formatDate(data.dataNascimento, "dd/MM/yyyy") : undefined,
-      idade: undefined, // Será definido abaixo se aplicável
+      idade: undefined, 
     };
 
     if (data.birthDateUnknown && typeof data.ageInMonths === 'number') {
       newPet.idade = Math.floor(data.ageInMonths / 12); 
     } else if (!data.birthDateUnknown && data.dataNascimento) {
-      // A idade será calculada dinamicamente a partir de dataNascimento
-      // Podemos opcionalmente armazenar a idade calculada no momento do cadastro também
       const age = calculateAge(data.dataNascimento);
-      newPet.idade = age.years; // Armazena anos como referência, mas o cálculo dinâmico é preferível
+      newPet.idade = age.years; 
     }
-
 
     setAllPets([...allPets, newPet]);
     toast({ title: "Sucesso!", description: `${data.nome} foi adicionado(a) aos seus pets.` });
@@ -207,6 +221,61 @@ export default function AdicionarPetPage() {
     form.setValue("corPelagem", "");
     setFurColorSearch("");
   }, [especieSelecionada, form]);
+
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const typedValue = e.target.value;
+    setDateInputString(typedValue); 
+
+    // Basic attempt to parse on the fly for dd/MM/yyyy, full validation on blur
+    if (typedValue.length <= 10) { // "dd/MM/yyyy"
+        const parts = typedValue.split('/');
+        if (parts.length === 3 && parts.every(p => /^\d*$/.test(p))) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+
+            if (typedValue.length === 10 && parts[2].length === 4) { // Full date typed
+                 const parsedDate = parseDateFn(typedValue, "dd/MM/yyyy", new Date());
+                 if (isValidDate(parsedDate)) {
+                    if (!watchedDataNascimento || watchedDataNascimento.getTime() !== parsedDate.getTime()) {
+                        form.setValue("dataNascimento", parsedDate, { shouldValidate: true });
+                    }
+                 } else {
+                    // Potentially clear RHF if it's definitely invalid length 10
+                    // form.setValue("dataNascimento", undefined, { shouldValidate: true });
+                 }
+            }
+        } else if (typedValue === "") {
+             form.setValue("dataNascimento", undefined, { shouldValidate: true });
+        }
+    } else if (typedValue === "") { // Cleared input
+        form.setValue("dataNascimento", undefined, { shouldValidate: true });
+    }
+  };
+
+  const handleDateInputBlur = () => {
+    const parsedDate = parseDateFn(dateInputString, "dd/MM/yyyy", new Date());
+    if (isValidDate(parsedDate)) {
+      if (!watchedDataNascimento || watchedDataNascimento.getTime() !== parsedDate.getTime()) {
+        form.setValue("dataNascimento", parsedDate, { shouldValidate: true });
+      }
+      // Ensure input string is correctly formatted if user typed e.g. d/m/yyyy and it was valid
+      setDateInputString(formatDateToBrasil(parsedDate));
+    } else {
+      if (dateInputString === "") { // If input is empty, RHF field should be undefined
+        if (watchedDataNascimento !== undefined) {
+            form.setValue("dataNascimento", undefined, { shouldValidate: true });
+        }
+      } else { // If input is non-empty but invalid
+        if (watchedDataNascimento !== undefined) {
+            form.setValue("dataNascimento", undefined, { shouldValidate: true });
+        }
+        // Keep dateInputString as what user typed (e.g. "abc") for them to correct
+        // Zod will mark dataNascimento as invalid if required (which it is if birthDateUnknown is false)
+      }
+    }
+  };
+
 
   return (
     <div className="container mx-auto py-8">
@@ -355,34 +424,45 @@ export default function AdicionarPetPage() {
                 <FormField
                   control={form.control}
                   name="dataNascimento"
-                  render={({ field }) => (
+                  render={({ field }) => ( 
                     <FormItem className="flex flex-col">
                       <FormLabel>Data de Nascimento</FormLabel>
-                      <Popover>
+                      <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                         <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                              disabled={isBirthDateUnknown}
-                            >
-                              {field.value ? (
-                                formatDateToBrasil(field.value)
-                              ) : (
-                                <span>Escolha uma data</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
+                           <FormControl>
+                             <div className="relative">
+                                <Input
+                                  placeholder="dd/mm/aaaa"
+                                  value={dateInputString}
+                                  onChange={handleDateInputChange}
+                                  onBlur={handleDateInputBlur}
+                                  disabled={isBirthDateUnknown}
+                                  className={cn(
+                                    "w-full pl-3 pr-10 text-left font-normal", 
+                                    !field.value && !dateInputString && "text-muted-foreground"
+                                  )}
+                                  onClick={() => !isBirthDateUnknown && setIsCalendarOpen(true)} // Open popover on click
+                                />
+                                <CalendarIcon 
+                                  className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50 cursor-pointer" 
+                                  onClick={() => !isBirthDateUnknown && setIsCalendarOpen(true)} // Also open on icon click
+                                />
+                              </div>
+                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            selected={field.value}
-                            onSelect={(date) => field.onChange(date)}
+                            selected={field.value} 
+                            onSelect={(date) => {
+                              form.setValue("dataNascimento", date, { shouldValidate: true }); 
+                              if (date && isValidDate(date)) {
+                                setDateInputString(formatDateToBrasil(date));
+                              } else {
+                                setDateInputString("");
+                              }
+                              setIsCalendarOpen(false); 
+                            }}
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }

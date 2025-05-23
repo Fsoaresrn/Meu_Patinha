@@ -245,108 +245,178 @@ export const petPurposes: string[] = [
 ];
 
 export const vaccineProtocols: VaccineProtocolInfo[] = [
-  // Vacinas para Cães
+  // --- Vacinas Caninas ---
   {
-    id: "v8_v10_canina",
-    name: "V8 / V10 (Polivalente Canina)",
+    id: "v8_canina",
+    name: "V8 (Múltipla Canina)",
     species: ["Cão"],
-    preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose tipo II", "Parainfluenza", "Leptospirose (diversos sorovares dependendo da vacina V8 ou V10)"],
+    preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose Canina Tipo 2", "Parainfluenza Canina", "Leptospirose (sorovares Canicola e Icterohaemorrhagiae)"],
     importance: "Essencial",
-    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "4ª dose (Opcional, 16-18 semanas)", "Reforço Anual"],
-    primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
+    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "Reforço Anual"],
+    primarySeriesIntervalDays: 21,
     boosterFrequencySuggestion: "Anual",
-    notes: "O número de doses na primovacinação pode variar (3 a 4). A 4ª dose é frequentemente recomendada para raças de alto risco ou em áreas de alta prevalência de parvovirose. O veterinário definirá o melhor esquema.",
+    notes: "Esquema de 3 doses na primovacinação (6-14 semanas). Reforço anual. Seguir orientação veterinária.",
     administrationNotes: "Via subcutânea."
   },
   {
-    id: "antirrabica_canina",
-    name: "Antirrábica (Cães)",
+    id: "v10_canina",
+    name: "V10 (Polivalente Canina)",
     species: ["Cão"],
-    preventsDiseases: ["Raiva"],
+    preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose Canina Tipo 2", "Parainfluenza Canina", "Leptospirose (sorovares Canicola, Icterohaemorrhagiae, Grippotyphosa e Pomona)"],
     importance: "Essencial",
-    recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)", "Reforço Anual"],
-    isSingleDosePrimary: true,
-    boosterFrequencySuggestion: "Anual",
-    notes: "Obrigatória por lei em muitas regiões. Fundamental para a saúde pública.",
-    administrationNotes: "Via subcutânea ou intramuscular."
-  },
-  {
-    id: "gripe_canina",
-    name: "Gripe Canina (Tosse dos Canis)",
-    species: ["Cão"],
-    preventsDiseases: ["Traqueobronquite Infecciosa Canina (causada por Bordetella bronchiseptica e/ou vírus da Parainfluenza Canina)"],
-    importance: "Complementar", // Ou Essencial dependendo do estilo de vida
-    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas, para algumas vacinas)", "Reforço Anual"], // Vacinas intranasais podem ser dose única.
+    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "4ª dose (Opcional, 16-18 semanas)", "Reforço Anual"],
     primarySeriesIntervalDays: 21,
     boosterFrequencySuggestion: "Anual",
-    notes: "Recomendada para cães que frequentam creches, hotéis, parques ou têm contato com outros cães. Versões injetável e intranasal disponíveis.",
-    administrationNotes: "Intranasal ou subcutânea, dependendo do produto."
+    notes: "Esquema de 3 a 4 doses na primovacinação (6-18 semanas). Reforço anual. Seguir orientação veterinária.",
+    administrationNotes: "Via subcutânea."
   },
   {
     id: "giardia_canina",
-    name: "Giárdia (Cães)",
+    name: "Giárdia (Canina)",
     species: ["Cão"],
     preventsDiseases: ["Giardíase"],
-    importance: "Opcional",
+    importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas)", "Reforço Anual"],
-    primarySeriesIntervalDays: 21,
+    primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
     boosterFrequencySuggestion: "Anual",
     notes: "Recomendada para cães com maior risco de exposição. A eficácia pode variar.",
     administrationNotes: "Via subcutânea."
   },
   {
     id: "leishmaniose_canina",
-    name: "Leishmaniose Visceral Canina",
+    name: "Leishmaniose (Canina)",
     species: ["Cão"],
-    preventsDiseases: ["Leishmaniose Visceral"],
-    importance: "Complementar", // Essencial em áreas endêmicas
+    preventsDiseases: ["Leishmaniose Visceral Canina"],
+    importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 4 meses, após teste sorológico negativo)", "2ª dose (21 dias após a 1ª)", "3ª dose (21 dias após a 2ª)", "Reforço Anual"],
     primarySeriesIntervalDays: 21,
     boosterFrequencySuggestion: "Anual",
     notes: "Fundamental em áreas endêmicas. Teste sorológico negativo é pré-requisito. Não impede a infecção, mas reduz o risco de desenvolvimento da doença e a transmissibilidade.",
     administrationNotes: "Via subcutânea."
   },
-  // Vacinas para Gatos
   {
-    id: "v3_v4_v5_felina",
-    name: "V3 / V4 / V5 (Polivalente Felina)",
+    id: "gripe_canina",
+    name: "Gripe Canina (Tosse dos Canis)",
+    species: ["Cão"],
+    preventsDiseases: ["Traqueobronquite Infecciosa Canina (Bordetella bronchiseptica e/ou Parainfluenza)"],
+    importance: "Complementar",
+    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas, para algumas vacinas injetáveis)", "Reforço Anual"],
+    primarySeriesIntervalDays: 21,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Recomendada para cães que frequentam creches, hotéis, etc. Versões injetável e intranasal (pode ser dose única) disponíveis.",
+    administrationNotes: "Intranasal ou subcutânea, dependendo do produto."
+  },
+  // --- Vacinas Felinas ---
+  {
+    id: "v3_felina",
+    name: "V3 (Tríplice Felina)",
     species: ["Gato"],
-    preventsDiseases: [
-      "Panleucopenia Felina", "Calicivirose Felina", "Rinotraqueíte Felina",
-      "Clamidiose (na V4 e V5)", "Leucemia Felina - FeLV (na V5)"
-    ],
+    preventsDiseases: ["Rinotraqueíte Viral Felina", "Calicivirose Felina", "Panleucopenia Felina"],
     importance: "Essencial",
     recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "Reforço Anual"],
-    primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
+    primarySeriesIntervalDays: 21,
     boosterFrequencySuggestion: "Anual",
-    notes: "V3 é o core. V4 adiciona proteção contra Clamidiose. V5 adiciona proteção contra FeLV (requer teste prévio negativo para FeLV). O veterinário indicará a melhor opção.",
-    administrationNotes: "Via subcutânea. Para FeLV, seguir recomendações de local de aplicação (ex: membro pélvico esquerdo)."
+    notes: "Base da proteção felina. Seguir orientação veterinária para número de doses e intervalo.",
+    administrationNotes: "Via subcutânea."
   },
   {
-    id: "antirrabica_felina",
-    name: "Antirrábica (Gatos)",
+    id: "v4_felina",
+    name: "V4 (Quádrupla Felina)",
     species: ["Gato"],
+    preventsDiseases: ["Rinotraqueíte Viral Felina", "Calicivirose Felina", "Panleucopenia Felina", "Clamidiose Felina"],
+    importance: "Essencial",
+    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "Reforço Anual"],
+    primarySeriesIntervalDays: 21,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Adiciona proteção contra Clamidiose. Seguir orientação veterinária.",
+    administrationNotes: "Via subcutânea."
+  },
+  {
+    id: "v5_felina",
+    name: "V5 (Quíntupla Felina)",
+    species: ["Gato"],
+    preventsDiseases: ["Rinotraqueíte Viral Felina", "Calicivirose Felina", "Panleucopenia Felina", "Clamidiose Felina", "Leucemia Viral Felina (FeLV)"],
+    importance: "Essencial",
+    recommendedDoses: ["1ª dose (a partir de 8 semanas, após teste FeLV negativo)", "2ª dose (3-4 semanas após a 1ª)", "3ª dose (3-4 semanas após a 2ª, opcional)", "Reforço Anual"],
+    primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
+    boosterFrequencySuggestion: "Anual",
+    notes: "Inclui proteção contra FeLV. Testagem prévia para FeLV é crucial. Seguir orientação veterinária.",
+    administrationNotes: "Via subcutânea, preferencialmente em locais recomendados para minimizar risco de sarcoma."
+  },
+  {
+    id: "felv_isolada",
+    name: "FeLV (Leucemia Felina - Isolada)",
+    species: ["Gato"],
+    preventsDiseases: ["Leucemia Viral Felina (FeLV)"],
+    importance: "Complementar",
+    recommendedDoses: ["1ª dose (a partir de 8 semanas, após teste FeLV negativo)", "2ª dose (3-4 semanas após a 1ª)", "Reforço Anual"],
+    primarySeriesIntervalDays: 21,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Apenas para gatos FeLV negativos com risco de exposição. Pode ser essencial dependendo do estilo de vida. Testar antes de vacinar.",
+    administrationNotes: "Via subcutânea, em local recomendado."
+  },
+  {
+    id: "fiv_felina",
+    name: "FIV (Imunodeficiência Felina)",
+    species: ["Gato"],
+    preventsDiseases: ["Vírus da Imunodeficiência Felina (FIV)"],
+    importance: "Complementar",
+    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (2-3 semanas após)", "3ª dose (2-3 semanas após)", "Reforço Anual"],
+    primarySeriesIntervalDays: 14, // 2-3 semanas
+    boosterFrequencySuggestion: "Anual",
+    notes: "A eficácia pode variar e a vacina pode interferir em testes sorológicos futuros. Uso controverso. Discutir com veterinário.",
+    administrationNotes: "Via subcutânea."
+  },
+  {
+    id: "chlamydia_isolada_felina",
+    name: "Chlamydia (Isolada - Felina)",
+    species: ["Gato"],
+    preventsDiseases: ["Clamidiose Felina"],
+    importance: "Complementar",
+    recommendedDoses: ["1ª dose (a partir de 9 semanas)", "2ª dose (3-4 semanas após)", "Reforço Anual"],
+    primarySeriesIntervalDays: 21,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Considerar para gatos em ambientes com múltiplos animais ou histórico da doença.",
+    administrationNotes: "Via subcutânea."
+  },
+  {
+    id: "bordetella_felina",
+    name: "Bordetella (Felina)",
+    species: ["Gato"],
+    preventsDiseases: ["Infecções respiratórias por Bordetella bronchiseptica"],
+    importance: "Complementar",
+    recommendedDoses: ["Dose única intranasal (a partir de 4 semanas)", "Reforço Anual"],
+    isSingleDosePrimary: true,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Vacina intranasal. Considerar para gatos em abrigos, gatis ou situações de alto risco de contágio.",
+    administrationNotes: "Via intranasal."
+  },
+  {
+    id: "pif_felina",
+    name: "PIF (Peritonite Infecciosa Felina)",
+    species: ["Gato"],
+    preventsDiseases: ["Peritonite Infecciosa Felina"],
+    importance: "Complementar",
+    recommendedDoses: ["1ª dose (a partir de 16 semanas)", "2ª dose (3-4 semanas após)", "Reforço Anual"],
+    primarySeriesIntervalDays: 21,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Vacina controversa, eficácia não universalmente aceita, disponibilidade limitada. Uso deve ser cuidadosamente avaliado pelo veterinário.",
+    administrationNotes: "Via intranasal, dependendo do produto."
+  },
+  // --- Vacinas Comuns (Cães e Gatos) ---
+  {
+    id: "antirrabica_comum",
+    name: "Antirrábica (Cães e Gatos)",
+    species: ["Cão", "Gato"],
     preventsDiseases: ["Raiva"],
     importance: "Essencial",
     recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)", "Reforço Anual"],
     isSingleDosePrimary: true,
     boosterFrequencySuggestion: "Anual",
-    notes: "Obrigatória por lei em muitas regiões. Fundamental para a saúde pública.",
-    administrationNotes: "Via subcutânea, preferencialmente no membro pélvico direito."
+    notes: "Obrigatória por lei em muitas regiões. Fundamental para a saúde pública. Para gatos, aplicar em local recomendado para minimizar risco de sarcoma.",
+    administrationNotes: "Via subcutânea ou intramuscular (cães). Gatos: subcutânea, preferencialmente no membro pélvico direito."
   },
-  {
-    id: "felv_pura",
-    name: "FeLV (Leucemia Felina) - Isolada",
-    species: ["Gato"],
-    preventsDiseases: ["Leucemia Felina (FeLV)"],
-    importance: "Essencial", // Para gatos negativos com risco de exposição
-    recommendedDoses: ["1ª dose (a partir de 8 semanas, após teste FeLV/FIV negativo)", "2ª dose (3-4 semanas após a 1ª)", "Reforço Anual"],
-    primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
-    boosterFrequencySuggestion: "Anual",
-    notes: "Apenas para gatos FeLV negativos. Gatos positivos não se beneficiam e não devem ser vacinados para FeLV. Testar antes de vacinar.",
-    administrationNotes: "Via subcutânea, seguir recomendações de local de aplicação (ex: membro pélvico esquerdo)."
-  },
-  // Vacina "Outra" genérica
+  // --- Opção Genérica ---
   {
     id: "outra",
     name: "Outra (Especificar)",
@@ -358,6 +428,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     notes: "Use esta opção para vacinas não listadas ou específicas."
   }
 ];
+
 
 export const vaccineBoosterFrequenciesConstants: VaccineBoosterFrequencySelected[] = [
   "Dose Única",

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import { PawPrint } from 'lucide-react';
+import { RgbPawIcon } from '@/components/shared/rgb-paw-icon'; // Importando o novo ícone
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -8,7 +8,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 flex items-center justify-center rounded-full bg-primary p-3 text-primary-foreground shadow-lg">
-            <PawPrint size={40} />
+            {/* Substituído PawPrint por RgbPawIcon */}
+            <RgbPawIcon size={40} /> 
           </div>
           <h1 className="text-4xl font-bold text-primary">Meu Patinha</h1>
           <p className="mt-2 text-muted-foreground">

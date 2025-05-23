@@ -126,7 +126,7 @@ export default function AddVaccinationPage() {
     if (watchedVaccineType) {
       const protocol = vaccineProtocols.find(p => p.id === watchedVaccineType);
       setSelectedProtocol(protocol || null);
-      if (protocol && protocol.recommendedDoses && protocol.recommendedDoses.length > 0) {
+      if (protocol && protocol.id !== 'outra' && protocol.recommendedDoses && protocol.recommendedDoses.length > 0) {
         setAvailableDoses(protocol.recommendedDoses);
       } else {
         setAvailableDoses(genericVaccineDosesConstants);

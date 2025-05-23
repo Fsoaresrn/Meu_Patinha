@@ -252,7 +252,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Cão"],
     preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose tipo II", "Parainfluenza", "Leptospirose (diversos sorovares dependendo da vacina V8 ou V10)"],
     importance: "Essencial",
-    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "4ª dose (Opcional, 16-18 semanas)"],
+    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "4ª dose (Opcional, 16-18 semanas)", "Reforço Anual"],
     primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
     boosterFrequencySuggestion: "Anual",
     notes: "O número de doses na primovacinação pode variar (3 a 4). A 4ª dose é frequentemente recomendada para raças de alto risco ou em áreas de alta prevalência de parvovirose. O veterinário definirá o melhor esquema.",
@@ -264,7 +264,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Cão"],
     preventsDiseases: ["Raiva"],
     importance: "Essencial",
-    recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)"],
+    recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)", "Reforço Anual"],
     isSingleDosePrimary: true,
     boosterFrequencySuggestion: "Anual",
     notes: "Obrigatória por lei em muitas regiões. Fundamental para a saúde pública.",
@@ -276,7 +276,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Cão"],
     preventsDiseases: ["Traqueobronquite Infecciosa Canina (causada por Bordetella bronchiseptica e/ou vírus da Parainfluenza Canina)"],
     importance: "Complementar", // Ou Essencial dependendo do estilo de vida
-    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas, para algumas vacinas)"], // Vacinas intranasais podem ser dose única.
+    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas, para algumas vacinas)", "Reforço Anual"], // Vacinas intranasais podem ser dose única.
     primarySeriesIntervalDays: 21,
     boosterFrequencySuggestion: "Anual",
     notes: "Recomendada para cães que frequentam creches, hotéis, parques ou têm contato com outros cães. Versões injetável e intranasal disponíveis.",
@@ -288,7 +288,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Cão"],
     preventsDiseases: ["Giardíase"],
     importance: "Opcional",
-    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas)"],
+    recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas)", "Reforço Anual"],
     primarySeriesIntervalDays: 21,
     boosterFrequencySuggestion: "Anual",
     notes: "Recomendada para cães com maior risco de exposição. A eficácia pode variar.",
@@ -300,7 +300,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Cão"],
     preventsDiseases: ["Leishmaniose Visceral"],
     importance: "Complementar", // Essencial em áreas endêmicas
-    recommendedDoses: ["1ª dose (a partir de 4 meses, após teste sorológico negativo)", "2ª dose (21 dias após a 1ª)", "3ª dose (21 dias após a 2ª)"],
+    recommendedDoses: ["1ª dose (a partir de 4 meses, após teste sorológico negativo)", "2ª dose (21 dias após a 1ª)", "3ª dose (21 dias após a 2ª)", "Reforço Anual"],
     primarySeriesIntervalDays: 21,
     boosterFrequencySuggestion: "Anual",
     notes: "Fundamental em áreas endêmicas. Teste sorológico negativo é pré-requisito. Não impede a infecção, mas reduz o risco de desenvolvimento da doença e a transmissibilidade.",
@@ -316,7 +316,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
       "Clamidiose (na V4 e V5)", "Leucemia Felina - FeLV (na V5)"
     ],
     importance: "Essencial",
-    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)"],
+    recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "Reforço Anual"],
     primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
     boosterFrequencySuggestion: "Anual",
     notes: "V3 é o core. V4 adiciona proteção contra Clamidiose. V5 adiciona proteção contra FeLV (requer teste prévio negativo para FeLV). O veterinário indicará a melhor opção.",
@@ -328,7 +328,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Gato"],
     preventsDiseases: ["Raiva"],
     importance: "Essencial",
-    recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)"],
+    recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)", "Reforço Anual"],
     isSingleDosePrimary: true,
     boosterFrequencySuggestion: "Anual",
     notes: "Obrigatória por lei em muitas regiões. Fundamental para a saúde pública.",
@@ -340,7 +340,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Gato"],
     preventsDiseases: ["Leucemia Felina (FeLV)"],
     importance: "Essencial", // Para gatos negativos com risco de exposição
-    recommendedDoses: ["1ª dose (a partir de 8 semanas, após teste FeLV/FIV negativo)", "2ª dose (3-4 semanas após a 1ª)"],
+    recommendedDoses: ["1ª dose (a partir de 8 semanas, após teste FeLV/FIV negativo)", "2ª dose (3-4 semanas após a 1ª)", "Reforço Anual"],
     primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
     boosterFrequencySuggestion: "Anual",
     notes: "Apenas para gatos FeLV negativos. Gatos positivos não se beneficiam e não devem ser vacinados para FeLV. Testar antes de vacinar.",
@@ -353,7 +353,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Cão", "Gato"],
     preventsDiseases: [],
     importance: "Opcional",
-    recommendedDoses: ["Dose Única", "1ª Dose", "2ª Dose", "3ª Dose", "Reforço"],
+    recommendedDoses: [], // Será populado com genericVaccineDosesConstants se "Outra" for selecionada
     boosterFrequencySuggestion: "Não se aplica",
     notes: "Use esta opção para vacinas não listadas ou específicas."
   }

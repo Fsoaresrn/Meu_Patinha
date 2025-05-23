@@ -1,33 +1,36 @@
+
 'use client';
 
 import { useAuthStore } from '@/stores/auth.store';
+import type { AuthState } from '@/stores/auth.store'; // Import AuthState if needed for type safety
 import { useEffect } from 'react';
 
 export function ZustandHydration() {
   useEffect(() => {
-    // This effect runs once on the client after initial mount.
-    // Zustand's persist middleware rehydrates asynchronously.
-    // We ensure finishLoading is called after rehydration is likely complete.
-    // The store's isLoading state is initialized to true.
-    // The persist middleware's onRehydrateStorage should ideally call finishLoading.
+    // The `onRehydrateStorage` option in `auth.store.ts` and the global rehydrate call
+    // are primary mechanisms for calling `finishLoading`.
+    // This component uses `onFinishHydration` for an explicit listener.
+
+    const handleFinishHydration = (hydratedState: AuthState | undefined) => {
+      // `hydratedState` is the state after hydration, not used here directly
+      // but available if needed.
+      useAuthStore.getState().finishLoading();
+    };
+
+    // Subscribe to the hydration finishing.
+    // `onFinishHydration` returns an unsubscribe function.
+    const unsubscribe = useAuthStore.persist.onFinishHydration(handleFinishHydration);
     
-    const unsubscribe = useAuthStore.persist.onRehydrateStorage(() => {
-      useAuthStore.getState().finishLoading(); // Call finishLoading when rehydration is complete
-      unsubscribe(); // Clean up listener
-    });
-    
-    // Fallback if onRehydrateStorage isn't triggered or if store is already hydrated (e.g. from cache)
-    // This ensures finishLoading is called if the store was already hydrated by the time this component mounts.
+    // Call immediately if already hydrated (e.g., from cache or synchronous localStorage read)
+    // This ensures finishLoading is called even if onFinishHydration fires before this effect.
     if (useAuthStore.persist.hasHydrated()) {
-        useAuthStore.getState().finishLoading();
-        unsubscribe(); // Clean up listener if it was set
+      handleFinishHydration(useAuthStore.getState());
     }
 
     return () => {
-      // Cleanup if component unmounts before rehydration
-      unsubscribe?.(); 
+      unsubscribe(); // Cleanup listener on unmount
     };
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on mount
 
   return null; // This component doesn't render anything
 }

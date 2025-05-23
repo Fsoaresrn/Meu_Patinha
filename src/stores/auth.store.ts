@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AuthUser } from '@/types';
@@ -94,12 +95,14 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'meu-patinha-auth-storage', 
       storage: createJSONStorage(() => localStorage),
-      onRehydrateStorage: () => (state) => {
-        // This callback is called when rehydration is done.
-        // We can now safely say loading is finished.
-        if (state) {
-          state.finishLoading();
+      onRehydrateStorage: (state, error) => {
+        // This callback is called after rehydration attempt.
+        if (error) {
+          console.error("Zustand: Failed to rehydrate auth store:", error);
         }
+        // We call finishLoading on the store instance.
+        // Need to access it via get() or useAuthStore.getState() if called outside `set`
+        useAuthStore.getState().finishLoading();
       },
       partialize: (state) => ({ // Only persist these fields
         user: state.user,
@@ -112,8 +115,14 @@ export const useAuthStore = create<AuthState>()(
 
 // Call finishLoading once after initial hydration if not handled by onRehydrateStorage
 // This is a bit of a safety net.
+// The persist middleware itself calls rehydrate. This explicit call ensures it happens
+// and then calls finishLoading.
 if (typeof window !== 'undefined') {
   useAuthStore.persist.rehydrate().then(() => {
+    useAuthStore.getState().finishLoading();
+  }).catch(error => {
+    console.error("Zustand: Explicit rehydrate failed:", error);
+    // Still attempt to finish loading, as the app might function with defaults.
     useAuthStore.getState().finishLoading();
   });
 }

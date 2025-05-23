@@ -9,14 +9,14 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // No longer needed for tipoResponsabilidade
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuthStore } from "@/stores/auth.store";
 import { useToast } from "@/hooks/use-toast";
 import type { AuthUser, UserResponsibility } from "@/types";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { ufsBrasil, cidadesPorUF } from "@/lib/constants";
+// import { ufsBrasil, cidadesPorUF } from "@/lib/constants"; // No longer needed here
 
 const responsabilidadesDisponiveis: { id: UserResponsibility; label: string }[] = [
   { id: "Tutor(a)", label: "Tutor(a) de Pet" },
@@ -32,13 +32,10 @@ const signupSchema = z.object({
   email: z.string().email("E-mail inválido"),
   senha: z.string().min(8, "Senha deve ter no mínimo 8 caracteres"),
   confirmarSenha: z.string(),
-  uf: z.string().min(2, "UF é obrigatória"),
-  cidade: z.string().min(1, "Cidade é obrigatória"),
-  enderecoRua: z.string().optional(),
-  enderecoNumero: z.string().optional(),
-  enderecoComplemento: z.string().optional(),
-  enderecoBairro: z.string().optional(),
-  cep: z.string().optional(),
+  // UF e Cidade removidos do signup
+  // uf: z.string().min(2, "UF é obrigatória"),
+  // cidade: z.string().min(1, "Cidade é obrigatória"),
+  // Endereço campos removidos
   telefoneDdd: z.string().optional(),
   telefoneNumero: z.string().optional(),
   acceptTerms: z.boolean().refine(val => val === true, {
@@ -65,17 +62,19 @@ export default function SignupPage() {
       email: "",
       senha: "",
       confirmarSenha: "",
-      uf: "",
-      cidade: "",
+      // uf: "", // Removido
+      // cidade: "", // Removido
       tipoResponsabilidade: [],
       acceptTerms: false,
+      telefoneDdd: "",
+      telefoneNumero: "",
     },
   });
 
-  const selectedUf = form.watch("uf");
+  // const selectedUf = form.watch("uf"); // Removido
 
   const onSubmit = (data: SignupFormValues) => {
-    const { nomeCompleto, cpf, tipoResponsabilidade, email, senha, uf, cidade, enderecoRua, enderecoNumero, enderecoComplemento, enderecoBairro, cep, telefoneDdd, telefoneNumero } = data;
+    const { nomeCompleto, cpf, tipoResponsabilidade, email, senha, telefoneDdd, telefoneNumero } = data;
     
     const formattedCpf = cpf.replace(/[^\d]/g, ""); // Normalize CPF
 
@@ -94,21 +93,22 @@ export default function SignupPage() {
       cpf: formattedCpf,
       nome: nomeCompleto,
       email,
-      tipoResponsabilidade: tipoResponsabilidade, // Agora é um array
-      uf,
-      cidade,
-      endereco: `${enderecoRua || ''}${enderecoNumero ? ', ' + enderecoNumero : ''}${enderecoComplemento ? ' - ' + enderecoComplemento : ''}${enderecoBairro ? '. Bairro: ' + enderecoBairro : ''}`.trim() || undefined,
-      cep: cep || undefined,
+      tipoResponsabilidade: tipoResponsabilidade,
+      // UF e Cidade agora são opcionais e serão preenchidos em "Meu Cadastro"
+      // uf: "", // Definido como opcional no tipo
+      // cidade: "", // Definido como opcional no tipo
+      // endereco: undefined, // Removido do signup
+      // cep: undefined, // Removido do signup
       telefone: (telefoneDdd && telefoneNumero) ? `(${telefoneDdd}) ${telefoneNumero}` : undefined,
-      acceptedTerms: false, // Terms accepted on first login after signup
+      acceptedTerms: false, 
     };
 
     localStorage.setItem(`password-${newUser.cpf}`, senha);
     setRegisteredUsers([...registeredUsers, newUser]);
     
     toast({ title: "Cadastro realizado com sucesso!", description: "Você já pode fazer login." });
-    loginUser(newUser);
-    router.push("/terms"); 
+    loginUser(newUser); // Loga o usuário
+    router.push("/terms"); // Redireciona para a página de termos para aceite
   };
 
   return (
@@ -206,59 +206,17 @@ export default function SignupPage() {
               </FormItem>
             )} />
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <FormField control={form.control} name="uf" render={({ field }) => (
-              <FormItem>
-                <FormLabel>UF</FormLabel>
-                <Select onValueChange={(value) => { field.onChange(value); form.setValue("cidade", ""); }} value={field.value || ""}>
-                  <FormControl><SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger></FormControl>
-                  <SelectContent>
-                    {ufsBrasil.map(uf => <SelectItem key={uf.sigla} value={uf.sigla}>{uf.nome}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="cidade" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cidade</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || ""} disabled={!selectedUf}>
-                  <FormControl><SelectTrigger><SelectValue placeholder="Cidade" /></SelectTrigger></FormControl>
-                  <SelectContent>
-                    {(cidadesPorUF[selectedUf as keyof typeof cidadesPorUF] || []).map(cidade => <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
-          </div>
           
-          <FormDescription>Informações de endereço (opcional):</FormDescription>
-           <FormField control={form.control} name="enderecoRua" render={({ field }) => (
-            <FormItem><FormLabel className="text-sm">Rua</FormLabel><FormControl><Input placeholder="Nome da rua" {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <FormField control={form.control} name="enderecoNumero" render={({ field }) => (
-              <FormItem><FormLabel className="text-sm">Número</FormLabel><FormControl><Input placeholder="Nº" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="enderecoComplemento" render={({ field }) => (
-              <FormItem><FormLabel className="text-sm">Complemento</FormLabel><FormControl><Input placeholder="Apto, Bloco" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-          </div>
-           <FormField control={form.control} name="enderecoBairro" render={({ field }) => (
-            <FormItem><FormLabel className="text-sm">Bairro</FormLabel><FormControl><Input placeholder="Seu bairro" {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
-           <FormField control={form.control} name="cep" render={({ field }) => (
-            <FormItem><FormLabel className="text-sm">CEP</FormLabel><FormControl><Input placeholder="xxxxx-xxx" {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
+          {/* Campos de UF e Cidade Removidos */}
+          {/* Campos de Endereço Completo Removidos */}
 
           <FormDescription>Telefone (opcional):</FormDescription>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField control={form.control} name="telefoneDdd" render={({ field }) => (
-              <FormItem><FormLabel className="text-sm">DDD</FormLabel><FormControl><Input placeholder="XX" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel className="text-sm">DDD</FormLabel><FormControl><Input placeholder="XX" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="telefoneNumero" render={({ field }) => (
-              <FormItem><FormLabel className="text-sm">Número</FormLabel><FormControl><Input placeholder="xxxxxxxxx" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel className="text-sm">Número</FormLabel><FormControl><Input placeholder="xxxxxxxxx" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
             )} />
           </div>
 
@@ -266,7 +224,7 @@ export default function SignupPage() {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
               <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Li e aceito os <Link href="/terms" target="_blank" className="text-primary hover:underline">Termos de Uso</Link></FormLabel>
+                <FormLabel>Li e aceito os <Link href="/terms" target="_blank" className="text-primary hover:underline">Termos de Uso e Política de Privacidade</Link></FormLabel>
                 <FormMessage />
               </div>
             </FormItem>

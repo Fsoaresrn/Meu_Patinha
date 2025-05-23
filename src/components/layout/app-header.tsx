@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -82,7 +83,7 @@ export function AppHeader() {
               <DropdownMenuItem asChild>
                 <Link href="/terms">
                   <ShieldQuestion className="mr-2 h-4 w-4" />
-                  <span>Termos de Uso</span>
+                  <span>Termos de Uso e Privacidade</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

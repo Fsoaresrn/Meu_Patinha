@@ -95,14 +95,13 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'meu-patinha-auth-storage', 
       storage: createJSONStorage(() => localStorage),
-      onRehydrateStorage: (state, error) => {
+      onRehydrateStorage: (_state, error) => {
         // This callback is called after rehydration attempt.
         if (error) {
           console.error("Zustand: Failed to rehydrate auth store:", error);
         }
-        // We call finishLoading on the store instance.
-        // Need to access it via get() or useAuthStore.getState() if called outside `set`
-        useAuthStore.getState().finishLoading();
+        // A chamada a finishLoading foi movida para o componente ZustandHydration
+        // usando persist.onFinishHydration para garantir que o store esteja inicializado.
       },
       partialize: (state) => ({ // Only persist these fields
         user: state.user,
@@ -119,7 +118,12 @@ export const useAuthStore = create<AuthState>()(
 // and then calls finishLoading.
 if (typeof window !== 'undefined') {
   useAuthStore.persist.rehydrate().then(() => {
-    useAuthStore.getState().finishLoading();
+    // A lógica de finishLoading agora é primariamente gerenciada pelo ZustandHydration.
+    // Esta chamada explícita aqui pode ser redundante ou até mesmo causar problemas
+    // se onFinishHydration já estiver configurado para chamar finishLoading.
+    // No entanto, manter uma chamada aqui como fallback pode ser útil em alguns cenários,
+    // mas é importante garantir que não cause chamadas múltiplas desnecessárias.
+    // useAuthStore.getState().finishLoading(); // Removido para evitar duplicidade, pois ZustandHydration cuida disso.
   }).catch(error => {
     console.error("Zustand: Explicit rehydrate failed:", error);
     // Still attempt to finish loading, as the app might function with defaults.

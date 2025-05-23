@@ -175,11 +175,6 @@ export default function SaudePage() {
             </>
           )}
 
-          <div className="text-center mt-8">
-            <Button variant="outline" className="mt-2" asChild>
-              <Link href="/">Voltar para a Casinha</Link>
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

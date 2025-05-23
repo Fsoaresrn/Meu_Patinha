@@ -22,12 +22,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList, acquisitionTypes, petPurposes, ufsBrasil } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
-import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon, Link as LinkIcon, QrCode, Users } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon, Link as LinkIcon, QrCode, Users, UploadCloud, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { parse as parseDateFn } from 'date-fns';
+import Image from "next/image";
+
+const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/bmp", "image/webp"];
 
 const petFormSchema = z.object({
   nome: z.string().min(2, { message: "Nome do pet é obrigatório (mínimo 2 caracteres)." }),
@@ -46,7 +51,7 @@ const petFormSchema = z.object({
   castrado: z.enum(yesNoOptions, { required_error: "Informar se é castrado é obrigatório." }),
   tipoAquisicao: z.enum(acquisitionTypes as [string, ...string[]]).optional(),
   finalidade: z.enum(petPurposes as [string, ...string[]]).optional(),
-  fotoUrl: z.string().url({ message: "URL da foto inválida." }).optional().or(z.literal("")),
+  fotoUrl: z.string().optional(), // Armazenará o Data URL da imagem
   tipoPelagem: z.string().optional(),
   corPelagem: z.string().optional(),
   peso: z.preprocess(
@@ -109,6 +114,9 @@ export default function AdicionarPetPage() {
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isSimPatinhasCalendarOpen, setIsSimPatinhasCalendarOpen] = useState(false);
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
     
   const form = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
@@ -120,7 +128,7 @@ export default function AdicionarPetPage() {
       castrado: undefined,
       tipoAquisicao: undefined,
       finalidade: undefined,
-      fotoUrl: "",
+      fotoUrl: "", // Será o Data URL
       sinaisObservacoes: "",
       birthDateUnknown: false,
       dataNascimento: undefined,
@@ -143,6 +151,64 @@ export default function AdicionarPetPage() {
   const [dateInputString, setDateInputString] = useState<string>("");
   const [simPatinhasDateInputString, setSimPatinhasDateInputString] = useState<string>("");
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          title: "Tipo de arquivo inválido",
+          description: `Por favor, selecione um arquivo PNG, JPG, BMP ou WEBP. (Recebido: ${file.type})`,
+        });
+        setImagePreview(null);
+        form.setValue("fotoUrl", "");
+        if(fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        toast({
+          variant: "destructive",
+          title: "Arquivo muito grande",
+          description: `O arquivo deve ter no máximo ${MAX_FILE_SIZE_MB}MB. (Tamanho: ${(file.size / 1024 / 1024).toFixed(2)}MB)`,
+        });
+        setImagePreview(null);
+        form.setValue("fotoUrl", "");
+        if(fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        form.setValue("fotoUrl", result, { shouldValidate: true });
+      };
+      reader.onerror = () => {
+        toast({
+            variant: "destructive",
+            title: "Erro ao ler arquivo",
+            description: "Não foi possível processar o arquivo de imagem.",
+        });
+        setImagePreview(null);
+        form.setValue("fotoUrl", "");
+        if(fileInputRef.current) fileInputRef.current.value = "";
+      }
+      reader.readAsDataURL(file);
+    } else {
+        setImagePreview(null);
+        form.setValue("fotoUrl", "");
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    form.setValue("fotoUrl", "");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Limpa o input de arquivo
+    }
+  };
+
+
   useEffect(() => {
     if (watchedDataNascimento && isValidDate(watchedDataNascimento)) {
       const formattedDate = formatDateToBrasil(watchedDataNascimento);
@@ -150,9 +216,13 @@ export default function AdicionarPetPage() {
         setDateInputString(formattedDate);
       }
     } else if (!watchedDataNascimento && dateInputString !== "") {
-      setDateInputString("");
+      // Se a data se tornar inválida ou undefined, mas o input ainda tiver algo, limpe o input.
+      // Isso pode acontecer se o usuário apagar a data no calendário, por exemplo.
+      // No entanto, se o usuário estiver digitando, não queremos limpar o input.
+      // O onBlur cuidará da validação final do que foi digitado.
     }
   }, [watchedDataNascimento, dateInputString]);
+
 
   const watchedSimPatinhasDate = form.watch("simPatinhasEmissionDate");
   useEffect(() => {
@@ -162,7 +232,7 @@ export default function AdicionarPetPage() {
         setSimPatinhasDateInputString(formattedDate);
       }
     } else if (!watchedSimPatinhasDate && simPatinhasDateInputString !== "") {
-        setSimPatinhasDateInputString("");
+        // Comportamento similar ao watchedDataNascimento
     }
   }, [watchedSimPatinhasDate, simPatinhasDateInputString]);
 
@@ -222,7 +292,7 @@ export default function AdicionarPetPage() {
       castrado: data.castrado,
       tipoAquisicao: data.tipoAquisicao as PetAcquisitionType | undefined,
       finalidade: data.finalidade as PetPurpose | undefined,
-      fotoUrl: data.fotoUrl || undefined,
+      fotoUrl: data.fotoUrl || undefined, // Agora é um Data URL
       tipoPelagem: data.tipoPelagem || "",
       corPelagem: data.corPelagem || "",
       peso: data.peso,
@@ -298,21 +368,32 @@ export default function AdicionarPetPage() {
       setSimPatinhasDateInputString(typedValue);
     }
 
-    if (typedValue.length <= 10) {
-        if (typedValue === "" || /^(?:\d{1,2}\/?\d{0,2}\/?\d{0,4})?$/.test(typedValue)) { 
+    // Regex para permitir apenas dd, dd/mm, dd/mm/aaaa e suas variações durante a digitação
+    const dateFormatRegex = /^(?:\d{1,2}(?:\/(?:\d{1,2}(?:\/\d{0,4})?)?)?)?$/;
+
+    if (typedValue.length <= 10) { // Permite até 10 caracteres (dd/mm/aaaa)
+        if (typedValue === "" || dateFormatRegex.test(typedValue)) { 
+            // Se a data digitada tem o formato completo e é válida, atualiza o form
             if (typedValue.length === 10 && typedValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
                  const parsedDate = parseDateFn(typedValue, "dd/MM/yyyy", new Date());
                  if (isValidDate(parsedDate)) {
+                    // Compara com a data atual no RHF para evitar atualizações desnecessárias
                     const currentRHFDate = form.getValues(fieldName);
                     if (!currentRHFDate || currentRHFDate.getTime() !== parsedDate.getTime()) {
                         form.setValue(fieldName, parsedDate, { shouldValidate: true });
                     }
+                 } else {
+                    // Se o formato é completo mas a data é inválida (ex: 30/02/2023), 
+                    // o RHF não será atualizado com uma data inválida, mas o erro será mostrado.
+                    form.setValue(fieldName, undefined, { shouldValidate: true }); // Força a validação do Zod
                  }
             } else if (typedValue === "") {
+                // Se o campo for limpo, define como undefined no RHF
                 form.setValue(fieldName, undefined, { shouldValidate: true });
             }
+             // Se não está completo ou válido, não atualiza o RHF ainda, espera o onBlur
         }
-    } else if (typedValue === "") {
+    } else if (typedValue === "") { // Caso o usuário apague tudo
         form.setValue(fieldName, undefined, { shouldValidate: true });
     }
   };
@@ -322,27 +403,32 @@ export default function AdicionarPetPage() {
     const currentRHFDate = form.getValues(fieldName);
 
     if (isValidDate(parsedDate)) {
+      // Se a data parseada for válida e diferente da que está no RHF, atualiza
       if (!currentRHFDate || currentRHFDate.getTime() !== parsedDate.getTime()) {
         form.setValue(fieldName, parsedDate, { shouldValidate: true });
       }
+      // Garante que o input string reflita a data formatada corretamente
       if (fieldName === "dataNascimento") {
         setDateInputString(formatDateToBrasil(parsedDate));
       } else {
         setSimPatinhasDateInputString(formatDateToBrasil(parsedDate));
       }
     } else {
-      if (dateString === "") { 
-        if (currentRHFDate !== undefined) {
+      // Se a string não representa uma data válida (e não está vazia)
+      if (dateString === "") { // Se o usuário apagou o campo
+        if (currentRHFDate !== undefined) { // E havia uma data válida antes
             form.setValue(fieldName, undefined, { shouldValidate: true });
         }
-      } else { 
-        if (currentRHFDate !== undefined) {
+      } else { // Se o usuário deixou um texto inválido
+        // Mantém o texto inválido no input para o usuário corrigir
+        // e define o valor do RHF como undefined para acionar a validação do Zod
+        if (currentRHFDate !== undefined) { // Limpa o valor do RHF se havia algo válido
             form.setValue(fieldName, undefined, { shouldValidate: true });
         }
          if (fieldName === "dataNascimento") {
-            setDateInputString(dateString); // Keep invalid input string for user to see
+            setDateInputString(dateString); 
         } else {
-            setSimPatinhasDateInputString(dateString); // Keep invalid input string for user to see
+            setSimPatinhasDateInputString(dateString); 
         }
       }
     }
@@ -532,7 +618,7 @@ export default function AdicionarPetPage() {
                               if (date && isValidDate(date)) {
                                 setDateInputString(formatDateToBrasil(date));
                               } else {
-                                setDateInputString("");
+                                setDateInputString(""); // Limpa se a data for undefined/null
                               }
                               setIsCalendarOpen(false); 
                             }}
@@ -654,13 +740,47 @@ export default function AdicionarPetPage() {
                 name="fotoUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL da Foto</FormLabel>
-                    <FormControl><Input placeholder="https://exemplo.com/foto.png" {...field} /></FormControl>
-                    <FormDescription>Cole a URL de uma imagem para o perfil do pet.</FormDescription>
+                    <FormLabel>Foto</FormLabel>
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-full p-4 border-2 border-dashed rounded-md hover:border-primary transition-colors cursor-pointer"
+                           onClick={() => fileInputRef.current?.click()}>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept="image/png, image/jpeg, image/bmp, image/webp"
+                            className="hidden" 
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                          />
+                        </FormControl>
+                        {imagePreview ? (
+                          <div className="relative w-48 h-48 mx-auto rounded-md overflow-hidden group">
+                            <Image src={imagePreview} alt="Preview da foto do pet" layout="fill" objectFit="cover" />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => { e.stopPropagation(); removeImage(); }}
+                              aria-label="Remover imagem"
+                            >
+                              <XCircle className="h-5 w-5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-muted-foreground py-6">
+                            <UploadCloud className="h-12 w-12 mb-2" />
+                            <p className="text-sm">Clique para carregar uma imagem</p>
+                            <p className="text-xs">(PNG, JPG, BMP, WEBP - Máx {MAX_FILE_SIZE_MB}MB)</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -956,3 +1076,5 @@ export default function AdicionarPetPage() {
     </div>
   );
 }
+
+    

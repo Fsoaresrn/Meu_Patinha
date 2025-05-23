@@ -19,6 +19,8 @@ import { useEffect, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { calculatePasswordStrength, type PasswordStrengthResult } from "@/lib/password-utils";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 
 const profileSchema = z.object({
@@ -253,10 +255,30 @@ export default function MeuCadastroPage() {
                   <FormLabel>Nova Senha<span className="text-destructive">*</span></FormLabel>
                   <FormControl><Input type="password" {...field} /></FormControl>
                   <FormMessage />
-                  {newPasswordStrength && newPasswordStrength.label && (
-                    <p className={`text-xs mt-1 ${newPasswordStrength.colorClass}`}>
-                      Força da senha: {newPasswordStrength.label}
-                    </p>
+                  {newPasswordStrength && newPasswordStrength.label && newPasswordStrength.score > 0 && (
+                    <div className="mt-2 space-y-1">
+                       <Progress
+                        value={newPasswordStrength.score * 25}
+                        className={cn(
+                          "h-2",
+                          {
+                            "[&>div]:!bg-destructive": newPasswordStrength.score === 1, // Fraca
+                            "[&>div]:!bg-orange-500": newPasswordStrength.score === 2, // Média
+                            "[&>div]:!bg-green-500": newPasswordStrength.score === 3, // Forte
+                            "[&>div]:!bg-green-700": newPasswordStrength.score === 4, // Muito Forte
+                          }
+                        )}
+                        aria-label={`Força da senha: ${newPasswordStrength.label}`}
+                      />
+                      <p className={`text-xs ${newPasswordStrength.colorClass}`}>
+                        Força da senha: {newPasswordStrength.label}
+                      </p>
+                    </div>
+                  )}
+                  {newPasswordStrength && newPasswordStrength.score === 0 && newPasswordStrength.label && (
+                      <p className={`text-xs mt-1 ${newPasswordStrength.colorClass}`}>
+                        Força da senha: {newPasswordStrength.label}
+                      </p>
                   )}
                 </FormItem>
               )} />

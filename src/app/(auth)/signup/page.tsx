@@ -20,6 +20,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TermsContent } from "@/components/terms/terms-content";
 import { calculatePasswordStrength, type PasswordStrengthResult } from "@/lib/password-utils";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 
 const responsabilidadesDisponiveis: { id: UserResponsibility; label: string }[] = [
@@ -200,10 +202,30 @@ export default function SignupPage() {
                 <FormLabel>Senha<span className="text-destructive">*</span></FormLabel>
                 <FormControl><Input type="password" placeholder="Crie uma senha" {...field} /></FormControl>
                 <FormMessage />
-                 {passwordStrength && passwordStrength.label && (
-                  <p className={`text-xs mt-1 ${passwordStrength.colorClass}`}>
-                    Força da senha: {passwordStrength.label}
-                  </p>
+                {passwordStrength && passwordStrength.label && passwordStrength.score > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <Progress
+                      value={passwordStrength.score * 25}
+                      className={cn(
+                        "h-2",
+                        {
+                          "[&>div]:!bg-destructive": passwordStrength.score === 1, // Fraca
+                          "[&>div]:!bg-orange-500": passwordStrength.score === 2, // Média
+                          "[&>div]:!bg-green-500": passwordStrength.score === 3, // Forte
+                          "[&>div]:!bg-green-700": passwordStrength.score === 4, // Muito Forte
+                        }
+                      )}
+                      aria-label={`Força da senha: ${passwordStrength.label}`}
+                    />
+                    <p className={`text-xs ${passwordStrength.colorClass}`}>
+                      Força da senha: {passwordStrength.label}
+                    </p>
+                  </div>
+                )}
+                 {passwordStrength && passwordStrength.score === 0 && passwordStrength.label && (
+                    <p className={`text-xs mt-1 ${passwordStrength.colorClass}`}>
+                      Força da senha: {passwordStrength.label}
+                    </p>
                 )}
               </FormItem>
             )} />

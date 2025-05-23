@@ -10,6 +10,7 @@ import type { Pet } from "@/types";
 import { useAuthStore } from "@/stores/auth.store";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Importar componentes Alert
 
 // Componente de Card de Pet Simplificado para Seleção
 function PetSelectionCard({ pet }: { pet: Pet }) {
@@ -72,14 +73,23 @@ export default function SaudePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-start space-x-3 p-4 rounded-md border border-destructive/50 bg-destructive/10 text-sm">
-            <AlertTriangle className="h-6 w-6 text-destructive mt-0.5 flex-shrink-0" />
-            <p className="text-destructive-foreground">
-              <strong>Atenção:</strong> As sugestões fornecidas pela IA são para fins informativos e
-              <strong>não substituem</strong> o diagnóstico e aconselhamento de um médico veterinário.
-              Consulte sempre um profissional para questões de saúde do seu pet.
-            </p>
-          </div>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-5 w-5" />
+            <AlertTitle>
+              <strong className="font-bold">Atenção</strong> Importante!
+            </AlertTitle>
+            <AlertDescription className="text-foreground space-y-2">
+              <p>
+                Esta ferramenta utiliza Inteligência Artificial para fornecer uma análise preliminar baseada nos sintomas que você descrever e nos dados cadastrados do pet selecionado (incluindo histórico de vacinação).
+              </p>
+              <p>
+                Este recurso <strong>NÃO substitui</strong> a avaliação, o diagnóstico ou o tratamento realizado por um médico veterinário qualificado.
+              </p>
+              <p>
+                Em caso de sintomas graves, piora do quadro ou qualquer dúvida sobre a saúde do seu pet, procure um veterinário imediatamente. Alguns diagnósticos só podem ser confirmados através de exames complementares.
+              </p>
+            </AlertDescription>
+          </Alert>
 
           {userPets.length === 0 ? (
             <div className="text-center p-6 border-2 border-dashed rounded-lg bg-muted/20">

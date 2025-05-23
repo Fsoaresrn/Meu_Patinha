@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Pet, PetSpecies, PetGender, PetSize } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // Não usado diretamente, mas FormLabel usa
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -20,7 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
-import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect, useMemo } from "react";
@@ -30,6 +30,7 @@ const petFormSchema = z.object({
   nome: z.string().min(2, { message: "Nome do pet é obrigatório (mínimo 2 caracteres)." }),
   especie: z.enum(petSpeciesList as [PetSpecies, ...PetSpecies[]], { required_error: "Espécie é obrigatória." }),
   raca: z.string().min(1, { message: "Raça é obrigatória." }),
+  birthDateUnknown: z.boolean().default(false),
   dataNascimento: z.date().optional(),
   ageInMonths: z.preprocess(
     (val) => (val === "" || val === undefined || val === null ? undefined : parseInt(String(val), 10)),
@@ -49,7 +50,23 @@ const petFormSchema = z.object({
   ),
   porte: z.enum(petSizesList as [PetSize, ...PetSize[]]).optional(),
   sinaisObservacoes: z.string().optional(),
+}).refine(data => {
+  if (data.birthDateUnknown && data.ageInMonths === undefined) {
+    return false; // Se data de nascimento é desconhecida, idade em meses é obrigatória
+  }
+  if (!data.birthDateUnknown && data.dataNascimento === undefined) {
+    return false; // Se data de nascimento é conhecida, a data é obrigatória
+  }
+  return true;
+}, {
+  message: "Informe a data de nascimento ou a idade estimada em meses.",
+  // Não podemos direcionar para um path específico facilmente aqui, então uma mensagem geral é melhor.
+  // Ou podemos ter mensagens específicas se testarmos os campos individualmente.
+  // Por simplicidade, manteremos uma mensagem geral ou deixar a validação de campo individual cuidar disso
+  // se os campos fossem obrigatórios condicionalmente no Zod, o que é mais complexo.
+  // A UI deve guiar o usuário. A validação de schema aqui é um fallback.
 });
+
 
 type PetFormValues = z.infer<typeof petFormSchema>;
 
@@ -63,7 +80,7 @@ export default function AdicionarPetPage() {
   const [isBreedPopoverOpen, setIsBreedPopoverOpen] = useState(false);
   const [breedSearchValue, setBreedSearchValue] = useState("");
   
-  const [furColorSearch, setFurColorSearch] = useState(""); // Mantido como antes, pode ser atualizado para combobox depois se necessário
+  const [furColorSearch, setFurColorSearch] = useState("");
 
   const form = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
@@ -75,29 +92,48 @@ export default function AdicionarPetPage() {
       castrado: undefined,
       fotoUrl: "",
       sinaisObservacoes: "",
+      birthDateUnknown: false,
+      dataNascimento: undefined,
       ageInMonths: undefined,
     },
   });
 
   const especieSelecionada = form.watch("especie");
   const watchedDataNascimento = form.watch("dataNascimento");
+  const isBirthDateUnknown = form.watch("birthDateUnknown");
 
   useEffect(() => {
-    if (watchedDataNascimento && isValidDate(watchedDataNascimento)) {
+    if (isBirthDateUnknown) {
+      form.setValue("dataNascimento", undefined);
+      setCalculatedAgeDisplay(null);
+    } else {
+      form.setValue("ageInMonths", undefined);
+    }
+  }, [isBirthDateUnknown, form]);
+
+  useEffect(() => {
+    if (!isBirthDateUnknown && watchedDataNascimento && isValidDate(watchedDataNascimento)) {
       const age = calculateAge(watchedDataNascimento);
       setCalculatedAgeDisplay(age.display);
-      if (form.getValues("ageInMonths") !== undefined) {
-        form.setValue("ageInMonths", undefined, { shouldValidate: false });
-      }
-    } else {
+      form.setValue("ageInMonths", undefined, { shouldValidate: false }); // Clear ageInMonths if date is set
+    } else if (!isBirthDateUnknown) {
       setCalculatedAgeDisplay(null);
     }
-  }, [watchedDataNascimento, form]);
+  }, [watchedDataNascimento, isBirthDateUnknown, form]);
+
 
   const onSubmit = (data: PetFormValues) => {
     if (!user) {
       toast({ variant: "destructive", title: "Erro", description: "Usuário não autenticado." });
       return;
+    }
+     if (data.birthDateUnknown && data.ageInMonths === undefined) {
+        form.setError("ageInMonths", { message: "Idade em meses é obrigatória se a data de nascimento for desconhecida." });
+        return;
+    }
+    if (!data.birthDateUnknown && !data.dataNascimento) {
+        form.setError("dataNascimento", { message: "Data de nascimento é obrigatória se não for desconhecida." });
+        return;
     }
 
     const newPet: Pet = {
@@ -118,13 +154,19 @@ export default function AdicionarPetPage() {
       possuiDeficiencia: false,
       possuiMicrochip: "Não",
       possuiPedigree: "Não",
-      dataNascimento: data.dataNascimento ? formatDate(data.dataNascimento, "dd/MM/yyyy") : undefined,
-      idade: undefined,
+      dataNascimento: !data.birthDateUnknown && data.dataNascimento ? formatDate(data.dataNascimento, "dd/MM/yyyy") : undefined,
+      idade: undefined, // Será definido abaixo se aplicável
     };
 
-    if (!data.dataNascimento && typeof data.ageInMonths === 'number') {
+    if (data.birthDateUnknown && typeof data.ageInMonths === 'number') {
       newPet.idade = Math.floor(data.ageInMonths / 12); 
+    } else if (!data.birthDateUnknown && data.dataNascimento) {
+      // A idade será calculada dinamicamente a partir de dataNascimento
+      // Podemos opcionalmente armazenar a idade calculada no momento do cadastro também
+      const age = calculateAge(data.dataNascimento);
+      newPet.idade = age.years; // Armazena anos como referência, mas o cálculo dinâmico é preferível
     }
+
 
     setAllPets([...allPets, newPet]);
     toast({ title: "Sucesso!", description: `${data.nome} foi adicionado(a) aos seus pets.` });
@@ -247,7 +289,7 @@ export default function AdicionarPetPage() {
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                          <Command shouldFilter={false}> {/* Manual filtering */}
+                          <Command shouldFilter={false}>
                             <CommandInput
                               placeholder="Buscar raça..."
                               value={breedSearchValue}
@@ -266,7 +308,7 @@ export default function AdicionarPetPage() {
                                     setBreedSearchValue(""); 
                                   }}
                                 >
-                                  <Check
+                                  <CheckIcon
                                     className={cn(
                                       "mr-2 h-4 w-4",
                                       raca.toLowerCase() === field.value?.toLowerCase() ? "opacity-100" : "opacity-0"
@@ -284,6 +326,105 @@ export default function AdicionarPetPage() {
                   )}
                 />
               </div>
+              
+              <FormField
+                control={form.control}
+                name="birthDateUnknown"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3 shadow-sm">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        id="birthDateUnknown"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel htmlFor="birthDateUnknown" className="cursor-pointer">
+                        Data de Nascimento desconhecida
+                      </FormLabel>
+                      <FormDescription>
+                        Marque esta opção se você não sabe a data exata e irá informar a idade estimada em meses.
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {!isBirthDateUnknown && (
+                <FormField
+                  control={form.control}
+                  name="dataNascimento"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Data de Nascimento</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              disabled={isBirthDateUnknown}
+                            >
+                              {field.value ? (
+                                formatDateToBrasil(field.value)
+                              ) : (
+                                <span>Escolha uma data</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(date) => field.onChange(date)}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {calculatedAgeDisplay && !isBirthDateUnknown && (
+                        <FormDescription className="mt-1 text-sm text-muted-foreground">
+                          Idade calculada: {calculatedAgeDisplay}
+                        </FormDescription>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              
+              {isBirthDateUnknown && (
+                <FormField
+                  control={form.control}
+                  name="ageInMonths"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Idade Estimada (em meses)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 6"
+                          {...field}
+                          disabled={!isBirthDateUnknown}
+                          onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10))}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormDescription>Preencha a idade aproximada do pet em meses.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -322,75 +463,6 @@ export default function AdicionarPetPage() {
               
               <FormField
                 control={form.control}
-                name="dataNascimento"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Data de Nascimento</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              formatDateToBrasil(field.value)
-                            ) : (
-                              <span>Escolha uma data</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => field.onChange(date)}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {calculatedAgeDisplay && (
-                      <FormDescription className="mt-1 text-sm text-muted-foreground">
-                        Idade calculada: {calculatedAgeDisplay}
-                      </FormDescription>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="ageInMonths"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Idade (em meses)</FormLabel>
-                    <FormDescription>Preencha se a data de nascimento não for conhecida.</FormDescription>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Ex: 6"
-                        {...field}
-                        disabled={!!watchedDataNascimento}
-                        onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10))}
-                        value={field.value ?? ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="fotoUrl"
                 render={({ field }) => (
                   <FormItem>
@@ -420,7 +492,7 @@ export default function AdicionarPetPage() {
                   )}
                 />
                 <div> 
-                    <FormLabel htmlFor="fur-color-search">Buscar Cor da Pelagem</FormLabel>
+                    <FormLabel htmlFor="fur-color-search">Buscar Cor da Pelagem (Opcional)</FormLabel>
                     <div className="relative">
                         <Input
                         id="fur-color-search"
@@ -517,3 +589,5 @@ export default function AdicionarPetPage() {
     </div>
   );
 }
+
+    

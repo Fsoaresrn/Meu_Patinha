@@ -12,7 +12,7 @@ import { Eye, EyeOff } from "lucide-react"; // Import icons
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuthStore } from "@/stores/auth.store";
+// import { useAuthStore } from "@/stores/auth.store"; // loginUser não é mais usado aqui diretamente
 import { useToast } from "@/hooks/use-toast";
 import type { AuthUser, UserResponsibility } from "@/types";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -45,8 +45,8 @@ const signupSchema = z.object({
     })
     .optional(),
   telefoneNumero: z.string()
-    .refine(val => val === undefined || val === "" || /^\d{8}$/.test(val), {
-      message: "Número deve conter 8 dígitos numéricos ou ser deixado em branco",
+    .refine(val => val === undefined || val === "" || /^\d{8,9}$/.test(val), { // Ajustado para 8 ou 9 dígitos
+      message: "Número deve conter 8 ou 9 dígitos numéricos ou ser deixado em branco",
     })
     .optional(),
   acceptTerms: z.boolean().refine(val => val === true, {
@@ -61,7 +61,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const router = useRouter();
-  const loginUser = useAuthStore((state) => state.login);
+  // const loginUser = useAuthStore((state) => state.login); // Não mais usado para login automático
   const { toast } = useToast();
   const [registeredUsers, setRegisteredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrengthResult | null>(null);
@@ -117,15 +117,15 @@ export default function SignupPage() {
       uf: "", 
       cidade: "", 
       telefone: (telefoneDdd && telefoneNumero) ? `(${telefoneDdd}) ${formatPhoneNumberForDisplay(telefoneNumero)}` : undefined,
-      acceptedTerms: false, 
+      acceptedTerms: false, // Os termos serão aceitos após o primeiro login
     };
 
     localStorage.setItem(`password-${newUser.cpf}`, senha);
     setRegisteredUsers([...registeredUsers, newUser]);
     
-    toast({ title: "Cadastro realizado com sucesso!", description: "Você já pode fazer login." });
-    loginUser(newUser); 
-    router.push("/terms"); 
+    toast({ title: "Cadastro realizado com sucesso!", description: "Por favor, faça login para continuar." });
+    // loginUser(newUser); // Removido login automático
+    router.push("/login"); // Redireciona para a página de login
   };
 
   return (
@@ -316,11 +316,11 @@ export default function SignupPage() {
                   <FormLabel className="text-sm">Número</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="XXXXX-XXX" 
+                      placeholder="XXXXX-XXXX" 
                       {...field} 
                       value={formatPhoneNumberForDisplay(field.value)}
                       onChange={(e) => {
-                        const numericValue = e.target.value.replace(/\D/g, "").slice(0, 8);
+                        const numericValue = e.target.value.replace(/\D/g, "").slice(0, 9); // Ajustado para 9 dígitos
                         field.onChange(numericValue);
                       }}
                     />
@@ -380,3 +380,6 @@ export default function SignupPage() {
     </>
   );
 }
+
+
+    

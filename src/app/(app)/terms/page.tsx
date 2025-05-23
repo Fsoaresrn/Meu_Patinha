@@ -47,14 +47,14 @@ export default function TermsPage() {
   return (
     <div className="container mx-auto flex max-w-3xl flex-col items-center justify-center py-12">
       <div className="w-full rounded-lg border bg-card p-8 shadow-lg">
-        <h1 className="mb-6 text-center text-3xl font-bold text-primary">Termos de Uso e Política de Privacidade do Meu Patinha</h1>
+        <h1 className="mb-6 text-center text-3xl font-bold text-primary">Termos de Uso e Responsabilidade e Política de Privacidade do Meu Patinha</h1>
         <ScrollArea className="mb-6 h-[500px] w-full rounded-md border p-4">
           <TermsContent /> {/* Usar o novo componente aqui */}
         </ScrollArea>
         <div className="mb-6 flex items-center space-x-2">
           <Checkbox id="accept-terms" checked={isChecked} onCheckedChange={(checked) => setIsChecked(checked as boolean)} />
           <Label htmlFor="accept-terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Eu li e concordo com os Termos de Uso e com a Política de Privacidade do Meu Patinha.
+            Eu li e concordo com os Termos de Uso e Responsabilidade e com a Política de Privacidade do Meu Patinha.
           </Label>
         </div>
         <Button onClick={handleAcceptTerms} className="w-full">

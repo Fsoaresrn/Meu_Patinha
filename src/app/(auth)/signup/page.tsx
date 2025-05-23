@@ -88,8 +88,9 @@ export default function SignupPage() {
       nome: nomeCompleto,
       email,
       tipoResponsabilidade: tipoResponsabilidade,
-      uf: "", 
-      cidade: "", 
+      // uf e cidade serão opcionais e preenchidos no Meu Cadastro
+      // uf: "", 
+      // cidade: "", 
       telefone: (telefoneDdd && telefoneNumero) ? `(${telefoneDdd}) ${telefoneNumero}` : undefined,
       acceptedTerms: false, 
     };
@@ -217,12 +218,12 @@ export default function SignupPage() {
                   <Dialog>
                     <DialogTrigger asChild>
                       <span className="text-primary hover:underline cursor-pointer">
-                        Termos de Uso e Política de Privacidade
+                        Termos de Uso e Responsabilidade e Política de Privacidade
                       </span>
                     </DialogTrigger>
                     <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
                       <DialogHeader>
-                        <DialogTitle>Termos de Uso e Política de Privacidade do Meu Patinha</DialogTitle>
+                        <DialogTitle>Termos de Uso e Responsabilidade e Política de Privacidade do Meu Patinha</DialogTitle>
                       </DialogHeader>
                       <ScrollArea className="flex-grow h-[calc(90vh-150px)] w-full rounded-md border p-4">
                         <TermsContent />

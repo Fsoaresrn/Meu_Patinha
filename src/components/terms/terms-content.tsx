@@ -7,9 +7,9 @@
 export function TermsContent() {
   return (
     <>
-      <h2 className="mb-2 text-xl font-semibold">Termos de Uso</h2>
+      <h2 className="mb-2 text-xl font-semibold">Termos de Uso e Responsabilidade</h2>
       <p className="mb-4 text-sm text-muted-foreground">
-        Ao acessar e usar o aplicativo Meu Patinha ("Aplicativo"), você concorda em cumprir e estar vinculado a estes Termos de Uso ("Termos"). Se você não concorda com estes Termos, não utilize o Aplicativo.
+        Ao acessar e usar o aplicativo Meu Patinha ("Aplicativo"), você concorda em cumprir e estar vinculado a estes Termos de Uso e Responsabilidade ("Termos"). Se você não concorda com estes Termos, não utilize o Aplicativo. Você é o único responsável pelas informações inseridas no aplicativo e pelas decisões tomadas com base nas sugestões fornecidas, especialmente aquelas geradas por Inteligência Artificial.
       </p>
       
       <h3 className="mb-2 text-lg font-semibold">1. Descrição do Serviço</h3>
@@ -17,31 +17,31 @@ export function TermsContent() {
         O Meu Patinha é uma plataforma para ajudar tutores de animais de estimação a gerenciar informações sobre a saúde, rotina e bem-estar de seus pets. As funcionalidades incluem perfis de pets, registros médicos, ferramentas de diagnóstico auxiliadas por IA, planejamento nutricional, entre outros.
       </p>
       
-      <h3 className="mb-2 text-lg font-semibold">2. Uso da Inteligência Artificial e Responsabilidade</h3>
+      <h3 className="mb-2 text-lg font-semibold">2. Uso da Inteligência Artificial e Responsabilidade do Usuário</h3>
       <p className="mb-2 text-sm text-muted-foreground">
         As funcionalidades de diagnóstico de sintomas e planejamento nutricional utilizam Inteligência Artificial (IA). As informações fornecidas pela IA são para fins informativos e de auxílio preliminar, <strong>NÃO substituindo, em hipótese alguma, o diagnóstico, aconselhamento ou tratamento veterinário profissional.</strong>
       </p>
       <p className="mb-2 text-sm text-muted-foreground">
-        <strong>É fundamental compreender que as sugestões da IA são baseadas em padrões e dados, e não constituem um diagnóstico veterinário definitivo.</strong> A saúde do seu animal de estimação é uma responsabilidade séria.
+        <strong>É fundamental compreender que as sugestões da IA são baseadas em padrões e dados, e não constituem um diagnóstico veterinário definitivo.</strong> A saúde do seu animal de estimação é uma responsabilidade séria e intransferível sua.
       </p>
       <p className="mb-2 text-sm text-muted-foreground">
-        <strong>Você concorda e reconhece que:</strong>
+        <strong>Ao utilizar o Aplicativo, você concorda e reconhece que:</strong>
       </p>
       <ul className="mb-4 ml-6 list-disc text-sm text-muted-foreground">
-        <li>Sempre consultará um médico veterinário qualificado para quaisquer questões relacionadas à saúde do seu pet, especialmente para confirmação de diagnósticos e planos de tratamento.</li>
-        <li>O veterinário poderá (e provavelmente irá) solicitar exames complementares para um diagnóstico preciso e confiável.</li>
-        <li>Você não deve tomar decisões críticas de tratamento ou manejo da saúde do seu pet baseando-se unicamente nas sugestões fornecidas pela IA do Aplicativo.</li>
-        <li>O Meu Patinha e seus desenvolvedores não se responsabilizam por diagnósticos incorretos, decisões tomadas com base nas sugestões da IA sem a devida consulta e acompanhamento veterinário profissional, ou por quaisquer consequências advindas do uso indevido das informações fornecidas pela ferramenta de IA.</li>
+        <li>Você é o único responsável por buscar e seguir o aconselhamento de um médico veterinário qualificado para todas as questões relacionadas à saúde do seu pet, incluindo a confirmação de diagnósticos e a definição de planos de tratamento.</li>
+        <li>A critério do médico veterinário, exames complementares poderão ser solicitados para um diagnóstico preciso e confiável.</li>
+        <li>Você não deve tomar decisões críticas de tratamento ou manejo da saúde do seu pet baseando-se unicamente nas sugestões fornecidas pela IA do Aplicativo. Tais sugestões devem ser consideradas como um ponto de partida para discussão com seu veterinário.</li>
+        <li>O Meu Patinha e seus desenvolvedores não se responsabilizam por diagnósticos incorretos, tratamentos inadequados, decisões tomadas com base nas sugestões da IA sem a devida consulta e acompanhamento veterinário profissional, ou por quaisquer consequências advindas do uso indevido das informações fornecidas pela ferramenta de IA. A responsabilidade final pela saúde e bem-estar do seu pet é exclusivamente sua.</li>
       </ul>
       
-      <h3 className="mb-2 text-lg font-semibold">3. Responsabilidade do Usuário</h3>
+      <h3 className="mb-2 text-lg font-semibold">3. Responsabilidade do Usuário pelas Informações</h3>
       <p className="mb-4 text-sm text-muted-foreground">
-        Você é responsável por manter a confidencialidade dos dados da sua conta e por todas as atividades que ocorram sob sua conta. Você concorda em fornecer informações verdadeiras, precisas, atuais e completas durante o cadastro e ao usar o Aplicativo.
+        Você é responsável por manter a confidencialidade dos dados da sua conta e por todas as atividades que ocorram sob sua conta. Você concorda em fornecer informações verdadeiras, precisas, atuais e completas durante o cadastro e ao usar o Aplicativo, e é responsável pela veracidade e precisão dos dados inseridos sobre seus pets. Informações incorretas podem levar a sugestões inadequadas pelas ferramentas de IA.
       </p>
       
       <h3 className="mb-2 text-lg font-semibold">4. Limitação de Responsabilidade</h3>
       <p className="mb-4 text-sm text-muted-foreground">
-        O Aplicativo é fornecido "como está" e "conforme disponível". Não garantimos que o Aplicativo será ininterrupto, livre de erros ou seguro. Em nenhuma circunstância o Meu Patinha será responsável por quaisquer danos diretos, indiretos, incidentais, especiais ou consequenciais resultantes do uso ou da incapacidade de usar o Aplicativo, incluindo, mas não se limitando a, decisões tomadas com base nas funcionalidades de IA sem o devido acompanhamento veterinário.
+        O Aplicativo é fornecido "como está" e "conforme disponível". Não garantimos que o Aplicativo será ininterrupto, livre de erros ou seguro. Em nenhuma circunstância o Meu Patinha será responsável por quaisquer danos diretos, indiretos, incidentais, especiais ou consequenciais resultantes do uso ou da incapacidade de usar o Aplicativo, incluindo, mas não se limitando a, decisões tomadas com base nas funcionalidades de IA sem o devido acompanhamento veterinário, ou por dados incorretos inseridos pelo usuário.
       </p>
       
       <h3 className="mb-2 text-lg font-semibold">5. Modificações nos Termos</h3>
@@ -120,5 +120,3 @@ export function TermsContent() {
     </>
   );
 }
-
-    

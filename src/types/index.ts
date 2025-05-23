@@ -80,15 +80,16 @@ export interface Pet {
   corPelagem: string; // Específico por espécie, pode ser "Outra"
   sinaisObservacoes?: string; // Sinais característicos/Observações
   
-  dataNascimento?: string; // "dd/MM/aaaa" ou flag "Desconhecida"
+  dataNascimento?: string; // "dd/MM/yyyy"
   idade?: number; // Calculada ou manual se dataNascimento for desconhecida
   naturalidadeCidade?: string;
   naturalidadeUF?: string;
   
-  simPatinhasId?: string; // ID do SimPatinhas
-  simPatinhasDataEmissao?: string; // "dd/MM/aaaa"
-  simPatinhasCidadeEmissao?: string;
-  simPatinhasUFEmissao?: string;
+  hasSimPatinhas?: "Sim" | "Não"; // Novo campo
+  simPatinhasId?: string; 
+  simPatinhasEmissionDate?: string; // "dd/MM/yyyy" - Anteriormente simPatinhasDataEmissao
+  simPatinhasEmissionCity?: string; // Anteriormente simPatinhasCidadeEmissao
+  simPatinhasEmissionUF?: string; // Anteriormente simPatinhasUFEmissao
   
   peso?: number; // Em kg
   porte?: PetSize;
@@ -136,7 +137,7 @@ export interface Vaccination {
   dose: string; // e.g., "1ª Dose", "Reforço Anual"
   administrationDate: string; // "dd/MM/aaaa"
   boosterFrequency?: string; // e.g., "Anual", "A cada 3 anos", "Não se aplica"
-  nextDueDate?: string; // "dd/MM/aaaa", manual ou calculada
+  nextDueDate?: string; // "dd/MM/yyyy", manual ou calculada
   vetClinic?: string;
   vetName?: string;
   lotNumber?: string; 

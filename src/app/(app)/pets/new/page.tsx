@@ -13,14 +13,16 @@ import type { Pet, PetSpecies, PetGender, PetSize, PetAcquisitionType, PetPurpos
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList, acquisitionTypes, petPurposes } from "@/lib/constants";
+import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList, acquisitionTypes, petPurposes, ufsBrasil } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
-import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon, Link as LinkIcon, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect, useMemo } from "react";
@@ -53,6 +55,12 @@ const petFormSchema = z.object({
   ),
   porte: z.enum(petSizesList as [PetSize, ...PetSize[]]).optional(),
   sinaisObservacoes: z.string().optional(),
+  // Campos SimPatinhas
+  hasSimPatinhas: z.enum(["Sim", "Não"], { errorMap: () => ({ message: "Selecione Sim ou Não." }) }).optional(),
+  simPatinhasId: z.string().optional(),
+  simPatinhasEmissionDate: z.date().optional(),
+  simPatinhasEmissionCity: z.string().optional(),
+  simPatinhasEmissionUF: z.string().optional(),
 }).refine(data => {
   if (data.birthDateUnknown && data.ageInMonths === undefined) {
     return false;
@@ -63,6 +71,24 @@ const petFormSchema = z.object({
   return true;
 }, {
   message: "Informe a data de nascimento ou a idade estimada em meses.",
+  path: ["dataNascimento"], // Ou path: ["ageInMonths"] dependendo do contexto do erro
+}).superRefine((data, ctx) => {
+  if (data.hasSimPatinhas === "Sim") {
+    if (!data.simPatinhasId || data.simPatinhasId.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Registro Geral SimPatinhas é obrigatório.",
+        path: ["simPatinhasId"],
+      });
+    }
+    if (!data.simPatinhasEmissionDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Data de Emissão do SimPatinhas é obrigatória.",
+        path: ["simPatinhasEmissionDate"],
+      });
+    }
+  }
 });
 
 
@@ -81,6 +107,7 @@ export default function AdicionarPetPage() {
   const [furColorSearch, setFurColorSearch] = useState("");
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isSimPatinhasCalendarOpen, setIsSimPatinhasCalendarOpen] = useState(false);
     
   const form = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
@@ -97,35 +124,49 @@ export default function AdicionarPetPage() {
       birthDateUnknown: false,
       dataNascimento: undefined,
       ageInMonths: undefined,
+      hasSimPatinhas: undefined,
+      simPatinhasId: "",
+      simPatinhasEmissionDate: undefined,
+      simPatinhasEmissionCity: "",
+      simPatinhasEmissionUF: "",
     },
   });
 
   const especieSelecionada = form.watch("especie");
   const watchedDataNascimento = form.watch("dataNascimento");
   const isBirthDateUnknown = form.watch("birthDateUnknown");
+  const hasSimPatinhas = form.watch("hasSimPatinhas");
   
-  // State for the date input string
   const [dateInputString, setDateInputString] = useState<string>("");
+  const [simPatinhasDateInputString, setSimPatinhasDateInputString] = useState<string>("");
 
   useEffect(() => {
-    // Sync RHF's field.value (Date object) to local dateInputString (string for display)
     if (watchedDataNascimento && isValidDate(watchedDataNascimento)) {
       const formattedDate = formatDateToBrasil(watchedDataNascimento);
-      // Only update if different to prevent caret jump or infinite loops if user is typing
       if (dateInputString !== formattedDate) {
         setDateInputString(formattedDate);
       }
     } else if (!watchedDataNascimento && dateInputString !== "") {
-      // If RHF date is cleared (e.g. "unknown" checked or invalid blur), clear input string
       setDateInputString("");
     }
   }, [watchedDataNascimento, dateInputString]);
+
+  const watchedSimPatinhasDate = form.watch("simPatinhasEmissionDate");
+  useEffect(() => {
+    if (watchedSimPatinhasDate && isValidDate(watchedSimPatinhasDate)) {
+      const formattedDate = formatDateToBrasil(watchedSimPatinhasDate);
+      if (simPatinhasDateInputString !== formattedDate) {
+        setSimPatinhasDateInputString(formattedDate);
+      }
+    } else if (!watchedSimPatinhasDate && simPatinhasDateInputString !== "") {
+        setSimPatinhasDateInputString("");
+    }
+  }, [watchedSimPatinhasDate, simPatinhasDateInputString]);
 
 
   useEffect(() => {
     if (isBirthDateUnknown) {
       form.setValue("dataNascimento", undefined);
-      // setDateInputString(""); // Already handled by watchedDataNascimento effect
       setCalculatedAgeDisplay(null);
     } else {
       form.setValue("ageInMonths", undefined);
@@ -141,6 +182,16 @@ export default function AdicionarPetPage() {
       setCalculatedAgeDisplay(null);
     }
   }, [watchedDataNascimento, isBirthDateUnknown, form]);
+
+  useEffect(() => {
+    if (hasSimPatinhas === "Não") {
+      form.setValue("simPatinhasId", "");
+      form.setValue("simPatinhasEmissionDate", undefined);
+      setSimPatinhasDateInputString("");
+      form.setValue("simPatinhasEmissionCity", "");
+      form.setValue("simPatinhasEmissionUF", "");
+    }
+  }, [hasSimPatinhas, form]);
 
 
   const onSubmit = (data: PetFormValues) => {
@@ -179,6 +230,11 @@ export default function AdicionarPetPage() {
       possuiPedigree: "Não",
       dataNascimento: !data.birthDateUnknown && data.dataNascimento ? formatDate(data.dataNascimento, "dd/MM/yyyy") : undefined,
       idade: undefined, 
+      hasSimPatinhas: data.hasSimPatinhas,
+      simPatinhasId: data.hasSimPatinhas === "Sim" ? data.simPatinhasId : undefined,
+      simPatinhasEmissionDate: data.hasSimPatinhas === "Sim" && data.simPatinhasEmissionDate ? formatDate(data.simPatinhasEmissionDate, "dd/MM/yyyy") : undefined,
+      simPatinhasEmissionCity: data.hasSimPatinhas === "Sim" ? data.simPatinhasEmissionCity : undefined,
+      simPatinhasEmissionUF: data.hasSimPatinhas === "Sim" ? data.simPatinhasEmissionUF : undefined,
     };
 
     if (data.birthDateUnknown && typeof data.ageInMonths === 'number') {
@@ -228,56 +284,57 @@ export default function AdicionarPetPage() {
     setFurColorSearch("");
   }, [especieSelecionada, form]);
 
-  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: "dataNascimento" | "simPatinhasEmissionDate") => {
     const typedValue = e.target.value;
-    setDateInputString(typedValue); 
+    if (fieldName === "dataNascimento") {
+      setDateInputString(typedValue);
+    } else {
+      setSimPatinhasDateInputString(typedValue);
+    }
 
-    // Basic attempt to parse on the fly for dd/MM/yyyy, full validation on blur
-    if (typedValue.length <= 10) { // "dd/MM/yyyy"
-        const parts = typedValue.split('/');
-        if (parts.length === 3 && parts.every(p => /^\d*$/.test(p))) {
-            const day = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10);
-            const year = parseInt(parts[2], 10);
-
-            if (typedValue.length === 10 && parts[2].length === 4) { // Full date typed
+    if (typedValue.length <= 10) {
+        if (typedValue === "" || /^(?:\d{1,2}\/?\d{0,2}\/?\d{0,4})?$/.test(typedValue)) { // Allow partial input
+            if (typedValue.length === 10 && typedValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
                  const parsedDate = parseDateFn(typedValue, "dd/MM/yyyy", new Date());
                  if (isValidDate(parsedDate)) {
-                    if (!watchedDataNascimento || watchedDataNascimento.getTime() !== parsedDate.getTime()) {
-                        form.setValue("dataNascimento", parsedDate, { shouldValidate: true });
+                    const currentRHFDate = form.getValues(fieldName);
+                    if (!currentRHFDate || currentRHFDate.getTime() !== parsedDate.getTime()) {
+                        form.setValue(fieldName, parsedDate, { shouldValidate: true });
                     }
                  } else {
-                    // Potentially clear RHF if it's definitely invalid length 10
-                    // form.setValue("dataNascimento", undefined, { shouldValidate: true });
+                    // form.setValue(fieldName, undefined, { shouldValidate: true }); // Or keep invalid for Zod
                  }
+            } else if (typedValue === "") {
+                form.setValue(fieldName, undefined, { shouldValidate: true });
             }
-        } else if (typedValue === "") {
-             form.setValue("dataNascimento", undefined, { shouldValidate: true });
-        }
-    } else if (typedValue === "") { // Cleared input
-        form.setValue("dataNascimento", undefined, { shouldValidate: true });
+        } // If not matching regex or empty, do nothing, let blur handle
+    } else if (typedValue === "") {
+        form.setValue(fieldName, undefined, { shouldValidate: true });
     }
   };
 
-  const handleDateInputBlur = () => {
-    const parsedDate = parseDateFn(dateInputString, "dd/MM/yyyy", new Date());
+  const handleDateInputBlur = (dateString: string, fieldName: "dataNascimento" | "simPatinhasEmissionDate") => {
+    const parsedDate = parseDateFn(dateString, "dd/MM/yyyy", new Date());
+    const currentRHFDate = form.getValues(fieldName);
+
     if (isValidDate(parsedDate)) {
-      if (!watchedDataNascimento || watchedDataNascimento.getTime() !== parsedDate.getTime()) {
-        form.setValue("dataNascimento", parsedDate, { shouldValidate: true });
+      if (!currentRHFDate || currentRHFDate.getTime() !== parsedDate.getTime()) {
+        form.setValue(fieldName, parsedDate, { shouldValidate: true });
       }
-      // Ensure input string is correctly formatted if user typed e.g. d/m/yyyy and it was valid
-      setDateInputString(formatDateToBrasil(parsedDate));
+      if (fieldName === "dataNascimento") {
+        setDateInputString(formatDateToBrasil(parsedDate));
+      } else {
+        setSimPatinhasDateInputString(formatDateToBrasil(parsedDate));
+      }
     } else {
-      if (dateInputString === "") { // If input is empty, RHF field should be undefined
-        if (watchedDataNascimento !== undefined) {
-            form.setValue("dataNascimento", undefined, { shouldValidate: true });
+      if (dateString === "") { 
+        if (currentRHFDate !== undefined) {
+            form.setValue(fieldName, undefined, { shouldValidate: true });
         }
-      } else { // If input is non-empty but invalid
-        if (watchedDataNascimento !== undefined) {
-            form.setValue("dataNascimento", undefined, { shouldValidate: true });
+      } else { 
+        if (currentRHFDate !== undefined) {
+            form.setValue(fieldName, undefined, { shouldValidate: true });
         }
-        // Keep dateInputString as what user typed (e.g. "abc") for them to correct
-        // Zod will mark dataNascimento as invalid if required (which it is if birthDateUnknown is false)
       }
     }
   };
@@ -301,6 +358,7 @@ export default function AdicionarPetPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Dados Básicos do Pet */}
               <FormField
                 control={form.control}
                 name="nome"
@@ -440,18 +498,18 @@ export default function AdicionarPetPage() {
                                 <Input
                                   placeholder="dd/mm/aaaa"
                                   value={dateInputString}
-                                  onChange={handleDateInputChange}
-                                  onBlur={handleDateInputBlur}
+                                  onChange={(e) => handleDateInputChange(e, "dataNascimento")}
+                                  onBlur={() => handleDateInputBlur(dateInputString, "dataNascimento")}
                                   disabled={isBirthDateUnknown}
                                   className={cn(
                                     "w-full pl-3 pr-10 text-left font-normal", 
                                     !field.value && !dateInputString && "text-muted-foreground"
                                   )}
-                                  onClick={() => !isBirthDateUnknown && setIsCalendarOpen(true)} // Open popover on click
+                                  onClick={() => !isBirthDateUnknown && setIsCalendarOpen(true)} 
                                 />
                                 <CalendarIcon 
                                   className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50 cursor-pointer" 
-                                  onClick={() => !isBirthDateUnknown && setIsCalendarOpen(true)} // Also open on icon click
+                                  onClick={() => !isBirthDateUnknown && setIsCalendarOpen(true)} 
                                 />
                               </div>
                            </FormControl>
@@ -511,7 +569,7 @@ export default function AdicionarPetPage() {
                 />
               )}
 
-
+              {/* Detalhes Adicionais */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -697,6 +755,149 @@ export default function AdicionarPetPage() {
                 )}
               />
 
+              {/* Seção SimPatinhas */}
+              <Card className="pt-4">
+                <CardHeader className="pb-2 pt-0">
+                  <div className="flex items-center gap-2">
+                    <QrCode className="h-6 w-6 text-primary" />
+                    <CardTitle className="text-xl">Cadastro SimPatinhas (Opcional)</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Alert>
+                    <LinkIcon className="h-4 w-4" />
+                    <AlertTitle>O que é o SimPatinhas?</AlertTitle>
+                    <AlertDescription>
+                      O Sistema de Identificação e Monitoramento de Cães e Gatos (SimPatinhas) é uma iniciativa para o controle populacional e bem-estar animal.
+                      <a href="https://sinpatinhas.mma.gov.br/login" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+                        Saiba mais ou cadastre seu pet aqui.
+                      </a>
+                    </AlertDescription>
+                  </Alert>
+
+                  <FormField
+                    control={form.control}
+                    name="hasSimPatinhas"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Possui cadastro no SimPatinhas?</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            className="flex space-x-4"
+                          >
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="Sim" />
+                              </FormControl>
+                              <FormLabel className="font-normal">Sim</FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="Não" />
+                              </FormControl>
+                              <FormLabel className="font-normal">Não</FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {hasSimPatinhas === "Sim" && (
+                    <div className="space-y-4_mt-4_border-t_pt-4">
+                      <FormField
+                        control={form.control}
+                        name="simPatinhasId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Registro Geral SimPatinhas</FormLabel>
+                            <FormControl><Input placeholder="ID do registro" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="simPatinhasEmissionDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Data de Emissão do SimPatinhas</FormLabel>
+                             <Popover open={isSimPatinhasCalendarOpen} onOpenChange={setIsSimPatinhasCalendarOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      placeholder="dd/mm/aaaa"
+                                      value={simPatinhasDateInputString}
+                                      onChange={(e) => handleDateInputChange(e, "simPatinhasEmissionDate")}
+                                      onBlur={() => handleDateInputBlur(simPatinhasDateInputString, "simPatinhasEmissionDate")}
+                                      className={cn("w-full pl-3 pr-10 text-left font-normal", !field.value && !simPatinhasDateInputString && "text-muted-foreground")}
+                                      onClick={() => setIsSimPatinhasCalendarOpen(true)}
+                                    />
+                                    <CalendarIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50 cursor-pointer" onClick={() => setIsSimPatinhasCalendarOpen(true)} />
+                                  </div>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={(date) => {
+                                    form.setValue("simPatinhasEmissionDate", date, { shouldValidate: true });
+                                    if (date && isValidDate(date)) {
+                                       setSimPatinhasDateInputString(formatDateToBrasil(date));
+                                    } else {
+                                       setSimPatinhasDateInputString("");
+                                    }
+                                    setIsSimPatinhasCalendarOpen(false);
+                                  }}
+                                  disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="simPatinhasEmissionCity"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cidade de Emissão (Opcional)</FormLabel>
+                              <FormControl><Input placeholder="Ex: Brasília" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="simPatinhasEmissionUF"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>UF de Emissão (Opcional)</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione a UF" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                  {ufsBrasil.map(uf => <SelectItem key={uf.sigla} value={uf.sigla}>{uf.nome}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+
               <div className="flex justify-end space-x-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => router.push('/pets')}>Cancelar</Button>
                 <Button type="submit" disabled={form.formState.isSubmitting}>
@@ -710,5 +911,3 @@ export default function AdicionarPetPage() {
     </div>
   );
 }
-
-    

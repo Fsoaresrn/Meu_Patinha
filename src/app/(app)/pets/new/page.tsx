@@ -20,10 +20,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
-import { CalendarIcon, ArrowLeft } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 const petFormSchema = z.object({
   nome: z.string().min(2, { message: "Nome do pet é obrigatório (mínimo 2 caracteres)." }),
@@ -58,6 +58,8 @@ export default function AdicionarPetPage() {
   const { toast } = useToast();
   const [allPets, setAllPets] = useLocalStorage<Pet[]>("all-pets-data", []);
   const [calculatedAgeDisplay, setCalculatedAgeDisplay] = useState<string | null>(null);
+  const [breedSearch, setBreedSearch] = useState("");
+  const [furColorSearch, setFurColorSearch] = useState("");
 
   const form = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
@@ -117,7 +119,7 @@ export default function AdicionarPetPage() {
     };
 
     if (!data.dataNascimento && typeof data.ageInMonths === 'number') {
-      newPet.idade = Math.floor(data.ageInMonths / 12); // Salva idade em anos (aproximado)
+      newPet.idade = Math.floor(data.ageInMonths / 12); 
     }
 
     setAllPets([...allPets, newPet]);
@@ -125,9 +127,40 @@ export default function AdicionarPetPage() {
     router.push("/pets");
   };
 
-  const racasDisponiveis = especieSelecionada === "Cão" ? dogBreeds : especieSelecionada === "Gato" ? catBreeds : [];
-  const tiposPelagemDisponiveis = especieSelecionada ? furTypesBySpecies[especieSelecionada] : [];
-  const coresPelagemDisponiveis = especieSelecionada ? furColorsBySpecies[especieSelecionada] : [];
+  const baseRacas = useMemo(() => {
+    return especieSelecionada === "Cão" ? dogBreeds : especieSelecionada === "Gato" ? catBreeds : [];
+  }, [especieSelecionada]);
+
+  const racasDisponiveis = useMemo(() => {
+    if (breedSearch.length >= 3) {
+      return baseRacas.filter(raca => raca.toLowerCase().startsWith(breedSearch.toLowerCase()));
+    }
+    return baseRacas;
+  }, [baseRacas, breedSearch]);
+
+  const tiposPelagemDisponiveis = useMemo(() => {
+    return especieSelecionada ? furTypesBySpecies[especieSelecionada] : [];
+  }, [especieSelecionada]);
+  
+  const baseCoresPelagem = useMemo(() => {
+    return especieSelecionada ? furColorsBySpecies[especieSelecionada] : [];
+  }, [especieSelecionada]);
+
+  const coresPelagemDisponiveis = useMemo(() => {
+    if (furColorSearch.length >= 3) {
+      return baseCoresPelagem.filter(cor => cor.toLowerCase().startsWith(furColorSearch.toLowerCase()));
+    }
+    return baseCoresPelagem;
+  }, [baseCoresPelagem, furColorSearch]);
+
+
+  useEffect(() => {
+    form.setValue("raca", "");
+    form.setValue("tipoPelagem", "");
+    form.setValue("corPelagem", "");
+    setBreedSearch("");
+    setFurColorSearch("");
+  }, [especieSelecionada, form]);
 
   return (
     <div className="container mx-auto py-8">
@@ -166,7 +199,12 @@ export default function AdicionarPetPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Espécie</FormLabel>
-                      <Select onValueChange={(value) => { field.onChange(value as PetSpecies); form.setValue("raca", ""); form.setValue("tipoPelagem", ""); form.setValue("corPelagem", ""); }} value={field.value}>
+                      <Select 
+                        onValueChange={(value) => { 
+                          field.onChange(value as PetSpecies);
+                        }} 
+                        value={field.value}
+                      >
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione a espécie" /></SelectTrigger></FormControl>
                         <SelectContent>
                           {petSpeciesList.map(specie => <SelectItem key={specie} value={specie}>{specie}</SelectItem>)}
@@ -176,22 +214,42 @@ export default function AdicionarPetPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="raca"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Raça</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} disabled={!especieSelecionada}>
-                        <FormControl><SelectTrigger><SelectValue placeholder={especieSelecionada ? "Selecione a raça" : "Primeiro escolha a espécie"} /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          {racasDisponiveis.map(breed => <SelectItem key={breed} value={breed}>{breed}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div> {/* Container for breed search and select */}
+                  <FormLabel htmlFor="breed-search">Buscar Raça</FormLabel>
+                  <div className="relative">
+                    <Input 
+                      id="breed-search"
+                      placeholder="Digite min. 3 letras" 
+                      value={breedSearch} 
+                      onChange={(e) => setBreedSearch(e.target.value)} 
+                      disabled={!especieSelecionada}
+                      className="pr-10"
+                    />
+                    <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="raca"
+                    render={({ field }) => (
+                      <FormItem className="mt-2"> {/* Add margin top for spacing */}
+                        {/* <FormLabel>Raça</FormLabel> No longer needed as label is on search */}
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!especieSelecionada}>
+                          <FormControl><SelectTrigger><SelectValue placeholder={especieSelecionada ? "Selecione a raça" : "Primeiro escolha a espécie"} /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            {racasDisponiveis.length > 0 ? (
+                              racasDisponiveis.map(breed => <SelectItem key={breed} value={breed}>{breed}</SelectItem>)
+                            ) : (
+                              <div className="p-2 text-sm text-muted-foreground">
+                                {breedSearch.length >= 3 ? "Nenhuma raça encontrada." : (especieSelecionada ? "Digite para buscar." : "Escolha a espécie.")}
+                              </div>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -328,22 +386,42 @@ export default function AdicionarPetPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="corPelagem"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cor da Pelagem (Opcional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} disabled={!especieSelecionada || coresPelagemDisponiveis.length === 0}>
-                        <FormControl><SelectTrigger><SelectValue placeholder={especieSelecionada ? "Selecione a cor" : "Escolha a espécie"} /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          {coresPelagemDisponiveis.map(color => <SelectItem key={color} value={color}>{color}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div> {/* Container for fur color search and select */}
+                    <FormLabel htmlFor="fur-color-search">Buscar Cor da Pelagem</FormLabel>
+                    <div className="relative">
+                        <Input
+                        id="fur-color-search"
+                        placeholder="Digite min. 3 letras"
+                        value={furColorSearch}
+                        onChange={(e) => setFurColorSearch(e.target.value)}
+                        disabled={!especieSelecionada}
+                        className="pr-10"
+                        />
+                        <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
+                    </div>
+                    <FormField
+                        control={form.control}
+                        name="corPelagem"
+                        render={({ field }) => (
+                        <FormItem className="mt-2"> {/* Add margin top for spacing */}
+                            {/* <FormLabel>Cor da Pelagem (Opcional)</FormLabel> No longer needed */}
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!especieSelecionada || coresPelagemDisponiveis.length === 0 && furColorSearch.length < 3}>
+                            <FormControl><SelectTrigger><SelectValue placeholder={especieSelecionada ? "Selecione a cor" : "Escolha a espécie"} /></SelectTrigger></FormControl>
+                            <SelectContent>
+                                {coresPelagemDisponiveis.length > 0 ? (
+                                coresPelagemDisponiveis.map(color => <SelectItem key={color} value={color}>{color}</SelectItem>)
+                                ) : (
+                                <div className="p-2 text-sm text-muted-foreground">
+                                    {furColorSearch.length >= 3 ? "Nenhuma cor encontrada." : (especieSelecionada ? "Digite para buscar." : "Escolha a espécie.")}
+                                </div>
+                                )}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -407,5 +485,3 @@ export default function AdicionarPetPage() {
     </div>
   );
 }
-
-    

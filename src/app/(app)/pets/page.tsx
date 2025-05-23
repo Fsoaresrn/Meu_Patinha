@@ -14,8 +14,8 @@ export default function MeusPetsPage() {
   const { user } = useAuthStore();
   const [allPets] = useLocalStorage<Pet[]>("all-pets-data", []);
 
-  // Filter pets where the current user is ownerId or secondaryTutorId
-  const userPets = allPets.filter(pet => pet.ownerId === user?.cpf || pet.secondaryTutorId === user?.cpf);
+  // Filter pets where the current user is ownerId or secondaryTutorCpf
+  const userPets = allPets.filter(pet => pet.ownerId === user?.cpf || pet.secondaryTutorCpf === user?.cpf);
 
   return (
     <div className="container mx-auto py-8">

@@ -67,6 +67,11 @@ const petFormSchema = z.object({
   simPatinhasEmissionUF: z.string().optional(),
   secondaryTutorName: z.string().optional(),
   secondaryTutorEmail: z.string().email({ message: "E-mail do 2º tutor inválido." }).optional().or(z.literal("")),
+  secondaryTutorCpf: z.string().optional().refine(val => {
+    if (!val || val.trim() === "") return true; // Optional, so empty is fine
+    const numericCpf = val.replace(/[^\d]/g, "");
+    return numericCpf.length === 11;
+  }, { message: "CPF do 2º tutor deve conter 11 dígitos." }),
 }).refine(data => {
   if (data.birthDateUnknown && data.ageInMonths === undefined) {
     return false;
@@ -141,6 +146,7 @@ export default function AdicionarPetPage() {
       simPatinhasEmissionUF: "",
       secondaryTutorName: "",
       secondaryTutorEmail: "",
+      secondaryTutorCpf: "",
     },
   });
 
@@ -309,6 +315,7 @@ export default function AdicionarPetPage() {
       simPatinhasEmissionUF: data.hasSimPatinhas === "Sim" ? data.simPatinhasEmissionUF : undefined,
       secondaryTutorName: data.secondaryTutorName || undefined,
       secondaryTutorEmail: data.secondaryTutorEmail || undefined,
+      secondaryTutorCpf: data.secondaryTutorCpf ? data.secondaryTutorCpf.replace(/[^\d]/g, "") : undefined,
     };
 
     if (data.birthDateUnknown && typeof data.ageInMonths === 'number') {
@@ -928,6 +935,17 @@ export default function AdicionarPetPage() {
                       <FormItem>
                         <FormLabel>E-mail do 2º Tutor</FormLabel>
                         <FormControl><Input type="email" placeholder="email@exemplo.com" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="secondaryTutorCpf"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CPF do 2º Tutor</FormLabel>
+                        <FormControl><Input placeholder="CPF (somente números)" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

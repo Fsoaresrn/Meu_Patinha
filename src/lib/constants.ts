@@ -1,5 +1,5 @@
 
-import type { PetSpecies, VaccineProtocolInfo, VaccineBoosterFrequencySelected, VaccineCategory } from "@/types";
+import type { PetSpecies, VaccineProtocolInfo, VaccineBoosterFrequencySelected, VaccineCategory, AntipulgasProductType, MedicalDocumentType } from "@/types";
 
 export const ufsBrasil = [
   { sigla: "AC", nome: "Acre" },
@@ -423,7 +423,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: ["Cão", "Gato"],
     preventsDiseases: [],
     importance: "Opcional",
-    recommendedDoses: [], // Será populado com genericVaccineDosesConstants se "Outra" for selecionada
+    recommendedDoses: [], 
     boosterFrequencySuggestion: "Não se aplica",
     notes: "Use esta opção para vacinas não listadas ou específicas."
   }
@@ -464,3 +464,7 @@ export const petIdGenerator = (): string => {
   return `${year}-${randomPart}`;
 };
 
+export const antipulgasProductTypesConstants: AntipulgasProductType[] = ["Coleira", "Pipeta", "Spray", "Comprimido", "Outro"];
+export const medicalDocumentTypesConstants: MedicalDocumentType[] = ["Exame de Sangue", "Raio-X", "Ultrassom", "Receita", "Atestado", "Outro"];
+
+    

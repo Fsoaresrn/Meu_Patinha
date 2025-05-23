@@ -15,7 +15,10 @@ import {
   Mail,
   Settings,
   ShieldQuestion,
-  ClipboardList, // Ícone para Diagnósticos
+  ClipboardList,
+  Pill,
+  ShieldCheck,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
@@ -38,7 +41,7 @@ import {
 interface NavSubItem {
   href: string;
   label: string;
-  icon?: LucideIcon; // Opcional, para subitens se necessário
+  icon?: LucideIcon; 
   isActive?: (pathname: string) => boolean; 
 }
 
@@ -60,6 +63,9 @@ const mainNavItems: NavItem[] = [
     subItems: [
       { href: "/saude/diagnosticos", label: "Diagnósticos", icon: ClipboardList, isActive: (pathname) => pathname.startsWith("/saude/diagnosticos") },
       { href: "/vaccination-booklet", label: "Caderneta de Vacinação", icon: BookMarked, isActive: (pathname) => pathname.startsWith("/vaccination-booklet") },
+      { href: "/saude/vermifugos", label: "Vermífugos", icon: Pill, isActive: (pathname) => pathname.startsWith("/saude/vermifugos") },
+      { href: "/saude/antipulgas", label: "Antipulgas e Carrapatos", icon: ShieldCheck, isActive: (pathname) => pathname.startsWith("/saude/antipulgas") },
+      { href: "/saude/exames", label: "Exames e Documentos", icon: FileText, isActive: (pathname) => pathname.startsWith("/saude/exames") },
     ],
   },
   { href: "/nutricao", label: "Nutrição", icon: Utensils, isActive: (pathname) => pathname.startsWith("/nutricao") },
@@ -77,16 +83,23 @@ export function AppSidebar() {
   const renderNavItem = (item: NavItem, isSubItem = false) => {
     const IconComponent = item.icon;
     const baseButtonClass = "w-full justify-start";
-    const activeState = item.isActive ? item.isActive(pathname) : (item.href && item.href !== "/" && pathname.startsWith(item.href));
+    // Ajuste para isActive: Se o item tem href, usa a lógica antiga. Se não tem (é um agrupador),
+    // verifica se algum subitem está ativo.
+    let activeState = false;
+    if (item.href) {
+      activeState = item.isActive ? item.isActive(pathname) : (item.href !== "/" && pathname.startsWith(item.href));
+    } else if (item.subItems) {
+      activeState = item.subItems.some(subItem => subItem.isActive ? subItem.isActive(pathname) : pathname.startsWith(subItem.href));
+    }
+
 
     if (item.subItems && item.subItems.length > 0) {
       return (
         <SidebarMenuItem key={item.label}>
           <SidebarMenuButton
             isActive={activeState}
-            className={cn(baseButtonClass, "cursor-default")} // Parent is not a link if it has subItems
+            className={cn(baseButtonClass, item.href ? "" : "cursor-default")} // Parent is not a link if it has subItems AND no href
             tooltip={item.label}
-            // disabled // Ou não interativo se for apenas um agrupador
           >
             <IconComponent className="h-5 w-5" />
             <span>{item.label}</span>
@@ -98,7 +111,7 @@ export function AppSidebar() {
                   <SidebarMenuSubButton
                     isActive={subItem.isActive ? subItem.isActive(pathname) : pathname.startsWith(subItem.href)}
                   >
-                    {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />} {/* Ícone opcional para subitem */}
+                    {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
                     {subItem.label}
                   </SidebarMenuSubButton>
                 </Link>
@@ -126,11 +139,12 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </Link>
         ) : (
+          // Caso de um item sem href e sem subItems (não deveria acontecer com a estrutura atual, mas é um fallback)
           <SidebarMenuButton
             isActive={activeState}
             className={cn(baseButtonClass, "cursor-default")}
             tooltip={item.label}
-            disabled
+            disabled 
           >
             <IconComponent className="h-5 w-5" />
             <span>{item.label}</span>
@@ -163,3 +177,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    

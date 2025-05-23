@@ -69,7 +69,7 @@ export interface PetStatus {
 export interface Pet {
   id: string; // Formato ANO-XXXXXXXXXXX
   ownerId: string; // CPF do tutor principal
-  secondaryTutorCpf?: string; // CPF do 2º tutor (opcional)
+  secondaryTutorCpf?: string; 
   secondaryTutorName?: string;
   secondaryTutorEmail?: string;
   sharedWith?: PetShare[]; // Array para cuidadores/veterinários
@@ -185,6 +185,9 @@ export interface DewormerLog {
   notes?: string;
 }
 
+// Tipo de Antipulgas
+export type AntipulgasProductType = "Coleira" | "Pipeta" | "Spray" | "Comprimido" | "Outro";
+
 // Log de Antipulgas/Carrapatos
 export interface AntipulgasLog {
   id: string;
@@ -192,18 +195,22 @@ export interface AntipulgasLog {
   productName: string;
   applicationDate: string; // "dd/MM/aaaa"
   nextDueDate?: string; // "dd/MM/aaaa"
-  type: "Coleira" | "Pipeta" | "Spray" | "Comprimido" | "Outro"; // Tipo de produto
+  type: AntipulgasProductType; 
   notes?: string;
 }
+
+// Tipo de Documento Médico
+export type MedicalDocumentType = "Exame de Sangue" | "Raio-X" | "Ultrassom" | "Receita" | "Atestado" | "Outro";
 
 // Documento Médico
 export interface MedicalDocument {
   id:string;
   petId: string;
   documentName: string;
-  documentType: "Exame de Sangue" | "Raio-X" | "Ultrassom" | "Receita" | "Atestado" | "Outro";
+  documentType: MedicalDocumentType;
   issueDate: string; // "dd/MM/aaaa"
   fileName?: string; // Nome do arquivo (simulação de upload)
+  fileDataUrl?: string; // Para armazenar o conteúdo do arquivo como data URL (sem backend)
   notes?: string;
 }
 
@@ -305,3 +312,5 @@ export const genericVaccineDoses: string[] = [
   "Reforço Anual",
   "Outra",
 ];
+
+    

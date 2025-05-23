@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Stethoscope, BookMarked, PawPrint, Utensils, Activity, SprayCan } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
+import { Logo } from "@/components/shared/logo"; // Importar o Logo
 
 const featureCards = [
   {
@@ -56,7 +58,8 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-10 p-6 rounded-lg shadow-md bg-card">
+      <div className="mb-10 p-6 rounded-lg shadow-md bg-card flex flex-col items-center text-center">
+        <Logo className="mb-4" iconSize={48} textSize="text-3xl" /> {/* Logo adicionado aqui */}
         <h1 className="text-4xl font-bold text-primary mb-2">Bem-vindo(a) ao Meu Patinha!</h1>
         {user && <p className="text-xl text-foreground">Olá, {user.nome.split(' ')[0]}! Estamos felizes em te ver por aqui.</p>}
         <p className="mt-2 text-muted-foreground">

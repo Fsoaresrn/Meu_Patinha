@@ -9,14 +9,16 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // No longer needed for tipoResponsabilidade
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuthStore } from "@/stores/auth.store";
 import { useToast } from "@/hooks/use-toast";
 import type { AuthUser, UserResponsibility } from "@/types";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-// import { ufsBrasil, cidadesPorUF } from "@/lib/constants"; // No longer needed here
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { TermsContent } from "@/components/terms/terms-content";
+
 
 const responsabilidadesDisponiveis: { id: UserResponsibility; label: string }[] = [
   { id: "Tutor(a)", label: "Tutor(a) de Pet" },
@@ -32,10 +34,6 @@ const signupSchema = z.object({
   email: z.string().email("E-mail inválido"),
   senha: z.string().min(8, "Senha deve ter no mínimo 8 caracteres"),
   confirmarSenha: z.string(),
-  // UF e Cidade removidos do signup
-  // uf: z.string().min(2, "UF é obrigatória"),
-  // cidade: z.string().min(1, "Cidade é obrigatória"),
-  // Endereço campos removidos
   telefoneDdd: z.string().optional(),
   telefoneNumero: z.string().optional(),
   acceptTerms: z.boolean().refine(val => val === true, {
@@ -62,8 +60,6 @@ export default function SignupPage() {
       email: "",
       senha: "",
       confirmarSenha: "",
-      // uf: "", // Removido
-      // cidade: "", // Removido
       tipoResponsabilidade: [],
       acceptTerms: false,
       telefoneDdd: "",
@@ -71,12 +67,10 @@ export default function SignupPage() {
     },
   });
 
-  // const selectedUf = form.watch("uf"); // Removido
-
   const onSubmit = (data: SignupFormValues) => {
     const { nomeCompleto, cpf, tipoResponsabilidade, email, senha, telefoneDdd, telefoneNumero } = data;
     
-    const formattedCpf = cpf.replace(/[^\d]/g, ""); // Normalize CPF
+    const formattedCpf = cpf.replace(/[^\d]/g, ""); 
 
     if (registeredUsers.find(u => u.cpf === formattedCpf)) {
       toast({ variant: "destructive", title: "Erro de cadastro", description: "CPF já cadastrado." });
@@ -94,11 +88,8 @@ export default function SignupPage() {
       nome: nomeCompleto,
       email,
       tipoResponsabilidade: tipoResponsabilidade,
-      // UF e Cidade agora são opcionais e serão preenchidos em "Meu Cadastro"
-      // uf: "", // Definido como opcional no tipo
-      // cidade: "", // Definido como opcional no tipo
-      // endereco: undefined, // Removido do signup
-      // cep: undefined, // Removido do signup
+      uf: "", 
+      cidade: "", 
       telefone: (telefoneDdd && telefoneNumero) ? `(${telefoneDdd}) ${telefoneNumero}` : undefined,
       acceptedTerms: false, 
     };
@@ -107,8 +98,8 @@ export default function SignupPage() {
     setRegisteredUsers([...registeredUsers, newUser]);
     
     toast({ title: "Cadastro realizado com sucesso!", description: "Você já pode fazer login." });
-    loginUser(newUser); // Loga o usuário
-    router.push("/terms"); // Redireciona para a página de termos para aceite
+    loginUser(newUser); 
+    router.push("/terms"); 
   };
 
   return (
@@ -207,9 +198,6 @@ export default function SignupPage() {
             )} />
           </div>
           
-          {/* Campos de UF e Cidade Removidos */}
-          {/* Campos de Endereço Completo Removidos */}
-
           <FormDescription>Telefone (opcional):</FormDescription>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField control={form.control} name="telefoneDdd" render={({ field }) => (
@@ -224,7 +212,29 @@ export default function SignupPage() {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
               <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Li e aceito os <Link href="/terms" target="_blank" className="text-primary hover:underline">Termos de Uso e Política de Privacidade</Link></FormLabel>
+                <FormLabel>
+                  Li e aceito os {" "}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <span className="text-primary hover:underline cursor-pointer">
+                        Termos de Uso e Política de Privacidade
+                      </span>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+                      <DialogHeader>
+                        <DialogTitle>Termos de Uso e Política de Privacidade do Meu Patinha</DialogTitle>
+                      </DialogHeader>
+                      <ScrollArea className="flex-grow h-[calc(90vh-150px)] w-full rounded-md border p-4">
+                        <TermsContent />
+                      </ScrollArea>
+                      <DialogFooter className="mt-auto pt-4">
+                        <DialogClose asChild>
+                          <Button type="button" variant="outline">Fechar</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </FormLabel>
                 <FormMessage />
               </div>
             </FormItem>
@@ -246,3 +256,5 @@ export default function SignupPage() {
     </>
   );
 }
+
+    

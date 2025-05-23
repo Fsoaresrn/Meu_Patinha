@@ -202,8 +202,22 @@ export const furTypesBySpecies: Record<PetSpecies, string[]> = {
 };
 
 export const furColorsBySpecies: Record<PetSpecies, string[]> = {
-  Cão: ["Preto", "Branco", "Marrom (Chocolate, Fígado)", "Dourado", "Amarelo", "Creme", "Cinza (Azul)", "Vermelho", "Tricolor", "Bicolor", "Merle", "Tigrado", "Outra"],
-  Gato: ["Preto", "Branco", "Cinza (Azul)", "Laranja (Vermelho)", "Creme", "Marrom (Chocolate)", "Lilás", "Tricolor (Cálico)", "Bicolor", "Escama (Tortoiseshell)", "Siamês (Pointed)", "Tigrado (Tabby)", "Outra"],
+  Cão: [
+    "Abricot", "Areia", "Azul", "Bege", "Bicolor", "Branco", "Caramelo", "Cinza", "Cutia", 
+    "Fulvo", "Malhado", "Marrom", "Merle", "Preto", "Tigrado", "Tricolor", "Vermelho", "Zibelina", "Outra"
+  ].sort((a,b) => {
+    if (a === "Outra") return 1;
+    if (b === "Outra") return -1;
+    return a.localeCompare(b);
+  }),
+  Gato: [
+    "Âmbar", "Azul", "Bege", "Branco", "Canela", "Caramelo", "Chocolate", "Cinza", "Creme", 
+    "Dourado", "Lilás", "Prateado", "Preto", "Vermelho", "Zibelina", "Outra"
+  ].sort((a,b) => {
+    if (a === "Outra") return 1;
+    if (b === "Outra") return -1;
+    return a.localeCompare(b);
+  }),
 };
 
 export const petSizesList: string[] = ["Pequeno", "Médio", "Grande", "Gigante"];

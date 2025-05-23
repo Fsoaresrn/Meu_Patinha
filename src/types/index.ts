@@ -70,8 +70,8 @@ export interface Pet {
   id: string; // Formato ANO-XXXXXXXXXXX
   ownerId: string; // CPF do tutor principal
   secondaryTutorId?: string; // CPF do 2º tutor (opcional)
-  secondaryTutorName?: string; // Nome do 2º tutor (opcional)
-  secondaryTutorEmail?: string; // E-mail do 2º tutor (opcional)
+  secondaryTutorName?: string; 
+  secondaryTutorEmail?: string; 
   sharedWith?: PetShare[]; // Array para cuidadores/veterinários
   
   nome: string;
@@ -87,11 +87,11 @@ export interface Pet {
   naturalidadeCidade?: string;
   naturalidadeUF?: string;
   
-  hasSimPatinhas?: "Sim" | "Não"; // Novo campo
+  hasSimPatinhas?: "Sim" | "Não"; 
   simPatinhasId?: string; 
-  simPatinhasEmissionDate?: string; // "dd/MM/yyyy" - Anteriormente simPatinhasDataEmissao
-  simPatinhasEmissionCity?: string; // Anteriormente simPatinhasCidadeEmissao
-  simPatinhasEmissionUF?: string; // Anteriormente simPatinhasUFEmissao
+  simPatinhasEmissionDate?: string; // "dd/MM/yyyy" 
+  simPatinhasEmissionCity?: string; 
+  simPatinhasEmissionUF?: string; 
   
   peso?: number; // Em kg
   porte?: PetSize;
@@ -119,7 +119,7 @@ export interface SymptomLog {
   petId: string;
   date: string; // Data do registro "dd/MM/aaaa HH:mm"
   symptomsDescription: string;
-  additionalSymptomsSelected?: string[]; // Sintomas de acompanhamento
+  followUpResponses?: Array<{ symptom: string; response: "Sim" | "Não" | "Não tenho certeza"; }>;
   aiDiagnosis?: string;
   aiHomeTreatments?: string;
   aiImmediateActions?: string;

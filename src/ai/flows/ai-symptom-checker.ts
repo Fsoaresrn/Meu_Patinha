@@ -12,16 +12,21 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const FollowUpResponseSchema = z.object({
+  symptom: z.string().describe('A pergunta/sintoma de acompanhamento sugerido pela IA.'),
+  response: z.enum(["Sim", "Não", "Não tenho certeza"]).describe('A resposta do usuário ao sintoma de acompanhamento.'),
+});
+
 const CheckSymptomsInputSchema = z.object({
   petName: z.string().describe('O nome do pet.'),
   species: z.enum(['Cão', 'Gato']).describe('A espécie do pet (Cão ou Gato).'),
   breed: z.string().describe('A raça do pet.'),
   age: z.number().describe('A idade do pet em anos.'),
   symptoms: z.string().describe('Uma descrição detalhada dos sintomas do pet.'),
-  additionalSymptoms: z
-    .array(z.string())
+  followUpResponses: z
+    .array(FollowUpResponseSchema)
     .optional()
-    .describe('Opcional: Sintomas adicionais a serem considerados.'),
+    .describe('Opcional: Respostas do usuário a sintomas de acompanhamento previamente sugeridos pela IA.'),
 });
 
 export type CheckSymptomsInput = z.infer<typeof CheckSymptomsInputSchema>;
@@ -45,7 +50,7 @@ const CheckSymptomsOutputSchema = z.object({
   suggestedFollowUpSymptoms: z
     .array(z.string())
     .optional()
-    .describe('Sintomas de acompanhamento sugeridos para perguntar ao usuário, em Português do Brasil, caso mais informações sejam necessárias.'),
+    .describe('Sintomas de acompanhamento sugeridos para perguntar ao usuário, em Português do Brasil, caso mais informações sejam necessárias. Devem ser perguntas claras que podem ser respondidas com "Sim", "Não" ou "Não tenho certeza".'),
 });
 
 export type CheckSymptomsOutput = z.infer<typeof CheckSymptomsOutputSchema>;
@@ -59,7 +64,7 @@ const prompt = ai.definePrompt({
   input: {schema: CheckSymptomsInputSchema},
   output: {schema: CheckSymptomsOutputSchema},
   prompt: `Você é um assistente veterinário de IA ajudando tutores de pets a entenderem os sintomas de seus animais.
-  **IMPORTANTE: Todas as suas respostas, incluindo diagnósticos, sugestões e avisos, DEVEM estar em Português do Brasil.**
+  **IMPORTANTE: Todas as suas respostas, incluindo diagnósticos, sugestões, avisos e perguntas de acompanhamento, DEVEM estar em Português do Brasil.**
 
   Com base nas informações fornecidas, apresente diagnósticos potenciais, sugira passos para cuidados imediatos e forneça um aviso legal.
 
@@ -67,19 +72,20 @@ const prompt = ai.definePrompt({
   Espécie: {{{species}}}
   Raça: {{{breed}}}
   Idade: {{{age}}}
-  Sintomas: {{{symptoms}}}
-  {{#if additionalSymptoms}}
-  Sintomas Adicionais:
-  {{#each additionalSymptoms}}
-  - {{{this}}}
+  Sintomas Principais: {{{symptoms}}}
+  {{#if followUpResponses}}
+  Respostas aos sintomas de acompanhamento anteriores:
+  {{#each followUpResponses}}
+  - Pergunta: "{{{this.symptom}}}" Resposta do tutor: {{{this.response}}}
   {{/each}}
   {{/if}}
+
+  Se os sintomas fornecidos (incluindo respostas de acompanhamento, se houver) ainda forem insuficientes para um diagnóstico ou se o diagnóstico for muito amplo, defina needsMoreInfo como true e sugira NOVOS sintomas de acompanhamento (PERGUNTAS claras para o usuário responder com "Sim", "Não" ou "Não tenho certeza") em Português do Brasil para refinar a análise.
+  Se você tiver confiança suficiente para um diagnóstico preliminar com base nas informações atuais, defina needsMoreInfo como false.
 
   Diagnósticos Potenciais: (Responda em Português do Brasil. Liste as condições potenciais, separadas por vírgulas)
   Sugestões de Cuidados Imediatos: (Responda em Português do Brasil. Forneça passos acionáveis, separados por vírgulas)
   Aviso Legal: (Responda em Português do Brasil. Aviso padrão sobre não substituir o conselho veterinário profissional)
-
-  Se os sintomas fornecidos forem insuficientes para um diagnóstico, defina needsMoreInfo como true e sugira sintomas de acompanhamento para perguntar. **Todas essas sugestões também devem estar em Português do Brasil.**
 `,
 });
 

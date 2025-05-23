@@ -16,15 +16,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, AlertTriangle, Lightbulb, Activity, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Lightbulb, Activity, ShieldCheck, Sparkles, Loader2, Info } from "lucide-react";
 import Image from "next/image";
 import { checkSymptoms, type CheckSymptomsInput, type CheckSymptomsOutput } from "@/ai/flows/ai-symptom-checker";
+import { formatDateToBrasil, formatDateTimeToBrasil } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
 
 const symptomSchema = z.object({
   symptomsDescription: z.string().min(10, { message: "Descreva os sintomas com pelo menos 10 caracteres." }).max(2000, {message: "Limite de 2000 caracteres atingido."}),
 });
 
 type SymptomFormValues = z.infer<typeof symptomSchema>;
+type FollowUpAnswer = "Sim" | "Não" | "Não tenho certeza" | null;
 
 export default function PetSintomasPage() {
   const router = useRouter();
@@ -41,7 +44,7 @@ export default function PetSintomasPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<CheckSymptomsOutput | null>(null);
   const [currentFollowUpSymptoms, setCurrentFollowUpSymptoms] = useState<string[]>([]);
-  const [selectedFollowUpSymptoms, setSelectedFollowUpSymptoms] = useState<string[]>([]);
+  const [followUpAnswers, setFollowUpAnswers] = useState<Record<string, FollowUpAnswer>>({});
 
 
   const form = useForm<SymptomFormValues>({
@@ -78,10 +81,8 @@ export default function PetSintomasPage() {
     }
   }, [petId, allPets, user, router, toast]);
 
-  const handleFollowUpSymptomToggle = (symptom: string) => {
-    setSelectedFollowUpSymptoms(prev => 
-      prev.includes(symptom) ? prev.filter(s => s !== symptom) : [...prev, symptom]
-    );
+  const handleFollowUpAnswer = (symptom: string, answer: FollowUpAnswer) => {
+    setFollowUpAnswers(prev => ({ ...prev, [symptom]: answer }));
   };
 
   const onSubmit = async (data: SymptomFormValues) => {
@@ -91,7 +92,14 @@ export default function PetSintomasPage() {
     }
 
     setIsSubmitting(true);
-    setAnalysisResult(null); // Limpa resultado anterior para indicar nova análise
+    setAnalysisResult(null); 
+
+    const formattedFollowUpResponses = Object.entries(followUpAnswers)
+      .filter(([, response]) => response !== null)
+      .map(([symptom, response]) => ({
+        symptom,
+        response: response as "Sim" | "Não" | "Não tenho certeza", // Type assertion after filter
+      }));
 
     const inputForAI: CheckSymptomsInput = {
       petName: pet.nome,
@@ -99,7 +107,7 @@ export default function PetSintomasPage() {
       breed: pet.raca,
       age: pet.idade || (pet.dataNascimento ? new Date().getFullYear() - new Date(pet.dataNascimento).getFullYear() : 0),
       symptoms: data.symptomsDescription,
-      additionalSymptoms: selectedFollowUpSymptoms.length > 0 ? selectedFollowUpSymptoms : undefined,
+      followUpResponses: formattedFollowUpResponses.length > 0 ? formattedFollowUpResponses : undefined,
     };
 
     try {
@@ -108,27 +116,26 @@ export default function PetSintomasPage() {
 
       if (result.needsMoreInfo && result.suggestedFollowUpSymptoms && result.suggestedFollowUpSymptoms.length > 0) {
         setCurrentFollowUpSymptoms(result.suggestedFollowUpSymptoms);
-        setSelectedFollowUpSymptoms([]); // Limpa selecionados para próxima rodada de feedback
+        setFollowUpAnswers({}); // Limpa respostas para próxima rodada
         toast({
           title: "Mais informações necessárias",
-          description: "A IA precisa de mais detalhes. Selecione os sintomas adicionais abaixo e analise novamente.",
+          description: "A IA precisa de mais detalhes. Responda às perguntas abaixo e analise novamente.",
           duration: 7000,
         });
       } else {
-        setCurrentFollowUpSymptoms([]); // Limpa se não precisar de mais info
+        setCurrentFollowUpSymptoms([]); 
         toast({
           title: "Análise Concluída",
           description: "A IA processou os sintomas. Veja os resultados abaixo.",
         });
       }
 
-      // Salvar log do sintoma
       const newLog: SymptomLog = {
         id: new Date().toISOString(),
         petId: pet.id,
-        date: new Date().toISOString(),
+        date: formatDateTimeToBrasil(new Date()),
         symptomsDescription: data.symptomsDescription,
-        additionalSymptomsSelected: inputForAI.additionalSymptoms,
+        followUpResponses: formattedFollowUpResponses.length > 0 ? formattedFollowUpResponses : undefined,
         aiDiagnosis: result.potentialDiagnoses,
         aiImmediateActions: result.immediateCareSuggestions,
         aiDisclaimer: result.disclaimer,
@@ -189,7 +196,7 @@ export default function PetSintomasPage() {
             <div>
               <CardTitle className="text-2xl font-bold text-primary">Análise de Sintomas para {pet.nome}</CardTitle>
               <CardDescription className="text-md text-muted-foreground">
-                {pet.especie} - {pet.raca} - {pet.idade !== undefined ? `${pet.idade} anos` : (pet.dataNascimento ? `${new Date().getFullYear() - new Date(pet.dataNascimento).getFullYear()} anos` : 'Idade não informada')}
+                {pet.especie} - {pet.raca} - {pet.dataNascimento ? formatDateToBrasil(pet.dataNascimento) : (pet.idade !== undefined ? `${pet.idade} anos (aprox.)` : 'Idade não informada')}
               </CardDescription>
             </div>
           </div>
@@ -211,7 +218,7 @@ export default function PetSintomasPage() {
                 name="symptomsDescription"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold">Descreva os Sintomas do Pet<span className="text-destructive">*</span></FormLabel>
+                    <FormLabel className="text-lg font-semibold">Descreva os Sintomas Principais do Pet<span className="text-destructive">*</span></FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Ex: Vômito frequente nas últimas 24h, falta de apetite, apatia. Detalhe o máximo possível."
@@ -229,22 +236,36 @@ export default function PetSintomasPage() {
               />
               
               {analysisResult && analysisResult.needsMoreInfo && currentFollowUpSymptoms.length > 0 && (
-                <FormItem className="p-4 border rounded-md bg-muted/50">
-                  <FormLabel className="text-lg font-semibold text-primary">Para um diagnóstico mais preciso, seu pet também apresenta algum destes sintomas?</FormLabel>
-                  <FormDescription>Selecione os sintomas aplicáveis abaixo e clique em "Analisar Sintomas" novamente.</FormDescription>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t">
-                    {currentFollowUpSymptoms.map((symptom) => (
-                      <Button
-                        key={symptom}
-                        type="button"
-                        variant={selectedFollowUpSymptoms.includes(symptom) ? "default" : "outline"}
-                        onClick={() => handleFollowUpSymptomToggle(symptom)}
-                        className="w-full justify-start text-left h-auto py-2"
-                        disabled={isSubmitting}
-                      >
-                        <span className="flex-1">{symptom}</span>
-                        {selectedFollowUpSymptoms.includes(symptom) && <ShieldCheck className="h-4 w-4 ml-2 text-primary-foreground"/>}
-                      </Button>
+                <FormItem className="p-4 border rounded-md bg-muted/50 space-y-4">
+                  <div className="flex items-start space-x-2">
+                    <Info className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                    <div>
+                      <FormLabel className="text-lg font-semibold text-primary">Para um diagnóstico mais preciso, responda:</FormLabel>
+                      <FormDescription>Selecione uma resposta para cada sintoma/pergunta abaixo e clique em "Analisar Sintomas" novamente.</FormDescription>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 pt-3 border-t">
+                    {currentFollowUpSymptoms.map((symptomQuestion, index) => (
+                      <div key={index} className="p-3 border rounded-md bg-background shadow-sm">
+                        <p className="mb-2 font-medium text-sm text-foreground break-words">{symptomQuestion}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {(["Sim", "Não", "Não tenho certeza"] as const).map(answerOption => (
+                            <Button
+                              key={answerOption}
+                              type="button"
+                              variant={followUpAnswers[symptomQuestion] === answerOption ? "default" : "outline"}
+                              onClick={() => handleFollowUpAnswer(symptomQuestion, answerOption)}
+                              className={cn("text-xs h-8 px-3", {
+                                "bg-primary text-primary-foreground": followUpAnswers[symptomQuestion] === answerOption,
+                              })}
+                              disabled={isSubmitting}
+                            >
+                              {answerOption}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </FormItem>
@@ -279,7 +300,7 @@ export default function PetSintomasPage() {
             {analysisResult.potentialDiagnoses && (
               <Alert>
                 <Lightbulb className="h-5 w-5" />
-                <AlertTitle className="font-semibold">Diagnósticos Potenciais</AlertTitle>
+                <AlertTitle className="font-semibold">Diagnósticos Potenciais (Sugestão da IA)</AlertTitle>
                 <AlertDescription>
                   <ul className="list-disc list-inside ml-4">
                     {analysisResult.potentialDiagnoses.split(',').map(diag => diag.trim()).filter(diag => diag).map((diag, index) => (
@@ -293,7 +314,7 @@ export default function PetSintomasPage() {
             {analysisResult.immediateCareSuggestions && (
               <Alert>
                 <Activity className="h-5 w-5" />
-                <AlertTitle className="font-semibold">Sugestões de Cuidados Imediatos</AlertTitle>
+                <AlertTitle className="font-semibold">Sugestões de Cuidados Imediatos (Sugestão da IA)</AlertTitle>
                  <AlertDescription>
                   <ul className="list-disc list-inside ml-4">
                     {analysisResult.immediateCareSuggestions.split(',').map(sug => sug.trim()).filter(sug => sug).map((sug, index) => (
@@ -324,5 +345,3 @@ export default function PetSintomasPage() {
     </div>
   );
 }
-
-    

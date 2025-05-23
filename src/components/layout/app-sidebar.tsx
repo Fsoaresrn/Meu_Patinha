@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -11,8 +12,8 @@ import {
   Activity,
   SprayCan, // Using SprayCan for Higiene, Shower is not in lucide
   Mail,
-  MessageSquare,
-  UserCircle,
+  // MessageSquare, // Removido daqui
+  // UserCircle, // Removido daqui
   Settings,
   ShieldQuestion,
 } from "lucide-react";
@@ -43,10 +44,10 @@ const mainNavItems = [
 
 const secondaryNavItems = [
   { href: "/convites", label: "Convites", icon: Mail },
-  { href: "/fale-conosco", label: "Fale Conosco", icon: MessageSquare },
+  // { href: "/fale-conosco", label: "Fale Conosco", icon: MessageSquare }, // Movido para o menu do usuário
 ];
 
-const accountNavItem = { href: "/meu-cadastro", label: "Meu Cadastro", icon: UserCircle };
+// const accountNavItem = { href: "/meu-cadastro", label: "Meu Cadastro", icon: UserCircle }; // Removido daqui, está no app-header
 const termsNavItem = { href: "/terms", label: "Termos de Uso", icon: ShieldQuestion };
 
 
@@ -87,7 +88,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          {renderNavItem(accountNavItem)}
+          {/* {renderNavItem(accountNavItem)} // Removido */}
           {/* Optionally add terms link here if needed, or keep in avatar menu */}
           {/* {renderNavItem(termsNavItem)} */}
         </SidebarMenu>

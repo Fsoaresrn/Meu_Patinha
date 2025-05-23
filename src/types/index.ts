@@ -13,13 +13,13 @@ export type PetSize = "Pequeno" | "Médio" | "Grande" | "Gigante";
 
 // Tipo de Aquisição do Pet
 export type PetAcquisitionType = 
-  | "Comprado" 
-  | "Adotado (Abrigo/ONG)" 
-  | "Adotado (Particular)"
-  | "Resgatado" 
-  | "Presente" 
-  | "Nasceu em casa" 
-  | "Outro";
+  | "Adoção/feira: Aquisição em estabelecimento reconhecido nesta finalidade"
+  | "Adoção/ONG: Aquisição em estabelecimento reconhecido nesta finalidade"
+  | "Adoção/Particular: Aquisição via pessoa de contato"
+  | "Adoção/varejo: Aquisição em estabelecimento reconhecido nesta finalidade"
+  | "Compra: Aquisição em estabelecimento registrado e emissor de nota fiscal"
+  | "Resgatado em Via pública"
+  | "Outros";
 
 // Finalidade do Pet
 export type PetPurpose = 
@@ -256,3 +256,4 @@ export interface Invitation {
   ownerEmail: string;
   dateSent: string; // "dd/MM/aaaa"
 }
+

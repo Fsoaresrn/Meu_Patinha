@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useAuthStore } from "@/stores/auth.store";
 import { useToast } from "@/hooks/use-toast";
-import type { Pet, PetSpecies, PetGender, PetSize } from "@/types";
+import type { Pet, PetSpecies, PetGender, PetSize, PetAcquisitionType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,7 +18,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList } from "@/lib/constants";
+import { petIdGenerator, petSpeciesList, dogBreeds, catBreeds, petGendersList, yesNoOptions, furTypesBySpecies, furColorsBySpecies, petSizesList, acquisitionTypes } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
 import { CalendarIcon, ArrowLeft, Search, ChevronsUpDown, Check as CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,7 @@ const petFormSchema = z.object({
   ),
   sexo: z.enum(petGendersList as [PetGender, ...PetGender[]], { required_error: "Sexo é obrigatória." }),
   castrado: z.enum(yesNoOptions, { required_error: "Informar se é castrado é obrigatório." }),
+  tipoAquisicao: z.enum(acquisitionTypes as [string, ...string[]]).optional(),
   fotoUrl: z.string().url({ message: "URL da foto inválida." }).optional().or(z.literal("")),
   tipoPelagem: z.string().optional(),
   corPelagem: z.string().optional(),
@@ -88,6 +89,7 @@ export default function AdicionarPetPage() {
       raca: "",
       sexo: undefined,
       castrado: undefined,
+      tipoAquisicao: undefined,
       fotoUrl: "",
       sinaisObservacoes: "",
       birthDateUnknown: false,
@@ -115,7 +117,7 @@ export default function AdicionarPetPage() {
       // If RHF date is cleared (e.g. "unknown" checked or invalid blur), clear input string
       setDateInputString("");
     }
-  }, [watchedDataNascimento]);
+  }, [watchedDataNascimento, dateInputString]);
 
 
   useEffect(() => {
@@ -161,6 +163,7 @@ export default function AdicionarPetPage() {
       raca: data.raca,
       sexo: data.sexo,
       castrado: data.castrado,
+      tipoAquisicao: data.tipoAquisicao as PetAcquisitionType | undefined,
       fotoUrl: data.fotoUrl || undefined,
       tipoPelagem: data.tipoPelagem || "",
       corPelagem: data.corPelagem || "",
@@ -541,6 +544,23 @@ export default function AdicionarPetPage() {
                 />
               </div>
               
+              <FormField
+                control={form.control}
+                name="tipoAquisicao"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Aquisição (Opcional)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione o tipo de aquisição" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        {acquisitionTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="fotoUrl"

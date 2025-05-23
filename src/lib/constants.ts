@@ -225,8 +225,13 @@ export const petGendersList: string[] = ["Macho", "Fêmea", "Não especificado"]
 export const yesNoOptions: ("Sim" | "Não")[] = ["Sim", "Não"];
 
 export const acquisitionTypes: string[] = [
-  "Comprado", "Adotado (Abrigo/ONG)", "Adotado (Particular)",
-  "Resgatado", "Presente", "Nasceu em casa", "Outro"
+  "Adoção/feira: Aquisição em estabelecimento reconhecido nesta finalidade",
+  "Adoção/ONG: Aquisição em estabelecimento reconhecido nesta finalidade",
+  "Adoção/Particular: Aquisição via pessoa de contato",
+  "Adoção/varejo: Aquisição em estabelecimento reconhecido nesta finalidade",
+  "Compra: Aquisição em estabelecimento registrado e emissor de nota fiscal",
+  "Resgatado em Via pública",
+  "Outros"
 ];
 
 export const petPurposes: string[] = [

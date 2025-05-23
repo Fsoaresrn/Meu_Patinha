@@ -59,7 +59,7 @@ export default function HomePage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-10 p-6 rounded-lg shadow-md bg-card flex flex-col items-center text-center">
-        <Logo className="mb-4" iconSize={48} textSize="text-3xl" /> {/* Logo adicionado aqui */}
+        <Logo className="mb-4" iconSize={48} textSize="text-3xl" /> {/* Logo posicionado e centralizado aqui */}
         <h1 className="text-4xl font-bold text-primary mb-2">Bem-vindo(a) ao Meu Patinha!</h1>
         {user && <p className="text-xl text-foreground">Olá, {user.nome.split(' ')[0]}! Estamos felizes em te ver por aqui.</p>}
         <p className="mt-2 text-muted-foreground">

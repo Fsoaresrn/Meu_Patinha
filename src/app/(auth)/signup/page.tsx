@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react"; // Import icons
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,8 @@ export default function SignupPage() {
   const { toast } = useToast();
   const [registeredUsers, setRegisteredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrengthResult | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -208,7 +211,25 @@ export default function SignupPage() {
             <FormField control={form.control} name="senha" render={({ field }) => (
               <FormItem>
                 <FormLabel>Senha<span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input type="password" placeholder="Crie uma senha" {...field} /></FormControl>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Crie uma senha"
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </Button>
+                  </div>
+                </FormControl>
                 <FormMessage />
                 {passwordStrength && passwordStrength.label && passwordStrength.score > 0 && (
                   <div className="mt-2 space-y-1">
@@ -217,10 +238,10 @@ export default function SignupPage() {
                       className={cn(
                         "h-2",
                         {
-                          "[&>div]:!bg-destructive": passwordStrength.score === 1, // Fraca
-                          "[&>div]:!bg-orange-500": passwordStrength.score === 2, // Média
-                          "[&>div]:!bg-green-500": passwordStrength.score === 3, // Forte
-                          "[&>div]:!bg-green-700": passwordStrength.score === 4, // Muito Forte
+                          "[&>div]:!bg-destructive": passwordStrength.score === 1, 
+                          "[&>div]:!bg-orange-500": passwordStrength.score === 2, 
+                          "[&>div]:!bg-green-500": passwordStrength.score === 3, 
+                          "[&>div]:!bg-green-700": passwordStrength.score === 4, 
                         }
                       )}
                       aria-label={`Força da senha: ${passwordStrength.label}`}
@@ -240,7 +261,25 @@ export default function SignupPage() {
             <FormField control={form.control} name="confirmarSenha" render={({ field }) => (
               <FormItem>
                 <FormLabel>Confirmar Senha<span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input type="password" placeholder="Confirme sua senha" {...field} /></FormControl>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirme sua senha"
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={showConfirmPassword ? "Esconder senha" : "Mostrar senha"}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </Button>
+                  </div>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -341,5 +380,3 @@ export default function SignupPage() {
     </>
   );
 }
-
-    

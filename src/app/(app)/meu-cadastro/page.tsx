@@ -23,6 +23,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react"; // Import icons
 
 
 const profileSchema = z.object({
@@ -58,6 +59,10 @@ export default function MeuCadastroPage() {
   const [registeredUsers, setRegisteredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
   const [newPasswordStrength, setNewPasswordStrength] = useState<PasswordStrengthResult | null>(null);
   const [showPrivacyNoticeModal, setShowPrivacyNoticeModal] = useState(false);
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const forcePasswordChange = searchParams.get('forcePasswordChange') === 'true' && tempPasswordForcedReset;
 
@@ -289,12 +294,50 @@ export default function MeuCadastroPage() {
             <Form {...passwordForm}>
               <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
                  <FormField control={passwordForm.control} name="senhaAtual" render={({ field }) => (
-                  <FormItem><FormLabel>{forcePasswordChange ? "Senha Provisória" : "Senha Atual"}<span className="text-destructive">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel>{forcePasswordChange ? "Senha Provisória" : "Senha Atual"}<span className="text-destructive">*</span></FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showCurrentPassword ? "text" : "password"}
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                          aria-label={showCurrentPassword ? "Esconder senha" : "Mostrar senha"}
+                        >
+                          {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )} />
                 <FormField control={passwordForm.control} name="novaSenha" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nova Senha<span className="text-destructive">*</span></FormLabel>
-                    <FormControl><Input type="password" {...field} /></FormControl>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showNewPassword ? "text" : "password"}
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          aria-label={showNewPassword ? "Esconder senha" : "Mostrar senha"}
+                        >
+                          {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </Button>
+                      </div>
+                    </FormControl>
                     <FormMessage />
                     {newPasswordStrength && newPasswordStrength.label && newPasswordStrength.score > 0 && (
                       <div className="mt-2 space-y-1">
@@ -303,10 +346,10 @@ export default function MeuCadastroPage() {
                           className={cn(
                             "h-2",
                             {
-                              "[&>div]:!bg-destructive": newPasswordStrength.score === 1, // Fraca
-                              "[&>div]:!bg-orange-500": newPasswordStrength.score === 2, // Média
-                              "[&>div]:!bg-green-500": newPasswordStrength.score === 3, // Forte
-                              "[&>div]:!bg-green-700": newPasswordStrength.score === 4, // Muito Forte
+                              "[&>div]:!bg-destructive": newPasswordStrength.score === 1, 
+                              "[&>div]:!bg-orange-500": newPasswordStrength.score === 2, 
+                              "[&>div]:!bg-green-500": newPasswordStrength.score === 3, 
+                              "[&>div]:!bg-green-700": newPasswordStrength.score === 4, 
                             }
                           )}
                           aria-label={`Força da senha: ${newPasswordStrength.label}`}
@@ -324,7 +367,28 @@ export default function MeuCadastroPage() {
                   </FormItem>
                 )} />
                 <FormField control={passwordForm.control} name="confirmarNovaSenha" render={({ field }) => (
-                  <FormItem><FormLabel>Confirmar Nova Senha<span className="text-destructive">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel>Confirmar Nova Senha<span className="text-destructive">*</span></FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmNewPassword ? "text" : "password"}
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                          onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                          aria-label={showConfirmNewPassword ? "Esconder senha" : "Mostrar senha"}
+                        >
+                          {showConfirmNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )} />
                 <Button type="submit" disabled={passwordForm.formState.isSubmitting}>Alterar Senha</Button>
               </form>
@@ -335,6 +399,3 @@ export default function MeuCadastroPage() {
     </>
   );
 }
-    
-
-    

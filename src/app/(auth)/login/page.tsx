@@ -6,10 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useState } from "react"; // Import useState
+import { Eye, EyeOff } from "lucide-react"; // Import icons
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label"; // Label is now part of Form
 import { useAuthStore } from "@/stores/auth.store";
 import { useToast } from "@/hooks/use-toast";
 import type { AuthUser } from "@/types";
@@ -29,7 +30,7 @@ export default function LoginPage() {
   const loginUser = useAuthStore((state) => state.login);
   const { toast } = useToast();
   const [registeredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
-
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -45,7 +46,6 @@ export default function LoginPage() {
     if (user) {
       const isTempPasswordLogin = user.temporaryPassword === data.senha;
       const isRegularPasswordLogin = localStorage.getItem(`password-${user.cpf}`) === data.senha;
-
 
       if (isRegularPasswordLogin || isTempPasswordLogin) {
         loginUser(user, isTempPasswordLogin);
@@ -89,7 +89,23 @@ export default function LoginPage() {
               <FormItem>
                 <FormLabel>Senha<span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Sua senha" {...field} />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Sua senha"
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,5 +131,3 @@ export default function LoginPage() {
     </>
   );
 }
-
-    

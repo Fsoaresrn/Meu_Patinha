@@ -22,6 +22,7 @@ import {
   BedDouble,
   School,
   Briefcase, // Ícone para Pet Sitter
+  ShoppingCart, // Ícone para Shopping
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
@@ -77,6 +78,7 @@ const mainNavItems: NavItem[] = [
   { href: "/hospedagem", label: "Hospedagem", icon: BedDouble, isActive: (pathname) => pathname.startsWith("/hospedagem") },
   { href: "/creche", label: "Creche", icon: School, isActive: (pathname) => pathname.startsWith("/creche") },
   { href: "/pet-sitter", label: "Pet Sitter", icon: Briefcase, isActive: (pathname) => pathname.startsWith("/pet-sitter") },
+  { href: "/shopping", label: "Shopping", icon: ShoppingCart, isActive: (pathname) => pathname.startsWith("/shopping") },
 ];
 
 const secondaryNavItems: NavItem[] = [
@@ -93,7 +95,7 @@ export function AppSidebar() {
     if (item.href) {
       activeState = item.isActive ? item.isActive(pathname) : (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href));
     } else if (item.subItems) {
-      activeState = item.subItems.some(subItem => subItem.isActive ? subItem.isActive(pathname) : pathname.startsWith(subItem.href));
+      activeState = item.isActive ? item.isActive(pathname) : item.subItems.some(subItem => subItem.isActive ? subItem.isActive(pathname) : pathname.startsWith(subItem.href));
     }
 
 

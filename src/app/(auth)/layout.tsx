@@ -7,10 +7,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Coluna Esquerda - Visível em telas médias e maiores */}
-      <div className="relative hidden md:flex md:w-1/2 lg:w-3/5 flex-col items-center justify-center bg-primary/10 p-8 text-center shadow-lg">
+      <div className="relative hidden md:flex md:w-1/2 lg:w-3/5 flex-col items-center justify-center bg-background shadow-lg">
         <Image
-          src="/petz.jpeg" // Atualizado para a imagem local
-          alt="Imagem de fundo com diversos pets amigáveis"  // Texto alternativo atualizado
+          src="/petz.jpeg" 
+          alt="Imagem de fundo com diversos pets amigáveis"
           layout="fill"
           objectFit="cover"
           priority

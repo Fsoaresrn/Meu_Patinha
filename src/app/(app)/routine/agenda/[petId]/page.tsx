@@ -10,7 +10,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import type { Pet } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, CalendarDays, Construction } from "lucide-react";
+import { ArrowLeft, CalendarDays, Construction, PlusCircle } from "lucide-react";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { cn } from "@/lib/utils";
 import { calculateAge } from "@/lib/date-utils";
@@ -131,6 +131,12 @@ export default function PetAgendaPage() {
           <p className="text-muted-foreground">
             Em breve, você poderá visualizar um calendário interativo e cards resumindo todas as atividades de rotina e bem-estar cadastradas para {pet.nome}. Ao selecionar uma data no calendário, as atividades daquele dia serão listadas.
           </p>
+           <div className="mt-8">
+            <Button size="lg" >
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Cadastrar Nova Atividade
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Stethoscope, BookMarked, PawPrint, Utensils, Activity, SprayCan } from "lucide-react";
+import { Stethoscope, BookMarked, PawPrint, Utensils, Activity, SprayCan, Pill, ShieldCheck, FileText } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { Logo } from "@/components/shared/logo"; 
 
@@ -50,6 +50,27 @@ const featureCards = [
     icon: SprayCan,
     link: "/higiene",
     color: "text-teal-500",
+  },
+  {
+    title: "Controle de Vermifugação",
+    description: "Gerencie os vermífugos e mantenha a saúde intestinal do seu pet em dia.",
+    icon: Pill,
+    link: "/saude/vermifugos",
+    color: "text-orange-500",
+  },
+  {
+    title: "Controle de Antipulgas",
+    description: "Mantenha seu pet protegido contra pulgas e carrapatos.",
+    icon: ShieldCheck,
+    link: "/saude/antipulgas",
+    color: "text-cyan-500",
+  },
+  {
+    title: "Exames e Documentos",
+    description: "Guarde e acesse o histórico de exames e documentos médicos do seu pet.",
+    icon: FileText,
+    link: "/saude/exames",
+    color: "text-indigo-500",
   },
 ];
 

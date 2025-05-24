@@ -4,7 +4,24 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Stethoscope, BookMarked, PawPrint, Utensils, Activity, SprayCan, Pill, ShieldCheck, FileText } from "lucide-react";
+import { 
+  Stethoscope, 
+  BookMarked, 
+  PawPrint, 
+  Utensils, 
+  Activity, 
+  SprayCan, 
+  Pill, 
+  ShieldCheck, 
+  FileText,
+  BedDouble,
+  School,
+  Briefcase,
+  ShoppingCart,
+  HeartHandshake,
+  Heart,
+  Images
+} from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { Logo } from "@/components/shared/logo"; 
 
@@ -71,6 +88,55 @@ const featureCards = [
     icon: FileText,
     link: "/saude/exames",
     color: "text-indigo-500",
+  },
+  {
+    title: "Álbum de Fotos",
+    description: "Relembre os melhores momentos com uma galeria de fotos dos seus pets.",
+    icon: Images,
+    link: "/album",
+    color: "text-pink-500",
+  },
+  {
+    title: "Hospedagem Pet",
+    description: "Encontre ou ofereça um lar temporário seguro e confortável para pets.",
+    icon: BedDouble,
+    link: "/hospedagem",
+    color: "text-lime-500",
+  },
+  {
+    title: "Creche para Pets",
+    description: "Deixe seu pet se divertir e socializar em um ambiente seguro durante o dia.",
+    icon: School,
+    link: "/creche",
+    color: "text-amber-500",
+  },
+  {
+    title: "Pet Sitter",
+    description: "Contrate cuidadores de confiança para cuidar do seu pet na sua ausência.",
+    icon: Briefcase,
+    link: "/pet-sitter",
+    color: "text-violet-500",
+  },
+  {
+    title: "Shopping Pet",
+    description: "Explore uma variedade de produtos, desde rações a brinquedos para seu pet.",
+    icon: ShoppingCart,
+    link: "/shopping",
+    color: "text-rose-500",
+  },
+  {
+    title: "Adoção de Pets",
+    description: "Encontre um novo companheiro ou anuncie um pet para adoção responsável.",
+    icon: HeartHandshake,
+    link: "/adocao",
+    color: "text-emerald-500",
+  },
+  {
+    title: "NamoroPet",
+    description: "Conecte seu pet com outros para acasalamento e novas amizades.",
+    icon: Heart,
+    link: "/namoro-pet",
+    color: "text-fuchsia-500",
   },
 ];
 

@@ -20,7 +20,8 @@ import {
   ShieldCheck,
   FileText,
   BedDouble,
-  School, // Ícone para Creche
+  School,
+  Briefcase, // Ícone para Pet Sitter
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
@@ -75,6 +76,7 @@ const mainNavItems: NavItem[] = [
   { href: "/higiene", label: "Higiene", icon: SprayCan, isActive: (pathname) => pathname.startsWith("/higiene") },
   { href: "/hospedagem", label: "Hospedagem", icon: BedDouble, isActive: (pathname) => pathname.startsWith("/hospedagem") },
   { href: "/creche", label: "Creche", icon: School, isActive: (pathname) => pathname.startsWith("/creche") },
+  { href: "/pet-sitter", label: "Pet Sitter", icon: Briefcase, isActive: (pathname) => pathname.startsWith("/pet-sitter") },
 ];
 
 const secondaryNavItems: NavItem[] = [
@@ -87,8 +89,6 @@ export function AppSidebar() {
   const renderNavItem = (item: NavItem, isSubItem = false) => {
     const IconComponent = item.icon;
     const baseButtonClass = "w-full justify-start";
-    // Ajuste para isActive: Se o item tem href, usa a lógica antiga. Se não tem (é um agrupador),
-    // verifica se algum subitem está ativo.
     let activeState = false;
     if (item.href) {
       activeState = item.isActive ? item.isActive(pathname) : (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href));
@@ -102,7 +102,7 @@ export function AppSidebar() {
         <SidebarMenuItem key={item.label}>
           <SidebarMenuButton
             isActive={activeState}
-            className={cn(baseButtonClass, item.href ? "" : "cursor-default")} // Parent is not a link if it has subItems AND no href
+            className={cn(baseButtonClass, item.href ? "" : "cursor-default")} 
             tooltip={item.label}
           >
             <IconComponent className="h-5 w-5" />
@@ -143,7 +143,6 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </Link>
         ) : (
-          // Caso de um item sem href e sem subItems (não deveria acontecer com a estrutura atual, mas é um fallback)
           <SidebarMenuButton
             isActive={activeState}
             className={cn(baseButtonClass, "cursor-default")}
@@ -175,7 +174,6 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          {/* {renderNavItem(termsNavItem)} */}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

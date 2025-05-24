@@ -55,7 +55,7 @@ export default function LoginPage() {
         router.push(redirectUrl);
 
       } else {
-        toast({ variant: "destructive", title: "Erro de login", description: "CPF ou senha incorretos." });
+        toast({ variant: "destructive", title: "Erro de login", description: "Usuário ou senha incorretos." });
       }
     } else {
       toast({ variant: "destructive", title: "Erro de login", description: "Usuário não encontrado." });
@@ -74,9 +74,9 @@ export default function LoginPage() {
             name="cpf"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>CPF<span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Usuário<span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <Input placeholder="Seu CPF (somente números)" {...field} />
+                  <Input placeholder="Seu usuário (CPF)" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

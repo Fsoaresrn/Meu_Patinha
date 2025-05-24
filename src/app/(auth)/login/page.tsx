@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react"; // Import useState
-import { Eye, EyeOff } from "lucide-react"; // Import icons
+import { useState } from "react"; 
+import { Eye, EyeOff } from "lucide-react"; 
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ export default function LoginPage() {
   const loginUser = useAuthStore((state) => state.login);
   const { toast } = useToast();
   const [registeredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false); 
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,7 +55,7 @@ export default function LoginPage() {
         router.push(redirectUrl);
 
       } else {
-        toast({ variant: "destructive", title: "Erro de login", description: "CPF ou senha incorretos." });
+        toast({ variant: "destructive", title: "Erro de login", description: "Usuário ou senha incorretos." }); // Mensagem genérica
       }
     } else {
       toast({ variant: "destructive", title: "Erro de login", description: "Usuário não encontrado." });
@@ -74,9 +74,9 @@ export default function LoginPage() {
             name="cpf"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>CPF<span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Usuário<span className="text-destructive">*</span></FormLabel> {/* Alterado de CPF para Usuário */}
                 <FormControl>
-                  <Input placeholder="Seu CPF (somente números)" {...field} />
+                  <Input placeholder="Seu usuário (CPF)" {...field} /> {/* Placeholder atualizado */}
                 </FormControl>
                 <FormMessage />
               </FormItem>

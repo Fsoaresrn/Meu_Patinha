@@ -14,17 +14,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           layout="fill"
           objectFit="cover"
           priority
-          className="" /* Opacidade removida para teste */
+          className="" 
         />
-        {/* Título e subtítulo sobrepostos foram removidos anteriormente */}
       </div>
 
       {/* Coluna Direita - Formulário */}
       <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-xs"> {/* Alterado de max-w-md para max-w-xs */}
           <div className="mb-8 flex flex-col items-center text-center">
             <Logo className="mb-4" iconSize={48} textSize="text-3xl" />
-            {/* O título da ação (ex: "Acesse sua conta") virá do children */}
           </div>
           <div className="rounded-xl border bg-card p-6 shadow-xl sm:p-8">
             {children}

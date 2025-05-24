@@ -15,12 +15,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthStore } from '@/stores/auth.store';
-import { useSidebar } from "@/components/ui/sidebar"; // Removed SidebarTrigger import as it's not used directly
+import { useSidebar } from "@/components/ui/sidebar"; 
 
 export function AppHeader() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
-  const { isMobile, toggleSidebar } = useSidebar(); // Get toggleSidebar from useSidebar
+  const { isMobile, toggleSidebar } = useSidebar(); 
 
   const handleEmergency = () => {
     window.open('https://www.google.com/maps/search/?api=1&query=clínicas+veterinárias+24h+próximas', '_blank');
@@ -48,7 +48,7 @@ export function AppHeader() {
             <Menu className="h-5 w-5" />
           </Button>
         )}
-        <span className="font-semibold text-lg hidden sm:block">Meu Patinha</span>
+        {/* O span "Meu Patinha" foi removido daqui */}
       </div>
       <div className="flex items-center gap-3">
         <Button variant="destructive" size="icon" onClick={handleEmergency} aria-label="Emergência Veterinária">

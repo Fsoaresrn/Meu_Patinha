@@ -12,7 +12,7 @@ import {
   Utensils,
   Activity,
   SprayCan,
-  Mail,
+  Users, // Alterado de Mail para Users para Compartilhamentos
   Settings,
   ShieldQuestion,
   ClipboardList,
@@ -21,8 +21,9 @@ import {
   FileText,
   BedDouble,
   School,
-  Briefcase, // Ícone para Pet Sitter
-  ShoppingCart, // Ícone para Shopping
+  Briefcase,
+  ShoppingCart,
+  HeartHandshake, // Novo ícone para Adoção
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
@@ -79,10 +80,11 @@ const mainNavItems: NavItem[] = [
   { href: "/creche", label: "Creche", icon: School, isActive: (pathname) => pathname.startsWith("/creche") },
   { href: "/pet-sitter", label: "Pet Sitter", icon: Briefcase, isActive: (pathname) => pathname.startsWith("/pet-sitter") },
   { href: "/shopping", label: "Shopping", icon: ShoppingCart, isActive: (pathname) => pathname.startsWith("/shopping") },
+  { href: "/adocao", label: "Adoção", icon: HeartHandshake, isActive: (pathname) => pathname.startsWith("/adocao") }, // Novo item Adoção
 ];
 
 const secondaryNavItems: NavItem[] = [
-  { href: "/convites", label: "Convites", icon: Mail, isActive: (pathname) => pathname.startsWith("/convites") },
+  { href: "/compartilhamentos", label: "Compartilhamentos", icon: Users, isActive: (pathname) => pathname.startsWith("/compartilhamentos") }, // Alterado de /convites e Mail
 ];
 
 export function AppSidebar() {

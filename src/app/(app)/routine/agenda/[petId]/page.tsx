@@ -14,7 +14,8 @@ import { ArrowLeft, CalendarDays, Construction, PlusCircle } from "lucide-react"
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { cn } from "@/lib/utils";
 import { calculateAge } from "@/lib/date-utils";
-import { Calendar } from "@/components/ui/calendar"; // Importar o Calendário
+import { Calendar } from "@/components/ui/calendar"; 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function PetAgendaPage() {
   const router = useRouter();
@@ -128,13 +129,7 @@ export default function PetAgendaPage() {
                 initialFocus
             />
           </div>
-          <div className="flex items-center justify-center text-amber-700 dark:text-amber-400 p-4 bg-amber-50 dark:bg-amber-900/30 rounded-md border border-amber-300 dark:border-amber-700">
-            <Construction className="h-6 w-6 mr-3 flex-shrink-0" />
-            <p className="font-semibold">Esta funcionalidade está em desenvolvimento!</p>
-          </div>
-          <p className="text-muted-foreground">
-            Em breve, você poderá visualizar um calendário interativo e cards resumindo todas as atividades de rotina e bem-estar cadastradas para {pet.nome}. Ao selecionar uma data no calendário, as atividades daquele dia serão listadas.
-          </p>
+          
            <div className="mt-8">
             <Button size="lg" >
               <PlusCircle className="mr-2 h-5 w-5" />

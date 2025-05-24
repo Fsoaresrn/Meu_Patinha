@@ -129,7 +129,7 @@ export default function PetAgendaPage() {
             <p className="font-semibold">Esta funcionalidade está em desenvolvimento!</p>
           </div>
           <p className="text-muted-foreground">
-            Em breve, você poderá adicionar passeios, horários de alimentação, brincadeiras, consultas veterinárias e muito mais, diretamente no calendário de {pet.nome}.
+            Em breve, você poderá visualizar um calendário interativo e cards resumindo todas as atividades de rotina e bem-estar cadastradas para {pet.nome}. Ao selecionar uma data no calendário, as atividades daquele dia serão listadas.
           </p>
         </CardContent>
       </Card>

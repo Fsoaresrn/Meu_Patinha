@@ -14,6 +14,7 @@ import { ArrowLeft, CalendarDays, Construction, PlusCircle } from "lucide-react"
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { cn } from "@/lib/utils";
 import { calculateAge } from "@/lib/date-utils";
+import { Calendar } from "@/components/ui/calendar"; // Importar o Calendário
 
 export default function PetAgendaPage() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function PetAgendaPage() {
   const [allPets] = useLocalStorage<Pet[]>("all-pets-data", []);
   const [pet, setPet] = useState<Pet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
     if (petId && user) {
@@ -116,14 +118,16 @@ export default function PetAgendaPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6 text-center">
-          <Image
-            src="https://placehold.co/300x200.png?text=🚧+📅+🐾"
-            alt="Calendário em construção"
-            width={300}
-            height={200}
-            className="mx-auto mb-6 rounded-lg shadow-md"
-            data-ai-hint="calendar construction pet"
-          />
+          <div className="flex justify-center my-6">
+            <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                className="rounded-md border shadow"
+                disabled={(date) => date > new Date() || date < new Date("2000-01-01")} // Exemplo de desabilitar datas
+                initialFocus
+            />
+          </div>
           <div className="flex items-center justify-center text-amber-700 dark:text-amber-400 p-4 bg-amber-50 dark:bg-amber-900/30 rounded-md border border-amber-300 dark:border-amber-700">
             <Construction className="h-6 w-6 mr-3 flex-shrink-0" />
             <p className="font-semibold">Esta funcionalidade está em desenvolvimento!</p>
@@ -142,5 +146,3 @@ export default function PetAgendaPage() {
     </div>
   );
 }
-
-    

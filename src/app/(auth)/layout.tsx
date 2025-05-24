@@ -1,7 +1,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import { Logo } from '@/components/shared/logo'; // Usaremos o logo existente
+import { Logo } from '@/components/shared/logo';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -9,13 +9,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {/* Coluna Esquerda - Visível em telas médias e maiores */}
       <div className="relative hidden md:flex md:w-1/2 lg:w-2/5 flex-col items-center justify-center bg-primary/10 p-8 text-center shadow-lg">
         <Image
-          src="https://placehold.co/800x1000.png?text=Imagem+do+Pet"
-          alt="Imagem de um pet amigável"
+          src="https://placehold.co/800x1000.png" // Mantendo placeholder, usuário substituirá
+          alt="Imagem de fundo com diversos pets amigáveis" // Alt text genérico
           layout="fill"
           objectFit="cover"
           priority
           className="opacity-30"
-          data-ai-hint="dog animal pet"
+          data-ai-hint="pets animals group" // Hint atualizado
         />
         <div className="relative z-10 flex flex-col items-center">
           <h1 className="text-5xl font-bold text-primary mb-4">
@@ -24,7 +24,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <p className="text-xl text-primary/80 max-w-xs">
             Compartilhe momentos com seu amigo e cuide do bem-estar dele.
           </p>
-          {/* Futuramente, aqui poderá entrar o botão "CONSTRUÍDO COM..." se desejar */}
         </div>
       </div>
 

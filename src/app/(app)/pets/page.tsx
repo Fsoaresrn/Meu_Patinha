@@ -21,7 +21,7 @@ export default function MeusPetsPage() {
     <div className="container mx-auto py-8">
       <div className="flex flex-col items-center text-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Meus Pets</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Meus Pets</h1>
           <p className="text-muted-foreground mt-2">
             Gerencie os perfis dos seus companheiros. Adicione novos pets, edite informações ou remova perfis.
           </p>

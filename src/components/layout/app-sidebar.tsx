@@ -24,7 +24,8 @@ import {
   Briefcase,
   ShoppingCart,
   HeartHandshake,
-  Heart, // Novo ícone para NamoroPet
+  Heart,
+  Images, // Ícone para Álbum
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
@@ -75,14 +76,15 @@ const mainNavItems: NavItem[] = [
     ],
   },
   { href: "/nutricao", label: "Nutrição", icon: Utensils, isActive: (pathname) => pathname.startsWith("/nutricao") },
-  { href: "/routine", label: "Rotina e Bem-Estar", icon: Activity, isActive: (pathname) => pathname.startsWith("/routine") },
+  { href: "/routine/agenda", label: "Agenda de Atividades", icon: Activity, isActive: (pathname) => pathname.startsWith("/routine/agenda") },
   { href: "/higiene", label: "Higiene", icon: SprayCan, isActive: (pathname) => pathname.startsWith("/higiene") },
+  { href: "/album", label: "Álbum", icon: Images, isActive: (pathname) => pathname.startsWith("/album") }, // Novo item Álbum
   { href: "/hospedagem", label: "Hospedagem", icon: BedDouble, isActive: (pathname) => pathname.startsWith("/hospedagem") },
   { href: "/creche", label: "Creche", icon: School, isActive: (pathname) => pathname.startsWith("/creche") },
   { href: "/pet-sitter", label: "Pet Sitter", icon: Briefcase, isActive: (pathname) => pathname.startsWith("/pet-sitter") },
   { href: "/shopping", label: "Shopping", icon: ShoppingCart, isActive: (pathname) => pathname.startsWith("/shopping") },
   { href: "/adocao", label: "Adoção", icon: HeartHandshake, isActive: (pathname) => pathname.startsWith("/adocao") },
-  { href: "/namoro-pet", label: "NamoroPet", icon: Heart, isActive: (pathname) => pathname.startsWith("/namoro-pet") }, // Novo item NamoroPet
+  { href: "/namoro-pet", label: "NamoroPet", icon: Heart, isActive: (pathname) => pathname.startsWith("/namoro-pet") },
 ];
 
 const secondaryNavItems: NavItem[] = [

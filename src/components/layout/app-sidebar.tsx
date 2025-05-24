@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react"; 
+import type { LucideIcon } from "lucide-react";
 import {
   Home,
   PawPrint,
@@ -11,7 +11,7 @@ import {
   BookMarked,
   Utensils,
   Activity,
-  SprayCan, 
+  SprayCan,
   Mail,
   Settings,
   ShieldQuestion,
@@ -19,7 +19,8 @@ import {
   Pill,
   ShieldCheck,
   FileText,
-  BedDouble, // Ícone para Hospedagem
+  BedDouble,
+  School, // Ícone para Creche
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
@@ -42,12 +43,12 @@ import {
 interface NavSubItem {
   href: string;
   label: string;
-  icon?: LucideIcon; 
-  isActive?: (pathname: string) => boolean; 
+  icon?: LucideIcon;
+  isActive?: (pathname: string) => boolean;
 }
 
 interface NavItem {
-  href?: string; 
+  href?: string;
   label: string;
   icon: LucideIcon;
   isActive?: (pathname: string) => boolean;
@@ -73,6 +74,7 @@ const mainNavItems: NavItem[] = [
   { href: "/routine", label: "Rotina e Bem-Estar", icon: Activity, isActive: (pathname) => pathname.startsWith("/routine") },
   { href: "/higiene", label: "Higiene", icon: SprayCan, isActive: (pathname) => pathname.startsWith("/higiene") },
   { href: "/hospedagem", label: "Hospedagem", icon: BedDouble, isActive: (pathname) => pathname.startsWith("/hospedagem") },
+  { href: "/creche", label: "Creche", icon: School, isActive: (pathname) => pathname.startsWith("/creche") },
 ];
 
 const secondaryNavItems: NavItem[] = [
@@ -89,7 +91,7 @@ export function AppSidebar() {
     // verifica se algum subitem está ativo.
     let activeState = false;
     if (item.href) {
-      activeState = item.isActive ? item.isActive(pathname) : (item.href !== "/" && pathname.startsWith(item.href));
+      activeState = item.isActive ? item.isActive(pathname) : (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href));
     } else if (item.subItems) {
       activeState = item.subItems.some(subItem => subItem.isActive ? subItem.isActive(pathname) : pathname.startsWith(subItem.href));
     }
@@ -146,7 +148,7 @@ export function AppSidebar() {
             isActive={activeState}
             className={cn(baseButtonClass, "cursor-default")}
             tooltip={item.label}
-            disabled 
+            disabled
           >
             <IconComponent className="h-5 w-5" />
             <span>{item.label}</span>

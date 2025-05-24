@@ -7,24 +7,18 @@ import * as z from "zod";
 import { useAuthStore } from "@/stores/auth.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import type { UserResponsibility, AuthUser } from "@/types";
+import type { AuthUser } from "@/types";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { ufsBrasil, cidadesPorUF } from "@/lib/constants";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useRouter, useSearchParams } from "next/navigation";
-import { calculatePasswordStrength, type PasswordStrengthResult } from "@/lib/password-utils";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react"; // Import icons
-
 
 const profileSchema = z.object({
   nome: z.string().min(3, "Nome é obrigatório"),
@@ -37,32 +31,17 @@ const profileSchema = z.object({
   telefone: z.string().optional(),
 });
 
-const passwordSchema = z.object({
-  senhaAtual: z.string().min(1, "Senha atual é obrigatória"),
-  novaSenha: z.string().min(6, "Nova senha deve ter no mínimo 6 caracteres"),
-  confirmarNovaSenha: z.string(),
-}).refine(data => data.novaSenha === data.confirmarNovaSenha, {
-  message: "As novas senhas não coincidem",
-  path: ["confirmarNovaSenha"],
-});
-
 type ProfileFormValues = z.infer<typeof profileSchema>;
-type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 const PRIVACY_NOTICE_STORAGE_KEY = "meu-patinha-privacy-notice-seen";
 
 export default function MeuCadastroPage() {
-  const { user, updateUser, logout, clearTempPasswordFlag, tempPasswordForcedReset } = useAuthStore();
+  const { user, updateUser, tempPasswordForcedReset } = useAuthStore();
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [registeredUsers, setRegisteredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
-  const [newPasswordStrength, setNewPasswordStrength] = useState<PasswordStrengthResult | null>(null);
   const [showPrivacyNoticeModal, setShowPrivacyNoticeModal] = useState(false);
-
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const forcePasswordChange = searchParams.get('forcePasswordChange') === 'true' && tempPasswordForcedReset;
 
@@ -81,21 +60,6 @@ export default function MeuCadastroPage() {
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
   });
-
-  const passwordForm = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: { senhaAtual: "", novaSenha: "", confirmarNovaSenha: "" },
-  });
-
-  const watchedNewPassword = passwordForm.watch("novaSenha");
-
-  useEffect(() => {
-    if (watchedNewPassword) {
-      setNewPasswordStrength(calculatePasswordStrength(watchedNewPassword));
-    } else {
-      setNewPasswordStrength(null);
-    }
-  }, [watchedNewPassword]);
 
   useEffect(() => {
     if (user) {
@@ -144,39 +108,9 @@ export default function MeuCadastroPage() {
     toast({ title: "Perfil Atualizado", description: "Suas informações foram salvas." });
   };
 
-  const onPasswordSubmit = (data: PasswordFormValues) => {
-    if (!user) return;
-
-    const storedPassword = localStorage.getItem(`password-${user.cpf}`);
-    const isTempPasswordMatch = user.temporaryPassword === data.senhaAtual;
-
-    if (storedPassword !== data.senhaAtual && !isTempPasswordMatch) {
-      passwordForm.setError("senhaAtual", { message: "Senha atual incorreta." });
-      toast({ variant: "destructive", title: "Erro", description: "Senha atual incorreta." });
-      return;
-    }
-
-    localStorage.setItem(`password-${user.cpf}`, data.novaSenha);
-    if (isTempPasswordMatch) {
-      updateUser({ temporaryPassword: undefined }); 
-      const userIndex = registeredUsers.findIndex(u => u.cpf === user.cpf);
-        if (userIndex !== -1) {
-            const updatedUsers = [...registeredUsers];
-            updatedUsers[userIndex] = { ...updatedUsers[userIndex], temporaryPassword: undefined };
-            setRegisteredUsers(updatedUsers);
-        }
-      clearTempPasswordFlag(); 
-    }
-    
-    toast({ title: "Senha Alterada", description: "Sua senha foi alterada com sucesso." });
-    passwordForm.reset();
-    setNewPasswordStrength(null); 
-    if (forcePasswordChange) {
-        router.push('/'); 
-    }
-  };
 
   if (!user) {
+    // This should be handled by AuthGuard, but as a fallback
     router.push('/login');
     return <div className="flex h-screen items-center justify-center"><p>Redirecionando...</p></div>;
   }
@@ -210,7 +144,13 @@ export default function MeuCadastroPage() {
         {forcePasswordChange && (
           <div className="p-4 mb-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-md">
             <p className="font-bold">Redefinição de Senha Obrigatória</p>
-            <p>Por favor, defina uma nova senha para continuar.</p>
+            <p>
+              Por favor, defina uma nova senha na página de {" "}
+              <Link href="/configuracoes?forcePasswordChange=true" className="font-semibold text-yellow-800 hover:underline">
+                Configurações
+              </Link>
+              {" "}para continuar.
+            </p>
           </div>
         )}
         <Card>
@@ -285,117 +225,9 @@ export default function MeuCadastroPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Alterar Senha</CardTitle>
-            <CardDescription>Crie uma nova senha para sua conta.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...passwordForm}>
-              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
-                 <FormField control={passwordForm.control} name="senhaAtual" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{forcePasswordChange ? "Senha Provisória" : "Senha Atual"}<span className="text-destructive">*</span></FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showCurrentPassword ? "text" : "password"}
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          aria-label={showCurrentPassword ? "Esconder senha" : "Mostrar senha"}
-                        >
-                          {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={passwordForm.control} name="novaSenha" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nova Senha<span className="text-destructive">*</span></FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showNewPassword ? "text" : "password"}
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                          aria-label={showNewPassword ? "Esconder senha" : "Mostrar senha"}
-                        >
-                          {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                    {newPasswordStrength && newPasswordStrength.label && newPasswordStrength.score > 0 && (
-                      <div className="mt-2 space-y-1">
-                         <Progress
-                          value={newPasswordStrength.score * 25}
-                          className={cn(
-                            "h-2",
-                            {
-                              "[&>div]:!bg-destructive": newPasswordStrength.score === 1, 
-                              "[&>div]:!bg-orange-500": newPasswordStrength.score === 2, 
-                              "[&>div]:!bg-green-500": newPasswordStrength.score === 3, 
-                              "[&>div]:!bg-green-700": newPasswordStrength.score === 4, 
-                            }
-                          )}
-                          aria-label={`Força da senha: ${newPasswordStrength.label}`}
-                        />
-                        <p className={`text-xs ${newPasswordStrength.colorClass}`}>
-                          Força da senha: {newPasswordStrength.label}
-                        </p>
-                      </div>
-                    )}
-                    {newPasswordStrength && newPasswordStrength.score === 0 && newPasswordStrength.label && (
-                        <p className={`text-xs mt-1 ${newPasswordStrength.colorClass}`}>
-                          Força da senha: {newPasswordStrength.label}
-                        </p>
-                    )}
-                  </FormItem>
-                )} />
-                <FormField control={passwordForm.control} name="confirmarNovaSenha" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirmar Nova Senha<span className="text-destructive">*</span></FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showConfirmNewPassword ? "text" : "password"}
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                          onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
-                          aria-label={showConfirmNewPassword ? "Esconder senha" : "Mostrar senha"}
-                        >
-                          {showConfirmNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <Button type="submit" disabled={passwordForm.formState.isSubmitting}>Alterar Senha</Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
       </div>
     </>
   );
 }
+
+    

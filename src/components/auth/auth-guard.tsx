@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ReactNode } from 'react';
@@ -19,9 +20,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, user, isLoading, tempPasswordForcedReset, finishLoading } = useAuthStore();
 
   useEffect(() => {
-    // Ensure loading state is properly set after hydration
-    // Zustand's persist middleware handles rehydration. isLoading should be false after that.
-    // If persist.onRehydrateStorage is working, this might be redundant, but good for safety.
     if (isLoading && useAuthStore.persist.hasHydrated()) {
       finishLoading();
     }
@@ -30,7 +28,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     if (isLoading) {
-      return; // Wait for auth state to load
+      return; 
     }
 
     const isAuthRoute = AUTH_ROUTES.includes(pathname);
@@ -39,14 +37,13 @@ export function AuthGuard({ children }: AuthGuardProps) {
     if (!isAuthenticated && !isAuthRoute) {
       router.replace(`/login?redirect=${pathname}`);
     } else if (isAuthenticated) {
-      if (!user?.acceptedTerms && !isTermsRoute && pathname !== '/logout') { // Allow logout
+      if (!user?.acceptedTerms && !isTermsRoute && pathname !== '/logout') { 
         router.replace(TERMS_ROUTE);
-      } else if (tempPasswordForcedReset && !isTermsRoute && pathname !== '/meu-cadastro' && pathname !== '/logout') {
+      } else if (tempPasswordForcedReset && !isTermsRoute && pathname !== '/configuracoes' && pathname !== '/logout') {
         // Force password change if logged in with temporary password
-        // Assuming /meu-cadastro has the password change functionality
-        router.replace('/meu-cadastro?forcePasswordChange=true');
+        // Now redirects to /configuracoes
+        router.replace('/configuracoes?forcePasswordChange=true');
       } else if (isAuthRoute && pathname !== '/recuperar-senha') { 
-        // If authenticated and on a login/signup page (but not recovery if mid-process), redirect to home
         router.replace('/');
       }
     }
@@ -60,9 +57,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // If authenticated and terms not accepted, and not on terms page, show minimal content or redirect handled by useEffect
   if (isAuthenticated && !user?.acceptedTerms && pathname !== TERMS_ROUTE && pathname !== '/logout') {
-     // This case should be caught by useEffect redirect. Show loading or null until redirect happens.
     return (
         <div className="flex h-screen w-screen items-center justify-center">
             <LoadingSpinner size={48} />
@@ -70,17 +65,15 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
   
-  // If on an auth page or terms page, render children directly (e.g. Login form, Terms form)
   if (AUTH_ROUTES.includes(pathname) || pathname === TERMS_ROUTE) {
     return <>{children}</>;
   }
 
-  // If authenticated and terms accepted (or on a path that doesn't require terms yet, like logout), render app content
   if (isAuthenticated) {
     return <>{children}</>;
   }
   
-  // Fallback for non-authenticated users trying to access protected routes (should be caught by redirect)
-  // Or if on an auth route already.
   return <>{children}</>;
 }
+
+    

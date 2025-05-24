@@ -7,24 +7,17 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Coluna Esquerda - Visível em telas médias e maiores */}
-      <div className="relative hidden md:flex md:w-1/2 lg:w-2/5 flex-col items-center justify-center bg-primary/10 p-8 text-center shadow-lg">
+      <div className="relative hidden md:flex md:w-1/2 lg:w-3/5 flex-col items-center justify-center bg-primary/10 p-8 text-center shadow-lg">
         <Image
-          src="https://placehold.co/800x1000.png" // Mantendo placeholder, usuário substituirá
-          alt="Imagem de fundo com diversos pets amigáveis" // Alt text genérico
+          src="https://placehold.co/800x1000.png" 
+          alt="Imagem de fundo com diversos pets amigáveis" 
           layout="fill"
           objectFit="cover"
           priority
           className="opacity-30"
-          data-ai-hint="pets animals group" // Hint atualizado
+          data-ai-hint="pets animals group" 
         />
-        <div className="relative z-10 flex flex-col items-center">
-          <h1 className="text-5xl font-bold text-primary mb-4">
-            Meu Patinha
-          </h1>
-          <p className="text-xl text-primary/80 max-w-xs">
-            Compartilhe momentos com seu amigo e cuide do bem-estar dele.
-          </p>
-        </div>
+        {/* O texto que sobrepunha a imagem foi removido daqui */}
       </div>
 
       {/* Coluna Direita - Formulário */}

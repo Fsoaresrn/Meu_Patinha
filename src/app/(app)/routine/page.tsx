@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, CalendarClock } from "lucide-react"; // Ícones relevantes
+import { Activity, CalendarClock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -29,10 +29,17 @@ export default function RotinaPage() {
             className="mx-auto mb-6 rounded-lg shadow-md"
             data-ai-hint="happy pet schedule"
           />
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-left">
             A funcionalidade de "Agenda de Atividades" está em desenvolvimento e será implementada aqui.
-            Você poderá organizar a rotina de passeios, alimentação, brincadeiras e outros eventos importantes.
+            Você poderá organizar e registrar diversos tipos de atividades, incluindo:
           </p>
+          <ul className="list-disc list-inside text-left text-sm text-muted-foreground space-y-1 pl-4">
+            <li><strong>Cuidados Diários:</strong> Alimentação, troca de água, escovação, limpeza da caixa de areia.</li>
+            <li><strong>Atividades Físicas e Enriquecimento:</strong> Passeios, brincadeiras, adestramento, estímulos olfativos.</li>
+            <li><strong>Saúde e Higiene:</strong> Aplicação de vermífugo/antipulgas, banhos, visitas ao veterinário, vacinação.</li>
+            <li><strong>Socialização:</strong> Visitas a locais pet-friendly, encontros com outros animais e pessoas.</li>
+            <li><strong>Monitoramento e Registros:</strong> Peso, comportamento, administração de medicamentos, dietas especiais.</li>
+          </ul>
           <div className="mt-6">
             <Button asChild size="lg">
               <Link href="/routine/agenda">

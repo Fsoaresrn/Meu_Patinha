@@ -19,6 +19,7 @@ import {
   Pill,
   ShieldCheck,
   FileText,
+  BedDouble, // Ícone para Hospedagem
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
@@ -71,6 +72,7 @@ const mainNavItems: NavItem[] = [
   { href: "/nutricao", label: "Nutrição", icon: Utensils, isActive: (pathname) => pathname.startsWith("/nutricao") },
   { href: "/routine", label: "Rotina e Bem-Estar", icon: Activity, isActive: (pathname) => pathname.startsWith("/routine") },
   { href: "/higiene", label: "Higiene", icon: SprayCan, isActive: (pathname) => pathname.startsWith("/higiene") },
+  { href: "/hospedagem", label: "Hospedagem", icon: BedDouble, isActive: (pathname) => pathname.startsWith("/hospedagem") },
 ];
 
 const secondaryNavItems: NavItem[] = [
@@ -177,5 +179,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
-    

@@ -14,8 +14,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           layout="fill"
           objectFit="cover"
           priority
-          className="opacity-30"
+          className="" /* Opacidade removida para teste */
         />
+        {/* Título e subtítulo sobrepostos foram removidos anteriormente */}
       </div>
 
       {/* Coluna Direita - Formulário */}

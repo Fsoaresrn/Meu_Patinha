@@ -9,15 +9,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {/* Coluna Esquerda - Visível em telas médias e maiores */}
       <div className="relative hidden md:flex md:w-1/2 lg:w-3/5 flex-col items-center justify-center bg-primary/10 p-8 text-center shadow-lg">
         <Image
-          src="https://placehold.co/800x1000.png" 
-          alt="Imagem de fundo com diversos pets amigáveis" 
+          src="/petz.jpeg" // Atualizado para a imagem local
+          alt="Imagem de fundo com diversos pets amigáveis"  // Texto alternativo atualizado
           layout="fill"
           objectFit="cover"
           priority
           className="opacity-30"
-          data-ai-hint="pets animals group" 
         />
-        {/* O texto que sobrepunha a imagem foi removido daqui */}
       </div>
 
       {/* Coluna Direita - Formulário */}

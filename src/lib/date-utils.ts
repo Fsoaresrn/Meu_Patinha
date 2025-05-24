@@ -8,6 +8,7 @@ import {
   differenceInYears as differenceInYearsFn,
   differenceInMonths as differenceInMonthsFn,
   differenceInDays as differenceInDaysFn,
+  differenceInWeeks as differenceInWeeksFn,
   isDate as isDateFn,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -80,36 +81,66 @@ export function formatDateTimeToBrasil(date: Date | number | string | undefined 
 }
 
 
-export function calculateAge(birthDate: Date | string): { years: number; months: number; display: string } {
-  const birth = typeof birthDate === 'string' ? parseDateSafe(birthDate) : birthDate;
+export function calculateAge(birthDateInput: Date | string | undefined | null): { years: number; months: number; days: number; totalWeeks: number; display: string } {
+  const birth = typeof birthDateInput === 'string' ? parseDateSafe(birthDateInput) : birthDateInput;
+
   if (!birth || !isValidDate(birth)) {
-    return { years: 0, months: 0, display: "Idade desconhecida" };
+    return { years: 0, months: 0, days: 0, totalWeeks: 0, display: "Idade desconhecida" };
   }
 
   const today = new Date();
-  let years = differenceInYearsFn(today, birth);
-  let months = differenceInMonthsFn(today, addYearsFn(birth, years));
+  today.setHours(0, 0, 0, 0); // Normalizar para o início do dia
+  const birthDayStart = new Date(birth.getFullYear(), birth.getMonth(), birth.getDate());
 
-  if (months < 0) { // Should not happen if logic is correct, but as a safeguard
+
+  if (birthDayStart.getTime() === today.getTime()) {
+    return { years: 0, months: 0, days: 0, totalWeeks: 0, display: "Recém-nascido" };
+  }
+  if (birthDayStart > today) {
+    return { years: 0, months: 0, days: 0, totalWeeks: 0, display: "Data futura" };
+  }
+
+  let years = differenceInYearsFn(today, birthDayStart);
+  const dateAfterYears = addYearsFn(birthDayStart, years);
+  let months = differenceInMonthsFn(today, dateAfterYears);
+  const dateAfterMonths = addMonthsFn(dateAfterYears, months);
+  let days = differenceInDaysFn(today, dateAfterMonths);
+  const totalWeeks = differenceInWeeksFn(today, birthDayStart);
+
+
+  // Ajustes finos para meses e dias
+  if (days < 0) { // Se o dia do mês atual é menor que o dia do nascimento
+    months--; // Reduz um mês
+    const monthBefore = addMonthsFn(dateAfterMonths, -1); // Pega o mês anterior ao "dateAfterMonths"
+    days = differenceInDaysFn(today, monthBefore); // Calcula os dias a partir do início do mês anterior correto
+  }
+  if (months < 0) { // Se o mês ajustado ficou negativo
     years--;
     months += 12;
   }
-  
-  let display = "";
+
+  let displayParts: string[] = [];
   if (years > 0) {
-    display += `${years} ano${years > 1 ? 's' : ''}`;
+    displayParts.push(`${years} ano${years > 1 ? 's' : ''}`);
   }
   if (months > 0) {
-    if (display.length > 0) display += " e ";
-    display += `${months} mes${months > 1 ? 'es' : ''}`;
+    displayParts.push(`${months} ${months > 1 ? 'meses' : 'mês'}`);
   }
-  if (display.length === 0) { // Less than a month old
-     const days = differenceInDaysFn(today, birth);
-     display = `${days} dia${days > 1 ? 's' : ''}`;
+  if (days > 0 && years === 0) { // Só mostrar dias se não houver anos
+    displayParts.push(`${days} dia${days > 1 ? 's' : ''}`);
+  }
+  
+  if (displayParts.length === 0) { // Caso muito jovem, menos de 1 dia ou cálculo resultou em 0 para tudo
+     if (days === 0 && months === 0 && years === 0) { // Realmente menos de 1 dia
+      return { years, months, days, totalWeeks, display: "Menos de 1 dia" };
+    }
+    // Fallback se algo estranho acontecer e days for 0 mas não for recém-nascido
+    return { years, months, days, totalWeeks, display: "Recém-nascido" }; 
   }
 
-  return { years, months, display: display || "Recém-nascido" };
+  return { years, months, days, totalWeeks, display: displayParts.join(', ') };
 }
+
 
 export function addMonths(date: Date | number, amount: number): Date {
   return addMonthsFn(date, amount);
@@ -118,3 +149,5 @@ export function addMonths(date: Date | number, amount: number): Date {
 export function addYears(date: Date | number, amount: number): Date {
   return addYearsFn(date, amount);
 }
+
+    

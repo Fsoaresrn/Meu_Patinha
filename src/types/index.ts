@@ -6,7 +6,7 @@ export type UserResponsibility = "Tutor(a)" | "Cuidador(a)" | "Veterinário(a)";
 export type PetGender = "Macho" | "Fêmea" | "Não especificado";
 
 // Espécie do Pet
-export type PetSpecies = "Cão" | "Gato";
+export type PetSpecies = "Cão" | "Gato" | "Coelho" | "Porco/Mini-porco" | "Hamster" | "Porquinhos-da-índia" | "Furão" | "Rato/camundongo" | "Chinchila" | "Lagarto/Iguana" | "Tartaruga" | "Cagado" | "Papagaio" | "Calopsita" | "Periquito" | "Canário" | "Coruja";
 
 // Porte do Pet
 export type PetSize = "Pequeno" | "Médio" | "Grande" | "Gigante";
@@ -134,7 +134,7 @@ export interface SymptomLog {
 export interface VaccineProtocolInfo {
   id: string; // e.g., v10_canina
   name: string; // e.g., "V10 (Polivalente Canina)"
-  species: PetSpecies[];
+  species: ("Cão" | "Gato" | "Coelho" | "Porco/Mini-porco" | "Hamster" | "Porquinhos-da-índia" | "Furão" | "Rato/camundongo" | "Chinchila" | "Lagarto/Iguana" | "Tartaruga" | "Cagado" | "Papagaio" | "Calopsita" | "Periquito" | "Canário" | "Coruja")[];
   preventsDiseases: string[]; // e.g., ["Cinomose", "Parvovirose"]
   importance: "Essencial" | "Complementar" | "Opcional";
   recommendedDoses: string[]; // e.g., ["1ª Dose (6-8 sem)", "2ª Dose (9-11 sem)", "3ª Dose (12-14 sem)"]

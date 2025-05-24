@@ -40,7 +40,7 @@ export const cidadesPorUF: Record<string, string[]> = {
   // Add more as needed
 };
 
-export const petSpeciesList: PetSpecies[] = ["Cão", "Gato"];
+export const petSpeciesList: PetSpecies[] = ["Cão", "Gato", "Coelho", "Porco/Mini-porco", "Hamster", "Porquinhos-da-índia", "Furão", "Rato/camundongo", "Chinchila", "Lagarto/Iguana", "Tartaruga", "Cagado", "Papagaio", "Calopsita", "Periquito", "Canário", "Coruja"];
 
 export const dogBreeds = [
   "Airedale Terrier",
@@ -250,7 +250,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     id: "v8_canina",
     name: "V8 (Múltipla Canina)",
     species: ["Cão"],
-    preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose Canina Tipo 2", "Parainfluenza Canina", "Leptospirose (sorovares Canicola e Icterohaemorrhagiae)"],
+    preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose Canina Tipo 2", "Parainfluenza Canina", "Leptospirose (sorovares Canicola e Icterohaemorrhagiae)"] as string[],
     importance: "Essencial",
     recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "Reforço Anual"],
     primarySeriesIntervalDays: 21,
@@ -262,7 +262,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     id: "v10_canina",
     name: "V10 (Polivalente Canina)",
     species: ["Cão"],
-    preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose Canina Tipo 2", "Parainfluenza Canina", "Leptospirose (sorovares Canicola, Icterohaemorrhagiae, Grippotyphosa e Pomona)"],
+    preventsDiseases: ["Cinomose", "Parvovirose", "Coronavirose", "Hepatite Infecciosa Canina", "Adenovirose Canina Tipo 2", "Parainfluenza Canina", "Leptospirose (sorovares Canicola, Icterohaemorrhagiae, Grippotyphosa e Pomona)"] as string[],
     importance: "Essencial",
     recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "4ª dose (Opcional, 16-18 semanas)", "Reforço Anual"],
     primarySeriesIntervalDays: 21,
@@ -274,7 +274,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     id: "giardia_canina",
     name: "Giárdia (Canina)",
     species: ["Cão"],
-    preventsDiseases: ["Giardíase"],
+    preventsDiseases: ["Giardíase"] as string[],
     importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas)", "Reforço Anual"],
     primarySeriesIntervalDays: 21, // Entre 21 e 28 dias
@@ -286,7 +286,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     id: "leishmaniose_canina",
     name: "Leishmaniose (Canina)",
     species: ["Cão"],
-    preventsDiseases: ["Leishmaniose Visceral Canina"],
+    preventsDiseases: ["Leishmaniose Visceral Canina"] as string[],
     importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 4 meses, após teste sorológico negativo)", "2ª dose (21 dias após a 1ª)", "3ª dose (21 dias após a 2ª)", "Reforço Anual"],
     primarySeriesIntervalDays: 21,
@@ -298,7 +298,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     id: "gripe_canina",
     name: "Gripe Canina (Tosse dos Canis)",
     species: ["Cão"],
-    preventsDiseases: ["Traqueobronquite Infecciosa Canina (Bordetella bronchiseptica e/ou Parainfluenza)"],
+    preventsDiseases: ["Traqueobronquite Infecciosa Canina (Bordetella bronchiseptica e/ou Parainfluenza)"] as string[],
     importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (após 2-4 semanas, para algumas vacinas injetáveis)", "Reforço Anual"],
     primarySeriesIntervalDays: 21,
@@ -310,7 +310,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "v3_felina",
     name: "V3 (Tríplice Felina)",
-    species: ["Gato"],
+    species: ["Gato"] as PetSpecies[],
     preventsDiseases: ["Rinotraqueíte Viral Felina", "Calicivirose Felina", "Panleucopenia Felina"],
     importance: "Essencial",
     recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "Reforço Anual"],
@@ -322,7 +322,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "v4_felina",
     name: "V4 (Quádrupla Felina)",
-    species: ["Gato"],
+    species: ["Gato"] as PetSpecies[],
     preventsDiseases: ["Rinotraqueíte Viral Felina", "Calicivirose Felina", "Panleucopenia Felina", "Clamidiose Felina"],
     importance: "Essencial",
     recommendedDoses: ["1ª dose (6-8 semanas)", "2ª dose (9-11 semanas)", "3ª dose (12-14 semanas)", "Reforço Anual"],
@@ -334,7 +334,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "v5_felina",
     name: "V5 (Quíntupla Felina)",
-    species: ["Gato"],
+    species: ["Gato"] as PetSpecies[],
     preventsDiseases: ["Rinotraqueíte Viral Felina", "Calicivirose Felina", "Panleucopenia Felina", "Clamidiose Felina", "Leucemia Viral Felina (FeLV)"],
     importance: "Essencial",
     recommendedDoses: ["1ª dose (a partir de 8 semanas, após teste FeLV negativo)", "2ª dose (3-4 semanas após a 1ª)", "3ª dose (3-4 semanas após a 2ª, opcional)", "Reforço Anual"],
@@ -346,7 +346,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "felv_isolada",
     name: "FeLV (Leucemia Felina - Isolada)",
-    species: ["Gato"],
+    species: ["Gato"] as PetSpecies[],
     preventsDiseases: ["Leucemia Viral Felina (FeLV)"],
     importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 8 semanas, após teste FeLV negativo)", "2ª dose (3-4 semanas após a 1ª)", "Reforço Anual"],
@@ -358,7 +358,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "fiv_felina",
     name: "FIV (Imunodeficiência Felina)",
-    species: ["Gato"],
+    species: ["Gato"] as PetSpecies[],
     preventsDiseases: ["Vírus da Imunodeficiência Felina (FIV)"],
     importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 8 semanas)", "2ª dose (2-3 semanas após)", "3ª dose (2-3 semanas após)", "Reforço Anual"],
@@ -370,7 +370,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "chlamydia_isolada_felina",
     name: "Chlamydia (Isolada - Felina)",
-    species: ["Gato"],
+    species: ["Gato"] as PetSpecies[],
     preventsDiseases: ["Clamidiose Felina"],
     importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 9 semanas)", "2ª dose (3-4 semanas após)", "Reforço Anual"],
@@ -382,7 +382,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "bordetella_felina",
     name: "Bordetella (Felina)",
-    species: ["Gato"],
+    species: ["Gato"] as PetSpecies[],
     preventsDiseases: ["Infecções respiratórias por Bordetella bronchiseptica"],
     importance: "Complementar",
     recommendedDoses: ["Dose única intranasal (a partir de 4 semanas)", "Reforço Anual"],
@@ -394,7 +394,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "pif_felina",
     name: "PIF (Peritonite Infecciosa Felina)",
-    species: ["Gato"],
+    species: ["Gato"] as PetSpecies[],
     preventsDiseases: ["Peritonite Infecciosa Felina"],
     importance: "Complementar",
     recommendedDoses: ["1ª dose (a partir de 16 semanas)", "2ª dose (3-4 semanas após)", "Reforço Anual"],
@@ -407,7 +407,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "antirrabica_comum",
     name: "Antirrábica (Cães e Gatos)",
-    species: ["Cão", "Gato"],
+    species: ["Cão", "Gato"] as PetSpecies[],
     preventsDiseases: ["Raiva"],
     importance: "Essencial",
     recommendedDoses: ["Dose única (a partir de 12 semanas ou conforme legislação local)", "Reforço Anual"],
@@ -420,7 +420,45 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
   {
     id: "outra",
     name: "Outra (Especificar)",
-    species: ["Cão", "Gato"],
+    species: petSpeciesList,
+    preventsDiseases: [] as string[],
+    importance: "Opcional",
+    recommendedDoses: [],
+    boosterFrequencySuggestion: "Não se aplica",
+    notes: "Use esta opção para vacinas não listadas ou específicas.",
+  },
+  // --- Vacinas para Coelhos ---
+  {
+    id: "mixomatose_coelho",
+    name: "Mixomatose (Coelho)",
+    species: ["Coelho"] as PetSpecies[],
+    preventsDiseases: ["Mixomatose"] as string[],
+    importance: "Complementar",
+    recommendedDoses: ["Dose única", "Reforço anual"] as string[],
+    isSingleDosePrimary: true,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Seguir orientação veterinária.",
+  },
+  {
+    id: "doenca_viral_hemorragica_coelho",
+    name: "Doença viral hemorrágica (Coelho)",
+    species: ["Coelho"] as PetSpecies[],
+    preventsDiseases: ["Doença viral hemorrágica"] as string[],
+    importance: "Complementar",
+    recommendedDoses: ["Dose única", "Reforço anual"] as string[],
+    isSingleDosePrimary: true,
+    boosterFrequencySuggestion: "Anual",
+    notes: "Seguir orientação veterinária.",
+  },
+  // --- Vacinas para Furão ---
+  {
+    id: "raiva_furao",
+    name: "Raiva (Furão)",
+    species: ["Furão"] as PetSpecies[],
+    preventsDiseases: ["Raiva"] as string[],
+    importance: "Essencial",
+    recommendedDoses: ["Dose única (a partir de 12 semanas)", "Reforço anual"] as string[],
+    isSingleDosePrimary: true,
     preventsDiseases: [],
     importance: "Opcional",
     recommendedDoses: [], 

@@ -125,8 +125,20 @@ const prompt = ai.definePrompt({
   Histórico de Vermifugação: Não fornecido ou não disponível.
   {{/if}}
 
-  Se os sintomas fornecidos (incluindo respostas de acompanhamento, se houver) ainda forem insuficientes para um diagnóstico ou se o diagnóstico for muito amplo, defina needsMoreInfo como true e sugira NOVOS sintomas de acompanhamento (PERGUNTAS claras para o usuário responder com "Sim", "Não" ou "Não tenho certeza") em Português do Brasil para refinar a análise.
-  Se você tiver confiança suficiente para um diagnóstico preliminar com base nas informações atuais, defina needsMoreInfo como false.
+  **Diretrizes para Perguntas de Acompanhamento e Diagnóstico Interativo:**
+  1.  **Evite Redundâncias e Multiperguntas:** Nunca repita perguntas já feitas, mesmo com formulações diferentes. Cada pergunta de acompanhamento em \`suggestedFollowUpSymptoms\` deve ser singular, focada em um único sintoma ou observação, e formulada para ser respondida com "Sim", "Não" ou "Não tenho certeza".
+      *   Exemplo INCORRETO de pergunta para \`suggestedFollowUpSymptoms\`: "Está bebendo água normalmente, ou está bebendo mais ou menos que o normal?"
+      *   Exemplo CORRETO para \`suggestedFollowUpSymptoms\`: "O pet está bebendo mais água do que o normal?"
+  2.  **Coleta de Informações Detalhadas:** Se você precisar de informações que não se encaixam em um "Sim/Não" (ex: a cor de um vômito, a frequência de um sintoma), NÃO inclua essa pergunta diretamente em \`suggestedFollowUpSymptoms\`. Em vez disso:
+      *   Defina \`needsMoreInfo\` como \`true\`.
+      *   Na sua resposta textual (em \`potentialDiagnoses\` ou \`immediateCareSuggestions\`), explique claramente qual informação adicional é necessária e instrua o usuário a adicioná-la à descrição principal dos sintomas para a próxima análise. Exemplo: "Para refinar o diagnóstico, por favor, descreva a cor e consistência do vômito na caixa de sintomas e analise novamente."
+  3.  **Observações com Múltiplas Opções:** Se um sintoma pode ter várias aparências (ex: sangue nas fezes), guie o usuário de forma similar ao item 2. Peça que ele observe e descreva os detalhes na caixa de sintomas. Exemplo: "Observe as fezes: são escuras como alcatrão, têm sangue vivo, ou coágulos? Descreva na caixa de sintomas."
+  4.  **Limite de Interações e Conclusão:** Analise TODAS as informações fornecidas, incluindo as respostas de acompanhamento de rodadas anteriores. Se, após algumas rodadas de perguntas de acompanhamento (baseadas nas respostas do usuário), um diagnóstico claro ainda não for possível ou a informação não estiver convergindo, defina \`needsMoreInfo\` como \`false\` e, em \`potentialDiagnoses\` ou \`immediateCareSuggestions\`, inclua a seguinte instrução: "Não foi possível concluir um diagnóstico com segurança com as informações fornecidas. Recomendamos que você leve seu animal de estimação imediatamente a um médico veterinário."
+  5.  **Contexto e Relevância:** Suas perguntas de acompanhamento devem ser sempre contextualmente relevantes, considerando todas as informações já fornecidas pelo usuário nas rodadas anteriores.
+
+  Com base em TUDO o que foi fornecido:
+  Se os sintomas (incluindo respostas de acompanhamento, se houver) ainda forem insuficientes para um diagnóstico ou se o diagnóstico for muito amplo, E você acreditar que perguntas adicionais (do tipo Sim/Não/Não sei que se encaixem na diretriz 1) podem ajudar, defina \`needsMoreInfo\` como \`true\` e forneça NOVAS perguntas claras em \`suggestedFollowUpSymptoms\` (em Português do Brasil).
+  Se você tiver confiança suficiente para um diagnóstico preliminar OU se decidiu concluir a triagem conforme a diretriz 4, defina \`needsMoreInfo\` como \`false\`.
 
   Diagnósticos Potenciais: (Responda em Português do Brasil. Liste as condições potenciais, separadas por vírgulas)
   Sugestões de Cuidados Imediatos: (Responda em Português do Brasil. Forneça passos acionáveis, separados por vírgulas)
@@ -145,3 +157,4 @@ const checkSymptomsFlow = ai.defineFlow(
     return output!;
   }
 );
+

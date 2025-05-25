@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Siren, UserCircle, LogOut, ShieldQuestion, Menu, Settings, MessageSquare, Info } from 'lucide-react'; // Adicionado Info
+import { Siren, UserCircle, LogOut, ShieldQuestion, Menu, Settings, MessageSquare, Info, Bell } from 'lucide-react'; // Adicionado Bell e Info
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -50,6 +50,9 @@ export function AppHeader() {
         )}
       </div>
       <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={() => { /* Lógica para notificações */}} aria-label="Notificações">
+          <Bell className="h-5 w-5" />
+        </Button>
         <Button variant="destructive" size="icon" onClick={handleEmergency} aria-label="Emergência Veterinária">
           <Siren className="h-5 w-5" />
         </Button>
@@ -94,7 +97,7 @@ export function AppHeader() {
               </DropdownMenuItem>
              <DropdownMenuItem asChild>
                  <Link href="/quem-somos">
-                  <Info className="mr-2 h-4 w-4" /> {/* Ícone adicionado */}
+                  <Info className="mr-2 h-4 w-4" />
                   <span>Quem Somos</span>
                  </Link>
              </DropdownMenuItem>

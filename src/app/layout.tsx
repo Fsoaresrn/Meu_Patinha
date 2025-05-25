@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google'; // Using Inter as a clean, modern sans-serif font
 import './globals.css';
@@ -11,7 +12,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Meu Patinha - Gerenciador Pet',
-  description: 'Gerencie a saúde e bem-estar do seu pet de forma fácil e intuitiva.',
+  description: 'Gerencie a saúde e bem-estar do seu pet de forma fácil e intuitiva com o Meu Patinha. Acompanhe vacinas, sintomas, nutrição e muito mais.',
 };
 
 export default function RootLayout({

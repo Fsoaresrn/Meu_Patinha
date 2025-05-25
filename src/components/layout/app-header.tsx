@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Siren, UserCircle, LogOut, ShieldQuestion, Menu, Settings, MessageSquare } from 'lucide-react';
+import { Siren, UserCircle, LogOut, ShieldQuestion, Menu, Settings, MessageSquare, Info } from 'lucide-react'; // Adicionado Info
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -48,7 +48,6 @@ export function AppHeader() {
             <Menu className="h-5 w-5" />
           </Button>
         )}
-        {/* O span "Meu Patinha" foi removido daqui */}
       </div>
       <div className="flex items-center gap-3">
         <Button variant="destructive" size="icon" onClick={handleEmergency} aria-label="Emergência Veterinária">
@@ -93,6 +92,13 @@ export function AppHeader() {
                   <span>Fale Conosco</span>
                 </Link>
               </DropdownMenuItem>
+             <DropdownMenuItem asChild>
+                 <Link href="/quem-somos">
+                  <Info className="mr-2 h-4 w-4" /> {/* Ícone adicionado */}
+                  <span>Quem Somos</span>
+                 </Link>
+             </DropdownMenuItem>
+ 
               <DropdownMenuItem asChild>
                 <Link href="/terms">
                   <ShieldQuestion className="mr-2 h-4 w-4" />

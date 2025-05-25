@@ -22,7 +22,10 @@ import {
   BedDouble,
   School,
   Briefcase,
+  Newspaper,
   ShoppingCart,
+  HeartPulse, // Ícone para Espaço Petlovers
+  Handshake, // Ícone para Patrocinadores
   HeartHandshake,
   Heart,
   Images, // Ícone para Álbum
@@ -83,12 +86,15 @@ const mainNavItems: NavItem[] = [
   { href: "/creche", label: "Creche", icon: School, isActive: (pathname) => pathname.startsWith("/creche") },
   { href: "/pet-sitter", label: "Pet Sitter", icon: Briefcase, isActive: (pathname) => pathname.startsWith("/pet-sitter") },
   { href: "/shopping", label: "Shopping", icon: ShoppingCart, isActive: (pathname) => pathname.startsWith("/shopping") },
+  { href: "/revista", label: "Revista Pet", icon: Newspaper, isActive: (pathname) => pathname.startsWith("/revista") }, // New Revista Pet item
   { href: "/adocao", label: "Adoção", icon: HeartHandshake, isActive: (pathname) => pathname.startsWith("/adocao") },
   { href: "/namoro-pet", label: "NamoroPet", icon: Heart, isActive: (pathname) => pathname.startsWith("/namoro-pet") },
 ];
 
 const secondaryNavItems: NavItem[] = [
   { href: "/compartilhamentos", label: "Compartilhamentos", icon: Users, isActive: (pathname) => pathname.startsWith("/compartilhamentos") },
+  { href: "/patrocinadores", label: "Patrocinadores", icon: Handshake, isActive: (pathname) => pathname.startsWith("/patrocinadores") },
+  { href: "/espaco-petlovers", label: "Espaço Petlovers", icon: HeartPulse, isActive: (pathname) => pathname.startsWith("/espaco-petlovers") }, // New Espaço Petlovers item
 ];
 
 export function AppSidebar() {

@@ -20,12 +20,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
       {/* Coluna Direita - Formulário */}
       <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+<<<<<<< HEAD
         <div className="w-full max-w-xs">
           <div className="mb-6 flex flex-col items-center text-center">
             <Logo className="mb-4" iconSize={48} textSize="text-3xl" />
             <p className="text-sm text-muted-foreground">
               Bem-vindo! Acesse sua conta e tenha tudo para acompanhar a saúde e o bem-estar do seu melhor amigo em um só lugar.
             </p>
+=======
+        <div className="w-full max-w-xs"> {/* Alterado de max-w-md para max-w-xs */}
+          <div className="mb-8 flex flex-col items-center text-center">
+            <Logo className="mb-4" iconSize={48} textSize="text-3xl" />
+>>>>>>> 9900e486d5d5efded68e34afb17086ba02fa8e70
           </div>
           <div className="rounded-xl border bg-card p-6 shadow-xl sm:p-8">
             {children}

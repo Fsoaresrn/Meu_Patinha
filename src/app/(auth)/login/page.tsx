@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react"; // Import useState
-import { Eye, EyeOff } from "lucide-react"; // Import icons
+import { useState } from "react"; 
+import { Eye, EyeOff } from "lucide-react"; 
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ export default function LoginPage() {
   const loginUser = useAuthStore((state) => state.login);
   const { toast } = useToast();
   const [registeredUsers] = useLocalStorage<AuthUser[]>("registered-users", []);
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false); 
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,7 +55,11 @@ export default function LoginPage() {
         router.push(redirectUrl);
 
       } else {
+<<<<<<< HEAD
         toast({ variant: "destructive", title: "Erro de login", description: "Usuário ou senha incorretos." });
+=======
+        toast({ variant: "destructive", title: "Erro de login", description: "Usuário ou senha incorretos." }); // Mensagem genérica
+>>>>>>> 9900e486d5d5efded68e34afb17086ba02fa8e70
       }
     } else {
       toast({ variant: "destructive", title: "Erro de login", description: "Usuário não encontrado." });
@@ -74,9 +78,15 @@ export default function LoginPage() {
             name="cpf"
             render={({ field }) => (
               <FormItem>
+<<<<<<< HEAD
                 <FormLabel>Usuário<span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input placeholder="Seu usuário (CPF)" {...field} />
+=======
+                <FormLabel>Usuário<span className="text-destructive">*</span></FormLabel> {/* Alterado de CPF para Usuário */}
+                <FormControl>
+                  <Input placeholder="Seu usuário (CPF)" {...field} /> {/* Placeholder atualizado */}
+>>>>>>> 9900e486d5d5efded68e34afb17086ba02fa8e70
                 </FormControl>
                 <FormMessage />
               </FormItem>

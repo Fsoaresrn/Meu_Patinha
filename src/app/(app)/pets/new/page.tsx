@@ -340,37 +340,40 @@ export default function AdicionarPetPage() {
 
   // Use helper function to get breeds based on selected species
   const baseRacas = useMemo(() => {
-    return getBreedsForSpecies(especieSelecionada);
+    return getBreedsForSpecies(especieSelecionada) || []; // Ensure array
   }, [especieSelecionada]);
 
   const filteredRacas = useMemo(() => {
-    if (!breedSearchValue) return baseRacas;
-    return baseRacas.filter(raca =>
+    const safeRacas = Array.isArray(baseRacas) ? baseRacas : [];
+    if (!breedSearchValue) return safeRacas;
+    return safeRacas.filter(raca =>
       raca.toLowerCase().includes(breedSearchValue.toLowerCase())
     );
   }, [baseRacas, breedSearchValue]);
 
   // Use helper function to get fur types based on selected species
   const tiposPelagemDisponiveis = useMemo(() => {
-    return getFurTypesForSpecies(especieSelecionada);
+    return getFurTypesForSpecies(especieSelecionada) || []; // Ensure array
   }, [especieSelecionada]);
 
   // Filter fur types based on search
   const filteredTiposPelagem = useMemo(() => {
-    if (!furTypeSearchValue) return tiposPelagemDisponiveis;
-    return tiposPelagemDisponiveis.filter(tipo =>
+    const safeTipos = Array.isArray(tiposPelagemDisponiveis) ? tiposPelagemDisponiveis : [];
+    if (!furTypeSearchValue) return safeTipos;
+    return safeTipos.filter(tipo =>
       tipo.toLowerCase().includes(furTypeSearchValue.toLowerCase())
     );
   }, [tiposPelagemDisponiveis, furTypeSearchValue]);
 
   // Use helper function to get fur colors based on selected species
   const baseCoresPelagem = useMemo(() => {
-    return getFurColorsForSpecies(especieSelecionada);
+    return getFurColorsForSpecies(especieSelecionada) || []; // Ensure array
   }, [especieSelecionada]);
 
   const filteredCoresPelagem = useMemo(() => {
-    if (!furColorSearchValue) return baseCoresPelagem;
-    return baseCoresPelagem.filter(cor =>
+    const safeCores = Array.isArray(baseCoresPelagem) ? baseCoresPelagem : [];
+    if (!furColorSearchValue) return safeCores;
+    return safeCores.filter(cor =>
       cor.toLowerCase().includes(furColorSearchValue.toLowerCase())
     );
   }, [baseCoresPelagem, furColorSearchValue]);
@@ -521,7 +524,7 @@ export default function AdicionarPetPage() {
                                 )}
                               >
                                 {field.value
-                                  ? baseRacas.find(raca => raca === field.value)
+                                  ? (Array.isArray(baseRacas) && baseRacas.find(raca => raca === field.value)) ?? field.value // Show value even if not in list
                                   : "Selecione a raça"}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
@@ -537,7 +540,7 @@ export default function AdicionarPetPage() {
                               <CommandList>
                                 <CommandEmpty>Nenhuma raça encontrada.</CommandEmpty>
                                 <CommandGroup>
-                                  {filteredRacas.map((raca) => (
+                                  {Array.isArray(filteredRacas) && filteredRacas.map((raca) => (
                                     <CommandItem
                                       value={raca}
                                       key={raca}
@@ -566,8 +569,8 @@ export default function AdicionarPetPage() {
                     )}
                   />
 
-                  {/* Conditional Rendering for Tipo de Pelagem */}
-                  {tiposPelagemDisponiveis.length > 0 && (
+                  {/* Conditional Rendering for Tipo de Pelagem - Added Array.isArray check */}
+                  {Array.isArray(tiposPelagemDisponiveis) && tiposPelagemDisponiveis.length > 0 && (
                     <FormField
                       control={form.control}
                       name="tipoPelagem"
@@ -586,7 +589,7 @@ export default function AdicionarPetPage() {
                                   )}
                                 >
                                   {field.value
-                                    ? tiposPelagemDisponiveis.find(tipo => tipo === field.value)
+                                    ? (Array.isArray(tiposPelagemDisponiveis) && tiposPelagemDisponiveis.find(tipo => tipo === field.value)) ?? field.value
                                     : "Selecione o tipo de pelagem"}
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
@@ -602,7 +605,8 @@ export default function AdicionarPetPage() {
                                 <CommandList>
                                   <CommandEmpty>Nenhum tipo encontrado.</CommandEmpty>
                                   <CommandGroup>
-                                    {filteredTiposPelagem.map((tipo) => (
+                                    {/* Added Array.isArray check */} 
+                                    {Array.isArray(filteredTiposPelagem) && filteredTiposPelagem.map((tipo) => (
                                       <CommandItem
                                         value={tipo}
                                         key={tipo}
@@ -651,7 +655,7 @@ export default function AdicionarPetPage() {
                                 )}
                               >
                                 {field.value
-                                  ? baseCoresPelagem.find(cor => cor === field.value)
+                                  ? (Array.isArray(baseCoresPelagem) && baseCoresPelagem.find(cor => cor === field.value)) ?? field.value
                                   : "Selecione a cor"}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
@@ -667,7 +671,7 @@ export default function AdicionarPetPage() {
                               <CommandList>
                                 <CommandEmpty>Nenhuma cor encontrada.</CommandEmpty>
                                 <CommandGroup>
-                                  {filteredCoresPelagem.map((cor) => (
+                                  {Array.isArray(filteredCoresPelagem) && filteredCoresPelagem.map((cor) => (
                                     <CommandItem
                                       value={cor}
                                       key={cor}

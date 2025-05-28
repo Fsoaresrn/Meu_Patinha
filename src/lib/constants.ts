@@ -42,182 +42,130 @@ export const cidadesPorUF: Record<string, string[]> = {
 
 export const petSpeciesList: PetSpecies[] = ["Cão", "Gato", "Coelho", "Porco/Mini-porco", "Hamster", "Porquinhos-da-índia", "Furão", "Rato/camundongo", "Chinchila", "Lagarto/Iguana", "Tartaruga", "Cagado", "Papagaio", "Calopsita", "Periquito", "Canário", "Coruja"];
 
-export const dogBreeds = [
-  "Airedale Terrier",
-  "American Pit Bull Terrier",
-  "American Staffordshire Terrier",
-  "Australian Cattle Dog",
-  "Australian Kelpie",
-  "Australian Shepherd",
-  "Basenji",
-  "Basset Artesiano Normando",
-  "Basset Azul da Gasconha",
-  "Basset Fulvo da Bretanha",
-  "Basset Hound",
-  "Beagle",
-  "Bearded Collie",
-  "Bedlington Terrier",
-  "Biewer Terrier",
-  "Bolonhês",
-  "Border Collie",
-  "Border Terrier",
-  "Boston Terrier",
-  "Bouvier des Flandres",
-  "Boxer",
-  "Bull Terrier",
-  "Buldogue Americano",
-  "Buldogue Campeiro",
-  "Buldogue Francês",
-  "Bullmastiff",
-  "Cavalier King Charles Spaniel",
-  "Cão da Groenlândia",
-  "Cão da Serra de Aires",
-  "Cão de Água Português",
-  "Cão de Crista Chinês",
-  "Cão de Montanha dos Pirenéus",
-  "Cão do Canaã",
-  "Cão Lobo Tchecoslovaco",
-  "Chihuahua",
-  "Chow Chow",
-  "Cirneco do Etna",
-  "Collie Pelo Curto",
-  "Collie Pelo Longo",
-  "Coton de Tuléar",
-  "Dálmata",
-  "Doberman",
-  "Dogo Argentino",
-  "Dogue Alemão",
-  "Elkhound Norueguês Cinza",
-  "Fila Brasileiro",
-  "Fox Terrier",
-  "Galgo Espanhol",
-  "Galgo Italiano",
-  "Golden Retriever",
-  "Griffon de Bruxelas",
-  "Hokkaido",
-  "Husky Siberiano",
-  "Jack Russell Terrier",
-  "King Charles Spaniel",
-  "Komondor",
-  "Kromfohrländer",
-  "Kuvasz",
-  "Labrador Retriever",
-  "Lhasa Apso",
-  "Malamute do Alaska",
-  "Maltês",
-  "Mastiff Inglês",
-  "Mudi",
-  "Old English Sheepdog",
-  "Ovelheiro Gaúcho",
-  "Papillon",
-  "Pastor Alemão",
-  "Pastor Americano Miniatura",
-  "Pastor Belga",
-  "Pastor Branco Suíço",
-  "Pastor da Mantiqueira",
-  "Pastor de Shetland",
-  "Pequeno Cão Leão",
-  "Pequinês",
-  "Pinscher Miniatura",
-  "Podengo Andaluz",
-  "Poodle",
-  "Presa Canário",
-  "Pug",
-  "Rafeiro do Alentejo",
-  "Rottweiler",
-  "São Bernardo",
-  "Schnauzer",
-  "Schnauzer Gigante",
-  "Schnauzer Miniatura",
-  "Shar Pei",
-  "Smoushond Holandês",
-  "SRD (Sem Raça Definida)",
-  "Terra Nova",
-  "Terrier Preto da Rússia",
-  "Tosa",
-  "Volpino Italiano",
-  "Welsh Springer Spaniel",
-  "Whippet",
-  "Wolfhound Irlandês",
-  "Xoloitzcuintle",
-  "Yakutian Laika",
-  "Yorkshire Terrier",
-  "Outra"
-].sort((a, b) => {
-  if (a === "SRD (Sem Raça Definida)") return 1;
-  if (b === "SRD (Sem Raça Definida)") return -1;
-  if (a === "Outra") return 1;
-  if (b === "Outra") return -1;
-  return a.localeCompare(b);
-});
+// Helper function to sort breeds, keeping SRD and Outra at the end
+const sortBreeds = (breeds: string[]): string[] => {
+  return breeds.sort((a, b) => {
+    const isASpecial = a === "SRD (Sem Raça Definida)" || a === "Outra";
+    const isBSpecial = b === "SRD (Sem Raça Definida)" || b === "Outra";
 
-export const catBreeds = [
-  "Abissínio",
-  "American Shorthair",
-  "Angorá",
-  "Ashera",
-  "Bengal",
-  "Bobtail Japonês",
-  "Bombay",
-  "British Shorthair",
-  "Burmês",
-  "Chartreux",
-  "Cornish Rex",
-  "Devon Rex",
-  "Egyptian Mau",
-  "Exótico",
-  "Himalaio",
-  "Maine Coon",
-  "Manx",
-  "Norueguês da Floresta",
-  "Ocicat",
-  "Oriental",
-  "Persa",
-  "Ragdoll",
-  "Russian Blue",
-  "Sagrado da Birmânia",
-  "Savannah",
-  "Scottish Fold",
-  "Selkirk Rex",
-  "Siamês",
-  "Siberiano",
-  "Singapura",
-  "Somali",
-  "Sphynx",
-  "SRD (Sem Raça Definida)",
-  "Toyger",
-  "Turkish Van",
-  "Outra"
-].sort((a, b) => {
-  if (a === "SRD (Sem Raça Definida)") return 1;
-  if (b === "SRD (Sem Raça Definida)") return -1;
-  if (a === "Outra") return 1;
-  if (b === "Outra") return -1;
-  return a.localeCompare(b);
-});
-
-export const furTypesBySpecies: Record<PetSpecies, string[]> = {
-  Cão: ["Curta", "Média", "Longa", "Dupla Camada", "Encaracolada", "Lisa", "Dura/Áspera", "Sem Pelo", "Outra"],
-  Gato: ["Curta", "Média", "Longa", "Sem Pelo", "Outra"],
+    if (isASpecial && !isBSpecial) return 1;
+    if (!isASpecial && isBSpecial) return -1;
+    if (isASpecial && isBSpecial) {
+      if (a === "SRD (Sem Raça Definida)" && b === "Outra") return -1;
+      if (a === "Outra" && b === "SRD (Sem Raça Definida)") return 1;
+    }
+    return a.localeCompare(b);
+  });
 };
 
-export const furColorsBySpecies: Record<PetSpecies, string[]> = {
-  Cão: [
+// Helper function to sort colors, keeping Outra at the end
+const sortColors = (colors: string[]): string[] => {
+  return colors.sort((a, b) => {
+    if (a === "Outra") return 1;
+    if (b === "Outra") return -1;
+    return a.localeCompare(b);
+  });
+};
+
+export const dogBreeds = sortBreeds([
+  "Airedale Terrier", "American Pit Bull Terrier", "American Staffordshire Terrier", "Australian Cattle Dog",
+  "Australian Kelpie", "Australian Shepherd", "Basenji", "Basset Artesiano Normando", "Basset Azul da Gasconha",
+  "Basset Fulvo da Bretanha", "Basset Hound", "Beagle", "Bearded Collie", "Bedlington Terrier", "Biewer Terrier",
+  "Bolonhês", "Border Collie", "Border Terrier", "Boston Terrier", "Bouvier des Flandres", "Boxer", "Bull Terrier",
+  "Buldogue Americano", "Buldogue Campeiro", "Buldogue Francês", "Bullmastiff", "Cavalier King Charles Spaniel",
+  "Cão da Groenlândia", "Cão da Serra de Aires", "Cão de Água Português", "Cão de Crista Chinês",
+  "Cão de Montanha dos Pirenéus", "Cão do Canaã", "Cão Lobo Tchecoslovaco", "Chihuahua", "Chow Chow",
+  "Cirneco do Etna", "Collie Pelo Curto", "Collie Pelo Longo", "Coton de Tuléar", "Dálmata", "Doberman",
+  "Dogo Argentino", "Dogue Alemão", "Elkhound Norueguês Cinza", "Fila Brasileiro", "Fox Terrier", "Galgo Espanhol",
+  "Galgo Italiano", "Golden Retriever", "Griffon de Bruxelas", "Hokkaido", "Husky Siberiano", "Jack Russell Terrier",
+  "King Charles Spaniel", "Komondor", "Kromfohrländer", "Kuvasz", "Labrador Retriever", "Lhasa Apso",
+  "Malamute do Alaska", "Maltês", "Mastiff Inglês", "Mudi", "Old English Sheepdog", "Ovelheiro Gaúcho", "Papillon",
+  "Pastor Alemão", "Pastor Americano Miniatura", "Pastor Belga", "Pastor Branco Suíço", "Pastor da Mantiqueira",
+  "Pastor de Shetland", "Pequeno Cão Leão", "Pequinês", "Pinscher Miniatura", "Podengo Andaluz", "Poodle",
+  "Presa Canário", "Pug", "Rafeiro do Alentejo", "Rottweiler", "São Bernardo", "Schnauzer", "Schnauzer Gigante",
+  "Schnauzer Miniatura", "Shar Pei", "Smoushond Holandês", "Terra Nova", "Terrier Preto da Rússia", "Tosa",
+  "Volpino Italiano", "Welsh Springer Spaniel", "Whippet", "Wolfhound Irlandês", "Xoloitzcuintle", "Yakutian Laika",
+  "Yorkshire Terrier", "SRD (Sem Raça Definida)", "Outra"
+]);
+
+export const catBreeds = sortBreeds([
+  "Abissínio", "American Shorthair", "Angorá", "Ashera", "Bengal", "Bobtail Japonês", "Bombay", "British Shorthair",
+  "Burmês", "Chartreux", "Cornish Rex", "Devon Rex", "Egyptian Mau", "Exótico", "Himalaio", "Maine Coon", "Manx",
+  "Norueguês da Floresta", "Ocicat", "Oriental", "Persa", "Ragdoll", "Russian Blue", "Sagrado da Birmânia",
+  "Savannah", "Scottish Fold", "Selkirk Rex", "Siamês", "Siberiano", "Singapura", "Somali", "Sphynx", "Toyger",
+  "Turkish Van", "SRD (Sem Raça Definida)", "Outra"
+]);
+
+export const hamsterBreeds = sortBreeds(["Sírio", "Anão Russo", "Chinês", "Roborovski", "SRD (Sem Raça Definida)", "Outra"]);
+export const guineaPigBreeds = sortBreeds(["Inglês", "Americano", "Abissínio", "Peruano", "Texel", "Sheltie", "Coroado", "Skinny (sem pelos)", "SRD (Sem Raça Definida)", "Outra"]); // Inclui Porco/Mini-porco
+export const ratMouseBreeds = sortBreeds(["Fancy", "Dumbo", "Rex", "Nude", "SRD (Sem Raça Definida)", "Outra"]);
+export const chinchillaBreeds = sortBreeds(["Padrão (Standard Gray)", "Branco", "Preto Velvet", "Beige", "Safira", "Mosaic", "SRD (Sem Raça Definida)", "Outra"]);
+export const rabbitBreeds = sortBreeds(["Angorá", "Lionhead", "Rex", "Mini Rex", "Netherland Dwarf", "Califórnia", "Fuzzy Lop", "Mini Lop", "Flemish Giant", "SRD (Sem Raça Definida)", "Outra"]);
+export const lizardBreeds = sortBreeds(["Leopardo", "Teiú", "Gecko Tokay", "Skink-de-língua-azul", "Dragão Barbudo", "SRD (Sem Raça Definida)", "Outra"]); // Inclui Iguana
+export const turtleBreeds = sortBreeds(["Tigre-d'água (Trachemys scripta elegans)", "Tartaruga-de-ouvido-amarelo", "Tartaruga-da-Amazônia", "Jabuti-piranga", "Jabuti-tinga", "SRD (Sem Raça Definida)", "Outra"]); // Inclui Cagado
+export const parakeetBreeds = sortBreeds(["Periquito-australiano (Budgie)", "Periquito Inglês", "Periquito Arlequim", "Lutino", "Albino", "Azul Cobalto", "SRD (Sem Raça Definida)", "Outra"]);
+export const cockatielBreeds = sortBreeds(["Calopsita Cinza (Selvagem)", "Lutino", "Albino", "Pérola", "Canela", "Arlequim", "SRD (Sem Raça Definida)", "Outra"]);
+export const parrotBreeds = sortBreeds(["Papagaio-verdadeiro (Amazona aestiva)", "Papagaio-do-congo (Cinza-africano)", "Arara-azul", "Maracanã", "Eclectus", "Papagaio-do-sol", "SRD (Sem Raça Definida)", "Outra"]);
+export const canaryBreeds = sortBreeds(["Belga (do Reino)", "Gloster", "Roller", "Norwich", "Vermelho", "Arlequim", "SRD (Sem Raça Definida)", "Outra"]);
+export const owlBreeds = sortBreeds(["Coruja-das-torres (Tyto alba)", "Coruja-buraqueira", "Coruja-do-mato", "Mocho-diabo", "Corujão-orelhudo", "SRD (Sem Raça Definida)", "Outra"]);
+
+// Mapeamento de Espécie para Lista de Raças
+export const breedsBySpecies: Record<PetSpecies, string[]> = {
+  "Cão": dogBreeds,
+  "Gato": catBreeds,
+  "Coelho": rabbitBreeds,
+  "Porco/Mini-porco": guineaPigBreeds, // Usando a mesma lista de porquinho-da-índia
+  "Hamster": hamsterBreeds,
+  "Porquinhos-da-índia": guineaPigBreeds,
+  "Furão": sortBreeds(["SRD (Sem Raça Definida)", "Outra"]), // Adicionando default para Furão
+  "Rato/camundongo": ratMouseBreeds,
+  "Chinchila": chinchillaBreeds,
+  "Lagarto/Iguana": lizardBreeds,
+  "Tartaruga": turtleBreeds,
+  "Cagado": turtleBreeds, // Usando a mesma lista de tartaruga
+  "Papagaio": parrotBreeds,
+  "Calopsita": cockatielBreeds,
+  "Periquito": parakeetBreeds,
+  "Canário": canaryBreeds,
+  "Coruja": owlBreeds,
+};
+
+// Tipos de Pelagem por Espécie (Apenas para espécies que possuem pelagem relevante)
+export const furTypesBySpecies: Partial<Record<PetSpecies, string[]>> = {
+  "Cão": ["Curta", "Média", "Longa", "Dupla Camada", "Encaracolada", "Lisa", "Dura/Áspera", "Sem Pelo", "Outra"],
+  "Gato": ["Curta", "Média", "Longa", "Sem Pelo", "Outra"],
+  "Hamster": ["Curta", "Macia", "Lisa", "Longa", "Outra"],
+  "Porco/Mini-porco": ["Lisa", "Áspera", "Longa", "Crespa", "Rosetada", "Sem Pelo", "Outra"], // Adicionado "Sem Pelo" para Skinny
+  "Porquinhos-da-índia": ["Lisa", "Áspera", "Longa", "Crespa", "Rosetada", "Sem Pelo", "Outra"], // Adicionado "Sem Pelo" para Skinny
+  "Rato/camundongo": ["Curta", "Fina", "Encaracolada", "Sem Pelo", "Outra"], // Adicionado "Sem Pelo" para Nude
+  "Chinchila": ["Extremamente densa", "Macia", "Outra"],
+  "Coelho": ["Curta", "Longa", "Sedosa", "Encaracolada", "Felpuda", "Outra"],
+  // Espécies como Furão, Lagarto/Iguana, Tartaruga, Cagado, Papagaio, Calopsita, Periquito, Canário, Coruja não terão este campo habilitado.
+};
+
+// Cores por Espécie
+export const furColorsBySpecies: Partial<Record<PetSpecies, string[]>> = {
+  "Cão": sortColors([
     "Abricot", "Areia", "Azul", "Bege", "Bicolor", "Branco", "Caramelo", "Cinza", "Cutia",
     "Fulvo", "Malhado", "Marrom", "Merle", "Preto", "Tigrado", "Tricolor", "Vermelho", "Zibelina", "Outra"
-  ].sort((a,b) => {
-    if (a === "Outra") return 1;
-    if (b === "Outra") return -1;
-    return a.localeCompare(b);
-  }),
-  Gato: [
+  ]),
+  "Gato": sortColors([
     "Âmbar", "Azul", "Bege", "Branco", "Canela", "Caramelo", "Chocolate", "Cinza", "Creme",
     "Dourado", "Lilás", "Prateado", "Preto", "Vermelho", "Zibelina", "Outra"
-  ].sort((a,b) => {
-    if (a === "Outra") return 1;
-    if (b === "Outra") return -1;
-    return a.localeCompare(b);
-  }),
+  ]),
+  "Hamster": sortColors(["Marrom", "Dourado", "Branco", "Cinza", "Preto", "Manchado", "Outra"]),
+  "Porco/Mini-porco": sortColors(["Branco", "Preto", "Dourado", "Tricolor", "Rajado", "Outra"]),
+  "Porquinhos-da-índia": sortColors(["Branco", "Preto", "Dourado", "Tricolor", "Rajado", "Outra"]),
+  "Rato/camundongo": sortColors(["Branco", "Cinza", "Preto", "Bege", "Manchado", "Outra"]),
+  "Chinchila": sortColors(["Cinza (padrão)", "Branco", "Bege", "Preto", "Safira", "Outra"]),
+  "Coelho": sortColors(["Branco", "Cinza", "Preto", "Marrom", "Bege", "Manchado", "Tricolor", "Laranja", "Outra"]),
+  "Periquito": sortColors(["Verde", "Azul", "Amarelo", "Branco", "Violeta", "Cinza", "Combinações", "Outra"]),
+  "Calopsita": sortColors(["Cinza", "Amarelo", "Branco", "Lutino (amarelo claro)", "Cara-laranja", "Outra"]),
+  "Papagaio": sortColors(["Verde dominante", "Verde com vermelho, azul e amarelo", "Outra"]),
+  "Canário": sortColors(["Amarelo (clássico)", "Laranja", "Branco", "Marfim", "Vermelho", "Outra"]),
+  "Coruja": sortColors(["Marrom", "Branco", "Cinza", "Rajada", "Outra"]),
+  // Espécies como Furão, Lagarto/Iguana, Tartaruga, Cagado podem não ter cores de pelagem aplicáveis ou variam muito.
+  // Poderia adicionar cores para escamas/carapaça se necessário.
 };
 
 export const petSizesList: string[] = ["Pequeno", "Médio", "Grande", "Gigante"];
@@ -423,52 +371,16 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     species: petSpeciesList,
     preventsDiseases: [] as string[],
     importance: "Opcional",
-    recommendedDoses: [],
+    recommendedDoses: ["Dose Única", "1ª Dose", "2ª Dose", "3ª Dose", "4ª Dose", "Reforço", "Reforço Anual", "Outra"],
     boosterFrequencySuggestion: "Não se aplica",
-    notes: "Use esta opção para vacinas não listadas ou específicas.",
-  },
-  // --- Vacinas para Coelhos ---
-  {
-    id: "mixomatose_coelho",
-    name: "Mixomatose (Coelho)",
-    species: ["Coelho"] as PetSpecies[],
-    preventsDiseases: ["Mixomatose"] as string[],
-    importance: "Complementar",
-    recommendedDoses: ["Dose única", "Reforço anual"] as string[],
-    isSingleDosePrimary: true,
-    boosterFrequencySuggestion: "Anual",
-    notes: "Seguir orientação veterinária.",
-  },
-  {
-    id: "doenca_viral_hemorragica_coelho",
-    name: "Doença viral hemorrágica (Coelho)",
-    species: ["Coelho"] as PetSpecies[],
-    preventsDiseases: ["Doença viral hemorrágica"] as string[],
-    importance: "Complementar",
-    recommendedDoses: ["Dose única", "Reforço anual"] as string[],
-    isSingleDosePrimary: true,
-    boosterFrequencySuggestion: "Anual",
-    notes: "Seguir orientação veterinária.",
-  },
-  // --- Vacinas para Furão ---
-  {
-    id: "raiva_furao",
-    name: "Raiva (Furão)",
-    species: ["Furão"] as PetSpecies[],
-    preventsDiseases: ["Raiva"] as string[],
-    importance: "Essencial",
-    recommendedDoses: ["Dose única (a partir de 12 semanas)", "Reforço anual"] as string[],
-    isSingleDosePrimary: true,
-    preventsDiseases: [],
-    importance: "Opcional",
-    recommendedDoses: [], 
-    boosterFrequencySuggestion: "Não se aplica",
-    notes: "Use esta opção para vacinas não listadas ou específicas."
+    notes: "Usar para vacinas não listadas ou específicas.",
+    administrationNotes: ""
   }
 ];
 
+export const vaccineCategories: VaccineCategory[] = ["Essencial", "Complementar", "Opcional"];
 
-export const vaccineBoosterFrequenciesConstants: VaccineBoosterFrequencySelected[] = [
+export const vaccineBoosterFrequencies: VaccineBoosterFrequencySelected[] = [
   "Dose Única",
   "Reforço Semanal",
   "Reforço Mensal",
@@ -478,9 +390,7 @@ export const vaccineBoosterFrequenciesConstants: VaccineBoosterFrequencySelected
   "Não Aplicar Reforço",
 ];
 
-export const vaccineCategoriesConstants: VaccineCategory[] = ["Essencial", "Complementar", "Opcional"];
-
-export const genericVaccineDosesConstants: string[] = [
+export const genericVaccineDoses: string[] = [
   "Dose Única",
   "1ª Dose",
   "2ª Dose",
@@ -488,21 +398,34 @@ export const genericVaccineDosesConstants: string[] = [
   "4ª Dose",
   "Reforço",
   "Reforço Anual",
-  "Outra (Especificar no campo Dose)",
+  "Outra",
 ];
 
+export const antipulgasProductTypes: AntipulgasProductType[] = ["Coleira", "Pipeta", "Spray", "Comprimido", "Outro"];
 
-export const activityTypes: string[] = ["Passeio", "Alimentação", "Brincadeira", "Viagem", "Hospedagem", "Visita ao Veterinário", "Outro"];
-export const hygieneTypes: string[] = ["Banho", "Tosa", "Escovação de Dentes", "Corte de Unhas", "Limpeza de Orelhas", "Outro"];
+export const medicalDocumentTypes: MedicalDocumentType[] = ["Exame de Sangue", "Raio-X", "Ultrassom", "Receita", "Atestado", "Outro"];
 
 export const petIdGenerator = (): string => {
   const year = new Date().getFullYear();
-  // Generates an 11-character random alphanumeric string
   const randomPart = Math.random().toString(36).substring(2, 13).toUpperCase();
   return `${year}-${randomPart}`;
 };
 
-export const antipulgasProductTypesConstants: AntipulgasProductType[] = ["Coleira", "Pipeta", "Spray", "Comprimido", "Outro"];
-export const medicalDocumentTypesConstants: MedicalDocumentType[] = ["Exame de Sangue", "Raio-X", "Ultrassom", "Receita", "Atestado", "Outro"];
+// Função para obter raças com base na espécie
+export const getBreedsForSpecies = (species: PetSpecies | undefined): string[] => {
+  if (!species) return [];
+  return breedsBySpecies[species] || sortBreeds(["SRD (Sem Raça Definida)", "Outra"]); // Retorna default se não mapeado
+};
 
-    
+// Função para obter tipos de pelagem com base na espécie
+export const getFurTypesForSpecies = (species: PetSpecies | undefined): string[] => {
+  if (!species) return [];
+  return furTypesBySpecies[species] || []; // Retorna array vazio se não aplicável
+};
+
+// Função para obter cores com base na espécie
+export const getFurColorsForSpecies = (species: PetSpecies | undefined): string[] => {
+  if (!species) return [];
+  return furColorsBySpecies[species] || sortColors(["Outra"]); // Retorna default se não mapeado
+};
+

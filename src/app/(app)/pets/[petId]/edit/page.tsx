@@ -350,46 +350,48 @@ export default function EditarPetPage() {
 
   // Use helper function to get breeds based on selected species
   const baseRacas = useMemo(() => {
-    return getBreedsForSpecies(especieSelecionada);
+    return getBreedsForSpecies(especieSelecionada) || []; // Ensure array
   }, [especieSelecionada]);
 
   const filteredRacas = useMemo(() => {
-    if (!breedSearchValue) return baseRacas;
-    return baseRacas.filter(raca =>
+    const safeRacas = Array.isArray(baseRacas) ? baseRacas : [];
+    if (!breedSearchValue) return safeRacas;
+    return safeRacas.filter(raca =>
       raca.toLowerCase().includes(breedSearchValue.toLowerCase())
     );
   }, [baseRacas, breedSearchValue]);
 
   // Use helper function to get fur types based on selected species
   const tiposPelagemDisponiveis = useMemo(() => {
-    return getFurTypesForSpecies(especieSelecionada);
+    return getFurTypesForSpecies(especieSelecionada) || []; // Ensure array
   }, [especieSelecionada]);
 
   // Filter fur types based on search
   const filteredTiposPelagem = useMemo(() => {
-    if (!furTypeSearchValue) return tiposPelagemDisponiveis;
-    return tiposPelagemDisponiveis.filter(tipo =>
+    const safeTipos = Array.isArray(tiposPelagemDisponiveis) ? tiposPelagemDisponiveis : [];
+    if (!furTypeSearchValue) return safeTipos;
+    return safeTipos.filter(tipo =>
       tipo.toLowerCase().includes(furTypeSearchValue.toLowerCase())
     );
   }, [tiposPelagemDisponiveis, furTypeSearchValue]);
 
   // Use helper function to get fur colors based on selected species
   const baseCoresPelagem = useMemo(() => {
-    return getFurColorsForSpecies(especieSelecionada);
+    return getFurColorsForSpecies(especieSelecionada) || []; // Ensure array
   }, [especieSelecionada]);
 
   const filteredCoresPelagem = useMemo(() => {
-    if (!furColorSearchValue) return baseCoresPelagem;
-    return baseCoresPelagem.filter(cor =>
+    const safeCores = Array.isArray(baseCoresPelagem) ? baseCoresPelagem : [];
+    if (!furColorSearchValue) return safeCores;
+    return safeCores.filter(cor =>
       cor.toLowerCase().includes(furColorSearchValue.toLowerCase())
     );
   }, [baseCoresPelagem, furColorSearchValue]);
 
 
-  // Reset dependent fields when species changes (only if editing and species actually changes)
+  // Reset dependent fields when species changes
   useEffect(() => {
-    // This effect should ideally run only when especieSelecionada changes *after* initial load
-    // We might need a flag or check against petToEdit.especie to prevent resetting on load
+    // Only reset if the species actually changes from the initial loaded value
     if (petToEdit && especieSelecionada !== petToEdit.especie) {
         form.setValue("raca", "");
         setBreedSearchValue("");
@@ -398,8 +400,7 @@ export default function EditarPetPage() {
         form.setValue("corPelagem", "");
         setFurColorSearchValue("");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [especieSelecionada, form, petToEdit]); // Add petToEdit dependency
+  }, [especieSelecionada, form, petToEdit]);
 
   const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: "dataNascimento" | "simPatinhasEmissionDate") => {
     const typedValue = e.target.value;
@@ -452,23 +453,12 @@ export default function EditarPetPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <LoadingSpinner size={48} />
-      </div>
-    );
+    return <LoadingSpinner className="mt-20" />;
   }
 
   if (!petToEdit) {
     // This case should ideally be handled by the redirect in useEffect, but added for safety
-    return (
-        <div className="container mx-auto px-4 py-8 text-center">
-            <p>Pet não encontrado ou erro ao carregar.</p>
-            <Button asChild className="mt-4">
-                <Link href="/pets">Voltar para Meus Pets</Link>
-            </Button>
-        </div>
-    );
+    return <div className="container mx-auto px-4 py-8 text-center">Pet não encontrado.</div>;
   }
 
   return (
@@ -476,8 +466,8 @@ export default function EditarPetPage() {
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold flex items-center">
-                <Edit className="mr-2 h-6 w-6"/> Editar Pet: {petToEdit.nome}
+            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                <Edit className="h-6 w-6"/> Editar Pet: {petToEdit.nome}
             </CardTitle>
             <Button variant="outline" size="icon" asChild>
               <Link href={`/pets/${petId}`}>
@@ -486,7 +476,7 @@ export default function EditarPetPage() {
               </Link>
             </Button>
           </div>
-          <CardDescription>Atualize os dados do seu pet.</CardDescription>
+          <CardDescription>Atualize os dados do seu animal.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -516,7 +506,7 @@ export default function EditarPetPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Espécie *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} >
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione a espécie" />
@@ -552,7 +542,7 @@ export default function EditarPetPage() {
                                 )}
                               >
                                 {field.value
-                                  ? baseRacas.find(raca => raca === field.value) ?? field.value // Show value even if not in list (e.g., "Outra")
+                                  ? (Array.isArray(baseRacas) && baseRacas.find(raca => raca === field.value)) ?? field.value
                                   : "Selecione a raça"}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
@@ -568,7 +558,7 @@ export default function EditarPetPage() {
                               <CommandList>
                                 <CommandEmpty>Nenhuma raça encontrada.</CommandEmpty>
                                 <CommandGroup>
-                                  {filteredRacas.map((raca) => (
+                                  {Array.isArray(filteredRacas) && filteredRacas.map((raca) => (
                                     <CommandItem
                                       value={raca}
                                       key={raca}
@@ -597,8 +587,8 @@ export default function EditarPetPage() {
                     )}
                   />
 
-                  {/* Conditional Rendering for Tipo de Pelagem */}
-                  {tiposPelagemDisponiveis.length > 0 && (
+                  {/* Conditional Rendering for Tipo de Pelagem - Added Array.isArray check */}
+                  {Array.isArray(tiposPelagemDisponiveis) && tiposPelagemDisponiveis.length > 0 && (
                     <FormField
                       control={form.control}
                       name="tipoPelagem"
@@ -617,7 +607,7 @@ export default function EditarPetPage() {
                                   )}
                                 >
                                   {field.value
-                                    ? tiposPelagemDisponiveis.find(tipo => tipo === field.value) ?? field.value
+                                    ? (Array.isArray(tiposPelagemDisponiveis) && tiposPelagemDisponiveis.find(tipo => tipo === field.value)) ?? field.value
                                     : "Selecione o tipo de pelagem"}
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
@@ -633,7 +623,8 @@ export default function EditarPetPage() {
                                 <CommandList>
                                   <CommandEmpty>Nenhum tipo encontrado.</CommandEmpty>
                                   <CommandGroup>
-                                    {filteredTiposPelagem.map((tipo) => (
+                                    {/* Added Array.isArray check */} 
+                                    {Array.isArray(filteredTiposPelagem) && filteredTiposPelagem.map((tipo) => (
                                       <CommandItem
                                         value={tipo}
                                         key={tipo}
@@ -682,7 +673,7 @@ export default function EditarPetPage() {
                                 )}
                               >
                                 {field.value
-                                  ? baseCoresPelagem.find(cor => cor === field.value) ?? field.value
+                                  ? (Array.isArray(baseCoresPelagem) && baseCoresPelagem.find(cor => cor === field.value)) ?? field.value
                                   : "Selecione a cor"}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
@@ -698,7 +689,7 @@ export default function EditarPetPage() {
                               <CommandList>
                                 <CommandEmpty>Nenhuma cor encontrada.</CommandEmpty>
                                 <CommandGroup>
-                                  {filteredCoresPelagem.map((cor) => (
+                                  {Array.isArray(filteredCoresPelagem) && filteredCoresPelagem.map((cor) => (
                                     <CommandItem
                                       value={cor}
                                       key={cor}
@@ -999,7 +990,7 @@ export default function EditarPetPage() {
                   name="fotoUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Carregar Nova Foto / Manter Atual</FormLabel>
+                      <FormLabel>Carregar Foto</FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-4">
                           <Input
@@ -1038,7 +1029,7 @@ export default function EditarPetPage() {
                         </div>
                       </FormControl>
                       <FormDescription>
-                        Envie uma nova foto ou deixe em branco para manter a atual (PNG, JPG, BMP, WEBP - Máx {MAX_FILE_SIZE_MB}MB).
+                        Envie uma foto do seu pet (PNG, JPG, BMP, WEBP - Máx {MAX_FILE_SIZE_MB}MB).
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

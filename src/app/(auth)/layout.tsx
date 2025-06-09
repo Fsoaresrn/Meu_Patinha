@@ -7,13 +7,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Coluna Esquerda - Imagem Centralizada */}
-      <div className="hidden md:flex md:w-1/2 lg:w-3/5 flex-col items-center justify-center bg-background p-8 shadow-lg">
+      <div style={{ display: 'inline-block', maxWidth: '100%' }} className="hidden md:flex md:w-1/2 lg:w-3/5 flex-col items-center justify-center bg-background p-8 shadow-lg">
         <Image
           src="/petz.jpeg"
           alt="Imagem com diversos pets amigáveis"
-          layout="intrinsic" // Alterado de fill para intrinsic
-          width={800} // Largura intrínseca da imagem (ajuste se necessário)
-          height={600} // Altura intrínseca da imagem (ajuste se necessário)
+          width={1536} // Largura intrínseca da imagem (ajuste se necessário)
+          height={1024} // Altura intrínseca da imagem (ajuste se necessário)
           priority
           className="rounded-lg shadow-md max-w-full h-auto" // Adicionado estilo e responsividade
         />

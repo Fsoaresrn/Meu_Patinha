@@ -14,12 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { DateSelectors } from "@/components/ui/date-selectors";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+
 // Import helper functions instead of individual breed lists
 import { petIdGenerator, petSpeciesList, petGendersList, yesNoOptions, petSizesList, acquisitionTypes, petPurposes, ufsBrasil, getBreedsForSpecies, getFurTypesForSpecies, getFurColorsForSpecies } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
@@ -67,7 +69,6 @@ const petFormSchema = z.object({
   simPatinhasEmissionCity: z.string().optional(),
   simPatinhasEmissionUF: z.string().optional(),
   secondaryTutorName: z.string().optional(),
-  secondaryTutorEmail: z.string().email({ message: "E-mail do 2º tutor inválido." }).optional().or(z.literal("")),
   secondaryTutorCpf: z.string().optional().refine(val => {
     if (!val || val.trim() === "") return true; // Optional, so empty is fine
     const numericCpf = val.replace(/[^\d]/g, "");
@@ -122,9 +123,6 @@ export default function AdicionarPetPage() {
   const [isFurColorPopoverOpen, setIsFurColorPopoverOpen] = useState(false);
   const [furColorSearchValue, setFurColorSearchValue] = useState("");
 
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isSimPatinhasCalendarOpen, setIsSimPatinhasCalendarOpen] = useState(false);
-
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -151,7 +149,6 @@ export default function AdicionarPetPage() {
       simPatinhasEmissionCity: "",
       simPatinhasEmissionUF: "",
       secondaryTutorName: "",
-      secondaryTutorEmail: "",
       secondaryTutorCpf: "",
     },
   });
@@ -160,10 +157,7 @@ export default function AdicionarPetPage() {
   const watchedDataNascimento = form.watch("dataNascimento");
   const isBirthDateUnknown = form.watch("birthDateUnknown");
   const hasSimPatinhas = form.watch("hasSimPatinhas");
-
-  const [dateInputString, setDateInputString] = useState<string>("");
-  const [simPatinhasDateInputString, setSimPatinhasDateInputString] = useState<string>("");
-
+  
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -221,43 +215,7 @@ export default function AdicionarPetPage() {
     }
   };
 
-
-  useEffect(() => {
-    if (watchedDataNascimento && isValidDate(watchedDataNascimento)) {
-      const formattedDate = formatDateToBrasil(watchedDataNascimento);
-      if (dateInputString !== formattedDate) {
-        setDateInputString(formattedDate);
-      }
-    } else if (!watchedDataNascimento && dateInputString !== "") {
-      // Clear input if date becomes invalid/empty
-      // setDateInputString(""); // Optional: Decide if you want to clear or keep invalid input
-    }
-  }, [watchedDataNascimento, dateInputString]);
-
-
   const watchedSimPatinhasDate = form.watch("simPatinhasEmissionDate");
-  useEffect(() => {
-    if (watchedSimPatinhasDate && isValidDate(watchedSimPatinhasDate)) {
-      const formattedDate = formatDateToBrasil(watchedSimPatinhasDate);
-      if (simPatinhasDateInputString !== formattedDate) {
-        setSimPatinhasDateInputString(formattedDate);
-      }
-    } else if (!watchedSimPatinhasDate && simPatinhasDateInputString !== "") {
-        // Clear input if date becomes invalid/empty
-        // setSimPatinhasDateInputString(""); // Optional
-    }
-  }, [watchedSimPatinhasDate, simPatinhasDateInputString]);
-
-
-  useEffect(() => {
-    if (isBirthDateUnknown) {
-      form.setValue("dataNascimento", undefined);
-      setCalculatedAgeDisplay(null);
-      setDateInputString("");
-    } else {
-      form.setValue("ageInMonths", undefined, { shouldValidate: true });
-    }
-  }, [isBirthDateUnknown, form]);
 
   useEffect(() => {
     if (!isBirthDateUnknown && watchedDataNascimento && isValidDate(watchedDataNascimento)) {
@@ -273,11 +231,19 @@ export default function AdicionarPetPage() {
     if (hasSimPatinhas === "Não") {
       form.setValue("simPatinhasId", "");
       form.setValue("simPatinhasEmissionDate", undefined);
-      setSimPatinhasDateInputString("");
       form.setValue("simPatinhasEmissionCity", "");
       form.setValue("simPatinhasEmissionUF", "");
     }
   }, [hasSimPatinhas, form]);
+
+  const onFormErrors = (errors: any) => {
+    console.error("Erros de validação do formulário:", errors);
+    toast({
+      variant: "destructive",
+      title: "Formulário Inválido",
+      description: "Por favor, verifique os campos em vermelho e corrija os erros.",
+    });
+  };
 
 
   const onSubmit = (data: PetFormValues) => {
@@ -322,7 +288,6 @@ export default function AdicionarPetPage() {
       simPatinhasEmissionCity: data.hasSimPatinhas === "Sim" ? data.simPatinhasEmissionCity : undefined,
       simPatinhasEmissionUF: data.hasSimPatinhas === "Sim" ? data.simPatinhasEmissionUF : undefined,
       secondaryTutorName: data.secondaryTutorName || undefined,
-      secondaryTutorEmail: data.secondaryTutorEmail || undefined,
       secondaryTutorCpf: data.secondaryTutorCpf ? data.secondaryTutorCpf.replace(/[^\d]/g, "") : undefined,
     };
 
@@ -389,61 +354,7 @@ export default function AdicionarPetPage() {
     setFurColorSearchValue("");
   }, [especieSelecionada, form]);
 
-  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: "dataNascimento" | "simPatinhasEmissionDate") => {
-    const typedValue = e.target.value;
-    if (fieldName === "dataNascimento") {
-      setDateInputString(typedValue);
-    } else {
-      setSimPatinhasDateInputString(typedValue);
-    }
 
-    // Basic regex to allow partial date input like dd, dd/mm, dd/mm/yyyy
-    const dateFormatRegex = /^(?:\d{1,2}(?:\/(?:\d{1,2}(?:\/\d{0,4})?)?)?)?$/;
-
-    if (typedValue.length <= 10) { // Max length dd/mm/yyyy
-        if (typedValue === "" || dateFormatRegex.test(typedValue)) {
-            // If the format is complete and valid, update the form state
-            if (typedValue.length === 10 && typedValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-                 const parsedDate = parseDateFn(typedValue, "dd/MM/yyyy", new Date());
-                 if (isValidDate(parsedDate)) {
-                    const currentRHFDate = form.getValues(fieldName);
-                    // Only update if the date actually changed to avoid infinite loops
-                    if (!currentRHFDate || formatDate(currentRHFDate, "dd/MM/yyyy") !== typedValue) {
-                        form.setValue(fieldName, parsedDate, { shouldValidate: true });
-                    }
-                 } else {
-                    // Invalid date format, potentially clear RHF state or show error
-                    form.setValue(fieldName, undefined, { shouldValidate: true });
-                 }
-            } else {
-                // Incomplete date, don't update RHF state yet, just the input string
-                // Optionally clear RHF state if input becomes incomplete
-                 form.setValue(fieldName, undefined, { shouldValidate: true });
-            }
-        } // else: Invalid characters entered, do nothing or show feedback
-    }
-  };
-
-  const handleDateSelect = (date: Date | undefined, fieldName: "dataNascimento" | "simPatinhasEmissionDate") => {
-    if (date && isValidDate(date)) {
-      form.setValue(fieldName, date, { shouldValidate: true });
-      const formatted = formatDateToBrasil(date);
-      if (fieldName === "dataNascimento") {
-        setDateInputString(formatted);
-        setIsCalendarOpen(false);
-      } else {
-        setSimPatinhasDateInputString(formatted);
-        setIsSimPatinhasCalendarOpen(false);
-      }
-    } else {
-      form.setValue(fieldName, undefined, { shouldValidate: true });
-      if (fieldName === "dataNascimento") {
-        setDateInputString("");
-      } else {
-        setSimPatinhasDateInputString("");
-      }
-    }
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -462,7 +373,8 @@ export default function AdicionarPetPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit, onFormErrors)} className="space-y-8">
+
 
               {/* Seção: Informações Básicas */}
               <section>
@@ -759,48 +671,15 @@ export default function AdicionarPetPage() {
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormLabel>Data de Nascimento *</FormLabel>
-                            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    <Input
-                                      placeholder="dd/mm/aaaa"
-                                      value={dateInputString}
-                                      onChange={(e) => handleDateInputChange(e, "dataNascimento")}
-                                      onBlur={() => {
-                                        // Validate on blur if needed
-                                        const parsedDate = parseDateFn(dateInputString, "dd/MM/yyyy", new Date());
-                                        if (!isValidDate(parsedDate)) {
-                                            form.setValue("dataNascimento", undefined, { shouldValidate: true });
-                                        }
-                                      }}
-                                      className="border-none p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 flex-grow mr-2"
-                                    />
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={(date) => handleDateSelect(date, "dataNascimento")}
-                                  disabled={(date) =>
-                                    date > new Date() || date < new Date("1980-01-01")
-                                  }
-                                  initialFocus
-                                  captionLayout="dropdown-buttons"
+                            <FormControl>
+                                <DateSelectors
+                                  value={field.value}
+                                  onChange={field.onChange}
                                   fromYear={1980}
                                   toYear={new Date().getFullYear()}
+                                  disabled={isBirthDateUnknown}
                                 />
-                              </PopoverContent>
-                            </Popover>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1070,51 +949,19 @@ export default function AdicionarPetPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Data de Emissão *</FormLabel>
-                          <Popover open={isSimPatinhasCalendarOpen} onOpenChange={setIsSimPatinhasCalendarOpen}>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  <Input
-                                    placeholder="dd/mm/aaaa"
-                                    value={simPatinhasDateInputString}
-                                    onChange={(e) => handleDateInputChange(e, "simPatinhasEmissionDate")}
-                                    onBlur={() => {
-                                      const parsedDate = parseDateFn(simPatinhasDateInputString, "dd/MM/yyyy", new Date());
-                                      if (!isValidDate(parsedDate)) {
-                                          form.setValue("simPatinhasEmissionDate", undefined, { shouldValidate: true });
-                                      }
-                                    }}
-                                    className="border-none p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 flex-grow mr-2"
-                                  />
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={(date) => handleDateSelect(date, "simPatinhasEmissionDate")}
-                                disabled={(date) =>
-                                  date > new Date() || date < new Date("1980-01-01")
-                                }
-                                initialFocus
-                                captionLayout="dropdown-buttons"
+                          <FormControl>
+                              <DateSelectors
+                                value={field.value}
+                                onChange={field.onChange}
                                 fromYear={1980}
                                 toYear={new Date().getFullYear()}
                               />
-                            </PopoverContent>
-                          </Popover>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
                       name="simPatinhasEmissionCity"
@@ -1166,19 +1013,6 @@ export default function AdicionarPetPage() {
                         <FormLabel>Nome do 2º Tutor</FormLabel>
                         <FormControl>
                           <Input placeholder="Nome completo" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="secondaryTutorEmail"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>E-mail do 2º Tutor</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="email@exemplo.com" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

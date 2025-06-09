@@ -81,8 +81,17 @@ export default function LoginPage() {
           <Button type="submit">Entrar</Button>
         </div>
       </form>
-      <div className="text-sm text-muted-foreground">
-        Esqueceu a senha? <Link href="/recuperar-senha" className="text-primary hover:underline">Recupere aqui</Link>
+      <div className="text-center text-sm text-muted-foreground">
+        Não tem uma conta? {' '} 
+        <Link href="/signup" className="text-primary hover:underline">
+          Crie aqui
+        </Link>
+      </div>
+      <div className="text-center text-sm text-muted-foreground">
+        Esqueceu a senha? {' '}
+        <Link href="/recuperar-senha" className="text-primary hover:underline">
+          Recupere aqui
+        </Link>
       </div>
     </div>
   )

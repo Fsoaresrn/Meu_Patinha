@@ -43,8 +43,10 @@ export default function ShoppingPage() {
           <div className="mt-6">
             <Button asChild size="lg" disabled> {/* Botão desabilitado por enquanto */}
               <Link href="#"> {/* Link para futura página de busca de produtos */}
-                <Search className="mr-2 h-5 w-5" />
-                Explorar Produtos (Em breve)
+                <span>
+                  <Search className="mr-2 h-5 w-5 inline-block" />
+                  Explorar Produtos (Em breve)
+                </span>
               </Link>
             </Button>
           </div>

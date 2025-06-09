@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react"; // Added Facebook and Instagram
 
 export default function FaleConoscoPage() {
   return (
@@ -52,10 +52,13 @@ export default function FaleConoscoPage() {
             <p className="text-muted-foreground">
               Acompanhe-nos nas redes sociais (links simulados):
             </p>
-            <div className="flex justify-center space-x-4 mt-2">
-              <a href="#" className="text-primary hover:underline">Facebook</a>
-              <a href="#" className="text-primary hover:underline">Instagram</a>
-              <a href="#" className="text-primary hover:underline">Twitter</a>
+            <div className="flex justify-center space-x-4 mt-3">
+              <a href="#" aria-label="Facebook" className="text-primary hover:text-primary/80 transition-colors">
+                <Facebook className="h-7 w-7" />
+              </a>
+              <a href="#" aria-label="Instagram" className="text-primary hover:text-primary/80 transition-colors">
+                <Instagram className="h-7 w-7" />
+              </a>
             </div>
           </div>
         </CardContent>

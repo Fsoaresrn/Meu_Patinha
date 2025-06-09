@@ -17,6 +17,14 @@ const FollowUpResponseSchema = z.object({
   response: z.enum(["Sim", "Não", "Não tenho certeza"]).describe('A resposta do usuário ao sintoma de acompanhamento.'),
 });
 
+// Adicionando um esquema para perguntas detalhadas
+const DetailedQuestionSchema = z.object({
+  type: z.enum(["open_text", "single_select", "multi_select", "date"]).describe("Tipo de pergunta detalhada: 'open_text' para entrada de texto livre, 'single_select' para escolha única, 'multi_select' para múltipla escolha, 'date' para entrada de data."),
+  text: z.string().describe("O texto da pergunta detalhada."),
+  options: z.array(z.string()).optional().describe("Opções para perguntas 'single_select' ou 'multi_select'."),
+  requiredFollowUp: z.boolean().optional().describe("Indica se esta pergunta detalhada é um seguimento direto de uma resposta 'Sim' a uma pergunta anterior em suggestedFollowUpSymptoms.")
+});
+
 const CheckSymptomsInputSchema = z.object({
   petName: z.string().describe('O nome do pet.'),
   species: z.enum(['Cão', 'Gato']).describe('A espécie do pet (Cão ou Gato).'),
@@ -66,7 +74,8 @@ const CheckSymptomsOutputSchema = z.object({
   suggestedFollowUpSymptoms: z
     .array(z.string())
     .optional()
-    .describe('Sintomas de acompanhamento sugeridos para perguntar ao usuário, em Português do Brasil, caso mais informações sejam necessárias. Devem ser perguntas claras que podem ser respondidas com "Sim", "Não" ou "Não tenho certeza".'),
+    .describe('Perguntas de acompanhamento simples (Sim/Não/Não tenho certeza) sugeridas para perguntar ao usuário, em Português do Brasil. Devem ser perguntas claras, únicas e que não foram feitas antes.'),
+  detailedQuestion: DetailedQuestionSchema.optional().describe("Uma pergunta detalhada específica se a IA precisar de informações que não sejam Sim/Não. A interface do usuário deve ser capaz de renderizar essa pergunta com base no 'type'.")
 });
 
 export type CheckSymptomsOutput = z.infer<typeof CheckSymptomsOutputSchema>;
@@ -82,7 +91,7 @@ const prompt = ai.definePrompt({
   prompt: `Você é um assistente veterinário de IA ajudando tutores de pets a entenderem os sintomas de seus animais.
   **IMPORTANTE: Todas as suas respostas, incluindo diagnósticos, sugestões, avisos e perguntas de acompanhamento, DEVEM estar em Português do Brasil.**
 
-  Analise os seguintes dados do pet para fornecer um diagnóstico preliminar. Considere **todos** os detalhes fornecidos: informações básicas do pet (nome, espécie, raça, idade, peso, sexo), sintomas principais, respostas aos sintomas de acompanhamento (se houver), histórico de vacinação (se fornecido) e histórico de vermifugação (se fornecido). Seja cauteloso: vacinas reduzem o risco, mas não eliminam totalmente a possibilidade de doença. Vermifugação em dia reduz a chance de parasitas, mas outros problemas gastrointestinais podem ocorrer.
+  Analise os seguintes dados do pet para fornecer um diagnóstico preliminar. Considere **todos** os detalhes fornecidos: informações básicas do pet (nome, espécie, raça, idade, peso, sexo), sintomas principais, histórico de vacinação, histórico de vermifugação e, crucialmente, **todo o histórico de perguntas e respostas de acompanhamento anteriores** para evitar repetições e fazer perguntas progressivamente mais específicas.
 
   Dados do Pet:
   Nome: {{{petName}}}
@@ -96,12 +105,12 @@ const prompt = ai.definePrompt({
   Sexo: {{{sex}}}
   {{/if}}
 
-  Sintomas Principais: {{{symptoms}}}
+  Sintomas Principais Fornecidos pelo Tutor: {{{symptoms}}}
 
   {{#if followUpResponses}}
-  Respostas aos sintomas de acompanhamento anteriores:
+  Histórico de Perguntas e Respostas de Acompanhamento (Considere este histórico cuidadosamente para evitar repetições):
   {{#each followUpResponses}}
-  - Pergunta: "{{{this.symptom}}}" Resposta do tutor: {{{this.response}}}
+  - IA Perguntou: "{{{this.symptom}}}" -> Tutor Respondeu: {{{this.response}}}
   {{/each}}
   {{/if}}
 
@@ -110,9 +119,9 @@ const prompt = ai.definePrompt({
   {{#each vaccineHistory}}
   - Vacina: {{{this.name}}}, Data da Última Dose: {{{this.date}}}
   {{/each}}
-  (Considere este histórico. Se o pet estiver vacinado para uma doença X, ela é menos provável, mas não impossível. Patógenos podem ter variantes e a eficácia da vacina não é 100%.)
+  (Lembre-se: vacinas reduzem risco, mas não o eliminam.)
   {{else}}
-  Histórico de Vacinação: Não fornecido ou não disponível.
+  Histórico de Vacinação: Não fornecido.
   {{/if}}
 
   {{#if dewormingHistory}}
@@ -120,29 +129,53 @@ const prompt = ai.definePrompt({
   {{#each dewormingHistory}}
   - Produto: {{{this.productName}}}, Data da Última Administração: {{{this.date}}}
   {{/each}}
-  (Considere este histórico. Sintomas gastrointestinais podem ser menos prováveis de serem parasitários se a vermifugação estiver em dia, mas não descarte totalmente.)
+  (Lembre-se: vermifugação em dia reduz chance de parasitas, mas outros problemas gastrointestinais podem ter sintomas similares.)
   {{else}}
-  Histórico de Vermifugação: Não fornecido ou não disponível.
+  Histórico de Vermifugação: Não fornecido.
   {{/if}}
 
   **Diretrizes para Perguntas de Acompanhamento e Diagnóstico Interativo:**
-  1.  **Evite Redundâncias e Multiperguntas:** Nunca repita perguntas já feitas, mesmo com formulações diferentes. Cada pergunta de acompanhamento em \`suggestedFollowUpSymptoms\` deve ser singular, focada em um único sintoma ou observação, e formulada para ser respondida com "Sim", "Não" ou "Não tenho certeza".
-      *   Exemplo INCORRETO de pergunta para \`suggestedFollowUpSymptoms\`: "Está bebendo água normalmente, ou está bebendo mais ou menos que o normal?"
-      *   Exemplo CORRETO para \`suggestedFollowUpSymptoms\`: "O pet está bebendo mais água do que o normal?"
-  2.  **Coleta de Informações Detalhadas:** Se você precisar de informações que não se encaixam em um "Sim/Não" (ex: a cor de um vômito, a frequência de um sintoma), NÃO inclua essa pergunta diretamente em \`suggestedFollowUpSymptoms\`. Em vez disso:
+
+  1.  **NÃO FAÇA PERGUNTAS REPETIDAS:** Analise CUIDADOSAMENTE o histórico de \`followUpResponses\` e os sintomas principais. Se uma informação já foi dada ou uma pergunta similar já foi respondida, não pergunte novamente, mesmo que com palavras diferentes.
+  2.  **PERGUNTAS SIMPLES (Sim/Não/Não tenho certeza):**
+      *   Se precisar de esclarecimentos que se encaixam em respostas Sim/Não/Não tenho certeza, formule perguntas claras, **únicas** e que **não foram feitas antes**, e adicione-as ao campo \`suggestedFollowUpSymptoms\`.
+      *   Cada pergunta deve ser singular. Exemplo INCORRETO: "Ele está comendo e bebendo normalmente?" Correto: "Ele está comendo normalmente?" (e em outra pergunta, se necessário "Ele está bebendo normalmente?").
+      *   Evite perguntas como "O sintoma X está presente ou ausente?". Reformule para algo como "O sintoma X está presente?".
+
+  3.  **PERGUNTAS DETALHADAS (Texto, Datas, Múltipla Escolha):**
+      *   Se você precisar de informações que EXIGEM uma resposta descritiva (ex: cor de um vômito, frequência de um sintoma, uma data específica, ou escolher entre várias características), você DEVE usar o campo \`detailedQuestion\`.
       *   Defina \`needsMoreInfo\` como \`true\`.
-      *   Na sua resposta textual (em \`potentialDiagnoses\` ou \`immediateCareSuggestions\`), explique claramente qual informação adicional é necessária e instrua o usuário a adicioná-la à descrição principal dos sintomas para a próxima análise. Exemplo: "Para refinar o diagnóstico, por favor, descreva a cor e consistência do vômito na caixa de sintomas e analise novamente."
-  3.  **Observações com Múltiplas Opções:** Se um sintoma pode ter várias aparências (ex: sangue nas fezes), guie o usuário de forma similar ao item 2. Peça que ele observe e descreva os detalhes na caixa de sintomas. Exemplo: "Observe as fezes: são escuras como alcatrão, têm sangue vivo, ou coágulos? Descreva na caixa de sintomas."
-  4.  **Limite de Interações e Conclusão:** Analise TODAS as informações fornecidas, incluindo as respostas de acompanhamento de rodadas anteriores. Se, após algumas rodadas de perguntas de acompanhamento (baseadas nas respostas do usuário), um diagnóstico claro ainda não for possível ou a informação não estiver convergindo, defina \`needsMoreInfo\` como \`false\` e, em \`potentialDiagnoses\` ou \`immediateCareSuggestions\`, inclua a seguinte instrução: "Não foi possível concluir um diagnóstico com segurança com as informações fornecidas. Recomendamos que você leve seu animal de estimação imediatamente a um médico veterinário."
-  5.  **Contexto e Relevância:** Suas perguntas de acompanhamento devem ser sempre contextualmente relevantes, considerando todas as informações já fornecidas pelo usuário nas rodadas anteriores.
+      *   Preencha \`detailedQuestion\` com:
+          *   \`type\`: \`'open_text'\` (para descrição), \`'date'\` (para data como "dd/MM/aaaa"), \`'single_select'\` ou \`'multi_select'\` (para opções).
+          *   \`text\`: A pergunta clara e direta. Ex: "Qual a data da última vermifugação (dd/MM/aaaa)?", "Descreva a aparência do vômito (cor, consistência, presença de sangue, etc.).", "Quais destas características você observa no sangue presente nas fezes?"
+          *   \`options\` (para select/multi-select): Um array de strings com as opções. Ex: ["Sangue vermelho vivo", "Coágulos", "Fezes escuras tipo borra de café", "Apenas laivos de sangue"].
+      *   Se uma pergunta detalhada é um seguimento direto de uma resposta "Sim" a uma pergunta anterior em \`suggestedFollowUpSymptoms\` (ex: "O pet já foi vermifugado?" -> "Sim". Próxima pergunta: "Qual a data da última vermifugação?"), defina \`detailedQuestion.requiredFollowUp\` como \`true\`.
+      *   **NÃO** coloque perguntas que exigem respostas detalhadas no campo \`suggestedFollowUpSymptoms\`.
 
-  Com base em TUDO o que foi fornecido:
-  Se os sintomas (incluindo respostas de acompanhamento, se houver) ainda forem insuficientes para um diagnóstico ou se o diagnóstico for muito amplo, E você acreditar que perguntas adicionais (do tipo Sim/Não/Não sei que se encaixem na diretriz 1) podem ajudar, defina \`needsMoreInfo\` como \`true\` e forneça NOVAS perguntas claras em \`suggestedFollowUpSymptoms\` (em Português do Brasil).
-  Se você tiver confiança suficiente para um diagnóstico preliminar OU se decidiu concluir a triagem conforme a diretriz 4, defina \`needsMoreInfo\` como \`false\`.
+  4.  **LIMITE DE INTERAÇÕES E ENCAMINHAMENTO:**
+      *   Seu objetivo é tentar refinar o diagnóstico, mas não prolongar a interação indefinidamente se a informação não estiver convergindo ou se os sintomas forem muito graves.
+      *   Se após cerca de **3-5 rodadas de perguntas de acompanhamento** (incluindo tanto as de \`suggestedFollowUpSymptoms\` quanto as de \`detailedQuestion\`) um diagnóstico provisório claro ainda não estiver emergindo, OU se os sintomas indicarem uma emergência, você DEVE:
+          *   Definir \`needsMoreInfo\` como \`false\` (ou omitir).
+          *   Omitir \`suggestedFollowUpSymptoms\` e \`detailedQuestion\`.
+          *   Em \`immediateCareSuggestions\`, priorize a instrução: **"Recomendamos enfaticamente que você procure um médico veterinário imediatamente para uma avaliação presencial do seu pet."**
+          *   Em \`potentialDiagnoses\`, você pode listar possibilidades muito genéricas se ainda incerto, ou focar nos sintomas mais preocupantes, mas sempre reforce a necessidade de avaliação veterinária.
 
-  Diagnósticos Potenciais: (Responda em Português do Brasil. Liste as condições potenciais, separadas por vírgulas)
-  Sugestões de Cuidados Imediatos: (Responda em Português do Brasil. Forneça passos acionáveis, separados por vírgulas)
-  Aviso Legal: (Responda em Português do Brasil. Aviso padrão sobre não substituir o conselho veterinário profissional)
+  5.  **GRAVIDADE E URGÊNCIA:** Se os sintomas iniciais ou as respostas subsequentes indicarem uma condição potencialmente fatal ou muito grave (ex: dificuldade respiratória severa, convulsões contínuas, hemorragia intensa, prostração extrema), priorize o encaminhamento imediato ao veterinário (conforme diretriz 4), mesmo que seja na primeira ou segunda interação.
+
+  **FLUXO DA RESPOSTA:**
+  a.  Analise TODAS as informações: dados do pet, sintomas principais, histórico de vacinação/vermifugação e TODO o histórico de perguntas e respostas anteriores (\`followUpResponses\`).
+  b.  Se os sintomas são graves ou se o limite de interações foi atingido, siga a diretriz 4 e 5.
+  c.  Caso contrário, se você precisar de mais informações:
+      i.  Se for uma pergunta Sim/Não/Não sei, use \`suggestedFollowUpSymptoms\` (Diretriz 2).
+      ii. Se for uma pergunta detalhada, use \`detailedQuestion\` (Diretriz 3).
+      iii.Defina \`needsMoreInfo\` como \`true\`.
+  d.  Se você tem informações suficientes para um diagnóstico preliminar e não precisa de mais perguntas:      
+      i.  Defina \`needsMoreInfo\` como \`false\` (ou omita).
+      ii. Omita \`suggestedFollowUpSymptoms\` e \`detailedQuestion\`.
+  e.  Sempre forneça \`potentialDiagnoses\`, \`immediateCareSuggestions\`, e o \`disclaimer\` padrão.
+
+  Aviso Legal Padrão (use este texto exato para o campo \`disclaimer\`):
+  "Esta análise é baseada em IA e não substitui o diagnóstico ou aconselhamento de um médico veterinário qualificado. A saúde do seu pet é uma prioridade; se os sintomas persistirem, piorarem, ou se você estiver preocupado, procure atendimento veterinário imediatamente."
 `,
 });
 
@@ -153,7 +186,14 @@ const checkSymptomsFlow = ai.defineFlow(
     outputSchema: CheckSymptomsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    // Adicionar lógica para garantir que o histórico de vacinação e vermifugação seja passado corretamente, mesmo que vazio.
+    const sanitizedInput = {
+      ...input,
+      vaccineHistory: input.vaccineHistory || [],
+      dewormingHistory: input.dewormingHistory || [],
+      followUpResponses: input.followUpResponses || [],
+    };
+    const {output} = await prompt(sanitizedInput);
     return output!;
   }
 );

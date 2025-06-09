@@ -11,8 +11,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <Image
           src="/petz.jpeg" 
           alt="Diversos pets amigáveis de várias raças e espécies"
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{ objectFit: "cover" }}
           priority
           className="opacity-70" // Ajuste a opacidade conforme necessário
         />

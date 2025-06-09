@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Heart, Search, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 
 export default function NamoroPetPage() {
   return (
@@ -21,15 +20,8 @@ export default function NamoroPetPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 text-center">
-          <Image
-            src="https://placehold.co/300x200.png?text=💕+🐶+🐱"
-            alt="Pets apaixonados"
-            width={300}
-            height={200}
-            className="mx-auto mb-6 rounded-lg shadow-md"
-            data-ai-hint="pet dating love"
-          />
-          <p className="text-muted-foreground text-left">
+          {/* Imagem removida conforme solicitado */}
+          <p className="text-muted-foreground text-left mt-4">
             A funcionalidade "NamoroPet" está em desenvolvimento. Futuramente, você poderá:
           </p>
           <ul className="list-disc list-inside text-left text-sm text-muted-foreground space-y-1 pl-4">
@@ -40,7 +32,7 @@ export default function NamoroPetPage() {
             <li><strong>Entrar em Contato:</strong> (Funcionalidade futura) Iniciar conversa com o tutor do pet de interesse.</li>
           </ul>
           
-          <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
+          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
             <Button asChild size="lg" disabled>
               <Link href="#"> 
                 <PlusCircle className="mr-2 h-5 w-5" />
@@ -55,7 +47,7 @@ export default function NamoroPetPage() {
             </Button>
           </div>
            <p className="text-xs text-muted-foreground mt-8">
-            Ajudando a conectar pets para momentos especiais!
+            Ajudando a conectar pets para momentos especiais! Esta funcionalidade será desenvolvida em breve.
           </p>
         </CardContent>
       </Card>

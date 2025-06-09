@@ -23,7 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Info, CalendarIcon, Syringe, Save } from "lucide-react";
 import { formatDateToBrasil, parseDateSafe, isValidDate, addMonths, addYears, formatDate } from "@/lib/date-utils";
-import { vaccineProtocols, vaccineBoosterFrequenciesConstants, genericVaccineDosesConstants, vaccineCategoriesConstants } from "@/lib/constants";
+import { vaccineProtocols, vaccineBoosterFrequencies, genericVaccineDoses } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { format as dateFnsFormat, parse as dateFnsParse } from 'date-fns';
@@ -72,7 +72,7 @@ export default function AddVaccinationPage() {
   const [isLoadingPet, setIsLoadingPet] = useState(true);
   
   const [selectedProtocol, setSelectedProtocol] = useState<VaccineProtocolInfo | null>(null);
-  const [availableDoses, setAvailableDoses] = useState<string[]>(genericVaccineDosesConstants);
+  const [availableDoses, setAvailableDoses] = useState<string[]>(genericVaccineDoses);
 
   const [adminDateInput, setAdminDateInput] = useState<string>("");
   const [nextDueDateInput, setNextDueDateInput] = useState<string>("");
@@ -129,12 +129,12 @@ export default function AddVaccinationPage() {
       if (protocol && protocol.id !== 'outra' && protocol.recommendedDoses && protocol.recommendedDoses.length > 0) {
         setAvailableDoses(protocol.recommendedDoses);
       } else {
-        setAvailableDoses(genericVaccineDosesConstants);
+        setAvailableDoses(genericVaccineDoses);
       }
       form.setValue("dose", ""); // Reset dose selection
     } else {
       setSelectedProtocol(null);
-      setAvailableDoses(genericVaccineDosesConstants);
+      setAvailableDoses(genericVaccineDoses);
     }
   }, [watchedVaccineType, form]);
 
@@ -384,6 +384,9 @@ export default function AddVaccinationPage() {
                             }}
                             disabled={(date) => date > new Date() || date < new Date("1950-01-01")}
                             initialFocus
+                            captionLayout="dropdown-buttons"
+                            fromYear={1950}
+                            toYear={new Date().getFullYear()}
                           />
                         </PopoverContent>
                       </Popover>
@@ -403,7 +406,7 @@ export default function AddVaccinationPage() {
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione a frequência" /></SelectTrigger></FormControl>
                         <SelectContent>
-                          {vaccineBoosterFrequenciesConstants.map(freq => (
+                          {vaccineBoosterFrequencies.map(freq => (
                             <SelectItem key={freq} value={freq}>{freq}</SelectItem>
                           ))}
                         </SelectContent>
@@ -444,6 +447,9 @@ export default function AddVaccinationPage() {
                             }}
                             disabled={(date) => date < (form.getValues("administrationDate") || new Date()) || watchedBoosterFrequency !== "Definir Próxima Data Manualmente"}
                             initialFocus
+                            captionLayout="dropdown-buttons"
+                            fromYear={form.getValues("administrationDate") ? form.getValues("administrationDate")!.getFullYear() : new Date().getFullYear()}
+                            toYear={new Date().getFullYear() + 10}
                           />
                         </PopoverContent>
                       </Popover>

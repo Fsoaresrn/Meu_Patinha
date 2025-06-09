@@ -39,21 +39,20 @@ export interface AuthUser {
   cpf: string; // ID primário
   nome: string;
   email: string; // editável
-  // Senha não é armazenada aqui após autenticação
   tipoResponsabilidade?: UserResponsibility[];
-  uf?: string; // Estado (Unidade Federativa)
+  uf?: string;
   cidade?: string;
-  endereco?: string; // Rua, Número, Complemento, Bairro
+  endereco?: string;
   cep?: string;
-  telefone?: string; // DDD e Número
+  telefone?: string;
   acceptedTerms: boolean;
-  temporaryPassword?: string; // Para recuperação, armazenado temporariamente
+  temporaryPassword?: string;
 }
 
-// Compartilhamento do Pet
+// Compartilhamento do Pet com profissionais (diferente de co-tutor)
 export interface PetShare {
   userId: string; // CPF do cuidador/vet
-  userEmail: string;
+  userEmail: string; // Email do profissional para contato/notificação
   status: ShareStatus;
 }
 
@@ -61,63 +60,63 @@ export interface PetShare {
 export type PetStatusValue = "ativo" | "falecido" | "doado" | "perdido" | "outro";
 export interface PetStatus {
   value: PetStatusValue;
-  date?: string; // Data do evento (e.g., data do falecimento)
-  notes?: string; // Notas adicionais (e.g., motivo "outro")
+  date?: string;
+  notes?: string;
 }
 
 // Pet
 export interface Pet {
-  id: string; // Formato ANO-XXXXXXXXXXX
+  id: string;
   ownerId: string; // CPF do tutor principal
-  secondaryTutorCpf?: string; 
-  secondaryTutorName?: string;
-  secondaryTutorEmail?: string;
-  sharedWith?: PetShare[]; // Array para cuidadores/veterinários
+  secondaryTutorCpf?: string; // CPF do segundo tutor (co-tutor)
+  // secondaryTutorName não é armazenado no objeto Pet
+  // secondaryTutorEmail não é armazenado no objeto Pet
+  sharedWith?: PetShare[]; // Para compartilhamento com veterinários/cuidadores
 
   nome: string;
   especie: PetSpecies;
-  raca: string; // Pode ser "Outra"
-  fotoUrl?: string; // URL da imagem ou data URI
-  tipoPelagem: string; // Específico por espécie, pode ser "Outra"
-  corPelagem: string; // Específico por espécie, pode ser "Outra"
-  sinaisObservacoes?: string; // Sinais característicos/Observações
+  raca: string;
+  fotoUrl?: string;
+  tipoPelagem: string;
+  corPelagem: string;
+  sinaisObservacoes?: string;
 
-  dataNascimento?: string; // "dd/MM/yyyy"
-  idade?: number; // Calculada ou manual se dataNascimento for desconhecida
+  dataNascimento?: string;
+  idade?: number;
   naturalidadeCidade?: string;
   naturalidadeUF?: string;
 
   hasSimPatinhas?: "Sim" | "Não";
   simPatinhasId?: string;
-  simPatinhasEmissionDate?: string; // "dd/MM/yyyy"
+  simPatinhasEmissionDate?: string;
   simPatinhasEmissionCity?: string;
   simPatinhasEmissionUF?: string;
 
-  peso?: number; // Em kg
+  peso?: number;
   porte?: PetSize;
   sexo: PetGender;
   tipoAquisicao?: PetAcquisitionType;
   castrado: "Sim" | "Não";
   finalidade?: PetPurpose;
 
-  historicoMedico?: string; // Textarea
+  historicoMedico?: string;
   possuiPedigree: "Sim" | "Não";
-  pedigreeArquivoNome?: string; // Nome do arquivo do pedigree
+  pedigreeArquivoNome?: string;
 
   possuiDeficiencia: boolean;
-  detalhesDeficiencia?: string; // Textarea se possuiDeficiencia for true
+  detalhesDeficiencia?: string;
 
   possuiMicrochip: "Sim" | "Não";
-  microchipId?: string; // Se possuiMicrochip for "Sim"
+  microchipId?: string;
 
-  status: PetStatus; // Status do pet (ativo, falecido, etc.)
+  status: PetStatus;
 }
 
 // Log de Sintomas
 export interface SymptomLog {
   id: string;
   petId: string;
-  date: string; // Data do registro "dd/MM/aaaa HH:mm"
+  date: string;
   symptomsDescription: string;
   followUpResponses?: Array<{ symptom: string; response: "Sim" | "Não" | "Não tenho certeza"; }>;
   aiDiagnosis?: string;
@@ -126,26 +125,26 @@ export interface SymptomLog {
   aiDisclaimer?: string;
   aiNeedsMoreInfo?: boolean;
   aiSuggestedFollowUp?: string[];
-  vetDiagnosis?: string; // Diagnóstico veterinário
-  vetDiagnosisDate?: string; // Data do diagnóstico veterinário
+  vetDiagnosis?: string;
+  vetDiagnosisDate?: string;
 }
 
-// Protocolo de Vacina (para dados padronizados)
+// Protocolo de Vacina
 export interface VaccineProtocolInfo {
-  id: string; // e.g., v10_canina
-  name: string; // e.g., "V10 (Polivalente Canina)"
-  species: ("Cão" | "Gato" | "Coelho" | "Porco/Mini-porco" | "Hamster" | "Porquinhos-da-índia" | "Furão" | "Rato/camundongo" | "Chinchila" | "Lagarto/Iguana" | "Tartaruga" | "Cagado" | "Papagaio" | "Calopsita" | "Periquito" | "Canário" | "Coruja")[];
-  preventsDiseases: string[]; // e.g., ["Cinomose", "Parvovirose"]
+  id: string;
+  name: string;
+  species: PetSpecies[];
+  preventsDiseases: string[];
   importance: "Essencial" | "Complementar" | "Opcional";
-  recommendedDoses: string[]; // e.g., ["1ª Dose (6-8 sem)", "2ª Dose (9-11 sem)", "3ª Dose (12-14 sem)"]
-  primarySeriesIntervalDays?: number; // e.g., 21 (para intervalo entre doses da série primária)
+  recommendedDoses: string[];
+  primarySeriesIntervalDays?: number;
   boosterFrequencySuggestion?: "Anual" | "Semestral" | "A cada 3 anos" | "Não se aplica";
-  isSingleDosePrimary?: boolean; // e.g., true para Antirrábica
-  notes?: string; // Notas gerais sobre o esquema vacinal
-  administrationNotes?: string; // Notas específicas sobre como administrar ou o que esperar
+  isSingleDosePrimary?: boolean;
+  notes?: string;
+  administrationNotes?: string;
 }
 
-// Frequência de Reforço Selecionável pelo Usuário
+// Frequência de Reforço Selecionável
 export type VaccineBoosterFrequencySelected =
   | "Dose Única"
   | "Reforço Semanal"
@@ -155,32 +154,30 @@ export type VaccineBoosterFrequencySelected =
   | "Definir Próxima Data Manualmente"
   | "Não Aplicar Reforço";
 
-
 // Vacinação (registro individual)
 export interface Vaccination {
   id: string;
   petId: string;
-  vaccineType: string; // ID do protocolo de VaccineProtocolInfo, ou "outra"
-  vaccineName: string; // Nome do protocolo ou nome digitado se vaccineType for "outra"
-  specifiedVaccineName?: string; // Campo para nome da vacina se vaccineType for "outra"
-  dose: string; // e.g., "1ª Dose", "Reforço Anual"
-  administrationDate: string; // "dd/MM/yyyy"
+  vaccineType: string;
+  vaccineName: string;
+  specifiedVaccineName?: string;
+  dose: string;
+  administrationDate: string;
   boosterFrequencySelected?: VaccineBoosterFrequencySelected;
-  nextDueDate?: string; // "dd/MM/yyyy", manual ou calculada
+  nextDueDate?: string;
   vetClinic?: string;
   vetName?: string;
   lotNumber?: string;
   notes?: string;
 }
 
-
 // Log de Vermífugo
 export interface DewormerLog {
   id: string;
   petId: string;
   productName: string;
-  administrationDate: string; // "dd/MM/aaaa"
-  nextDueDate?: string; // "dd/MM/aaaa"
+  administrationDate: string;
+  nextDueDate?: string;
   dosage?: string;
   notes?: string;
 }
@@ -193,8 +190,8 @@ export interface AntipulgasLog {
   id: string;
   petId: string;
   productName: string;
-  applicationDate: string; // "dd/MM/aaaa"
-  nextDueDate?: string; // "dd/MM/aaaa"
+  applicationDate: string;
+  nextDueDate?: string;
   type: AntipulgasProductType; 
   notes?: string;
 }
@@ -208,9 +205,9 @@ export interface MedicalDocument {
   petId: string;
   documentName: string;
   documentType: MedicalDocumentType;
-  issueDate: string; // "dd/MM/aaaa"
-  fileName?: string; // Nome do arquivo (simulação de upload)
-  fileDataUrl?: string; // Para armazenar o conteúdo do arquivo como data URL (sem backend)
+  issueDate: string;
+  fileName?: string;
+  fileDataUrl?: string;
   notes?: string;
 }
 
@@ -218,7 +215,7 @@ export interface MedicalDocument {
 export interface ConsultationLog {
   id: string;
   petId: string;
-  consultationDate: string; // "dd/MM/aaaa HH:mm"
+  consultationDate: string;
   vetClinic?: string;
   vetName?: string;
   reason: string;
@@ -233,22 +230,20 @@ export interface ActivityLog {
   petId: string;
   activityType: "Passeio" | "Alimentação" | "Brincadeira" | "Viagem" | "Hospedagem" | "Visita ao Veterinário" | "Outro";
   description?: string;
-  startTime: string; // "dd/MM/aaaa HH:mm"
-  endTime?: string; // "dd/MM/aaaa HH:mm" (opcional)
+  startTime: string;
+  endTime?: string;
 
-  // Campos específicos para Hospedagem
   hospedagemLocal?: string;
   hospedagemTelefone?: string;
   hospedagemResponsavel?: string;
 
-  // Campos específicos para Visita ao Veterinário
   visitaVetClinica?: string;
   visitaVetNome?: string;
 
   isRecurrent: boolean;
   recurrenceFrequency?: "Diariamente" | "Semanalmente" | "Mensalmente" | "Personalizado";
-  recurrenceValue?: string; // e.g., "Seg, Qua, Sex" ou "A cada X dias"
-  recurrenceEndDate?: string; // "dd/MM/aaaa" (opcional)
+  recurrenceValue?: string;
+  recurrenceEndDate?: string;
 
   notes?: string;
 }
@@ -258,15 +253,15 @@ export interface HygieneLog {
   id: string;
   petId: string;
   hygieneType: "Banho" | "Tosa" | "Escovação de Dentes" | "Corte de Unhas" | "Limpeza de Orelhas" | "Outro";
-  date: string; // "dd/MM/aaaa HH:mm"
+  date: string;
   productUsed?: string;
   notes?: string;
 }
 
-// Plano Alimentar (gerado pela IA ou manual)
+// Plano Alimentar
 export interface FeedingPlan {
   petId: string;
-  generatedDate: string; // "dd/MM/aaaa"
+  generatedDate: string;
   recommendedFoodTypes: string;
   dailyFoodAmount: string;
   feedingFrequency: string;
@@ -275,15 +270,15 @@ export interface FeedingPlan {
   disclaimer: string;
 }
 
-// Convite de Compartilhamento (para a tela /convites)
+// Convite de Compartilhamento
 export interface Invitation {
-  id: string; // ID do convite (pode ser petId + convidadoId)
+  id: string;
   petId: string;
   petName: string;
   petFotoUrl?: string;
-  ownerName: string; // Nome do tutor que convidou
+  ownerName: string;
   ownerEmail: string;
-  dateSent: string; // "dd/MM/aaaa"
+  dateSent: string;
 }
 
 // Categoria da Vacina
@@ -301,7 +296,7 @@ export const vaccineBoosterFrequencies: VaccineBoosterFrequencySelected[] = [
   "Não Aplicar Reforço",
 ];
 
-// Doses Genéricas (fallback)
+// Doses Genéricas
 export const genericVaccineDoses: string[] = [
   "Dose Única",
   "1ª Dose",

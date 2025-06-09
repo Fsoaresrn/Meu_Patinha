@@ -102,8 +102,7 @@ export function PetCard({ pet }: PetCardProps) {
           <Image
             src={pet.fotoUrl || `https://placehold.co/400x300.png?text=${encodeURIComponent(pet.nome.charAt(0))}`}
             alt={`Foto de ${pet.nome}`}
-            layout="fill"
-            objectFit="cover"
+            fill
             className="transition-transform duration-300 group-hover:scale-105"
             data-ai-hint={`${pet.especie} ${pet.raca}`}
           />

@@ -103,8 +103,12 @@ export const guineaPigBreeds = sortBreeds(["Inglês", "Americano", "Abissínio",
 export const ratMouseBreeds = sortBreeds(["Fancy", "Dumbo", "Rex", "Nude", "SRD (Sem Raça Definida)", "Outra"]);
 export const chinchillaBreeds = sortBreeds(["Padrão (Standard Gray)", "Branco", "Preto Velvet", "Beige", "Safira", "Mosaic", "SRD (Sem Raça Definida)", "Outra"]);
 export const rabbitBreeds = sortBreeds(["Angorá", "Lionhead", "Rex", "Mini Rex", "Netherland Dwarf", "Califórnia", "Fuzzy Lop", "Mini Lop", "Flemish Giant", "SRD (Sem Raça Definida)", "Outra"]);
+<<<<<<< HEAD
 export const lizardBreeds = sortBreeds(["Leopardo", "Teiú", "Gecko Tokay", "Skink-de-língua-azul", "Dragão Barbudo", "SRD (Sem Raça Definida)", "Outra"]);
 export const iguanaBreeds = sortBreeds(["Verde (Iguana iguana)", "Azul", "Vermelha", "SRD (Sem Raça Definida)", "Outra"]);
+=======
+export const lizardBreeds = sortBreeds(["Leopardo", "Teiú", "Gecko Tokay", "Skink-de-língua-azul", "Dragão Barbudo", "SRD (Sem Raça Definida)", "Outra"]); // Inclui Iguana
+>>>>>>> origin/fix/next-image-legacy-prop
 export const turtleBreeds = sortBreeds(["Tigre-d'água (Trachemys scripta elegans)", "Tartaruga-de-ouvido-amarelo", "Tartaruga-da-Amazônia", "Jabuti-piranga", "Jabuti-tinga", "SRD (Sem Raça Definida)", "Outra"]); // Inclui Cagado
 export const parakeetBreeds = sortBreeds(["Periquito-australiano (Budgie)", "Periquito Inglês", "Periquito Arlequim", "Lutino", "Albino", "Azul Cobalto", "SRD (Sem Raça Definida)", "Outra"]);
 export const cockatielBreeds = sortBreeds(["Calopsita Cinza (Selvagem)", "Lutino", "Albino", "Pérola", "Canela", "Arlequim", "SRD (Sem Raça Definida)", "Outra"]);
@@ -123,8 +127,12 @@ export const breedsBySpecies: Record<PetSpecies, string[]> = {
   "Furão": sortBreeds(["SRD (Sem Raça Definida)", "Outra"]), // Adicionando default para Furão
   "Rato/camundongo": ratMouseBreeds,
   "Chinchila": chinchillaBreeds,
+<<<<<<< HEAD
   "Lagarto": lizardBreeds,
   "Iguana": iguanaBreeds,
+=======
+  "Lagarto/Iguana": lizardBreeds,
+>>>>>>> origin/fix/next-image-legacy-prop
   "Tartaruga": turtleBreeds,
   "Cagado": turtleBreeds, // Usando a mesma lista de tartaruga
   "Papagaio": parrotBreeds,
@@ -144,7 +152,11 @@ export const furTypesBySpecies: Partial<Record<PetSpecies, string[]>> = {
   "Rato/camundongo": ["Curta", "Fina", "Encaracolada", "Sem Pelo", "Outra"], // Adicionado "Sem Pelo" para Nude
   "Chinchila": ["Extremamente densa", "Macia", "Outra"],
   "Coelho": ["Curta", "Longa", "Sedosa", "Encaracolada", "Felpuda", "Outra"],
+<<<<<<< HEAD
   // Espécies como Furão, Lagarto, Iguana, Tartaruga, Cagado, Papagaio, Calopsita, Periquito, Canário, Coruja não terão este campo habilitado.
+=======
+  // Espécies como Furão, Lagarto/Iguana, Tartaruga, Cagado, Papagaio, Calopsita, Periquito, Canário, Coruja não terão este campo habilitado.
+>>>>>>> origin/fix/next-image-legacy-prop
 };
 
 // Cores por Espécie
@@ -164,11 +176,20 @@ export const furColorsBySpecies: Partial<Record<PetSpecies, string[]>> = {
   "Chinchila": sortColors(["Cinza (padrão)", "Branco", "Bege", "Preto", "Safira", "Outra"]),
   "Coelho": sortColors(["Branco", "Cinza", "Preto", "Marrom", "Bege", "Manchado", "Tricolor", "Laranja", "Outra"]),
   "Periquito": sortColors(["Verde", "Azul", "Amarelo", "Branco", "Violeta", "Cinza", "Combinações", "Outra"]),
+<<<<<<< HEAD
   "Calopsita": sortColors(["Cinza", "Amarelo", "Branco", "Lutino (amarelo claro)", "Cara-Laranja", "Outra"]),
   "Papagaio": sortColors(["Verde dominante", "Verde com vermelho", "Azul e amarelo", "Colorido", "Outra"]),
   "Canário": sortColors(["Amarelo (clássico)", "Laranja", "Branco", "Marfim", "Vermelho", "Variegado", "Outra"]),
   "Coruja": sortColors(["Marrom", "Branco", "Cinza", "Rajada", "Outra"]),
   // Espécies como Furão, Lagarto, Iguana, Tartaruga, Cagado podem não ter cores de pelagem aplicáveis ou variam muito.
+=======
+  "Calopsita": sortColors(["Cinza", "Amarelo", "Branco", "Lutino (amarelo claro)", "Cara-laranja", "Outra"]),
+  "Papagaio": sortColors(["Verde dominante", "Verde com vermelho, azul e amarelo", "Outra"]),
+  "Canário": sortColors(["Amarelo (clássico)", "Laranja", "Branco", "Marfim", "Vermelho", "Outra"]),
+  "Coruja": sortColors(["Marrom", "Branco", "Cinza", "Rajada", "Outra"]),
+  // Espécies como Furão, Lagarto/Iguana, Tartaruga, Cagado podem não ter cores de pelagem aplicáveis ou variam muito.
+  // Poderia adicionar cores para escamas/carapaça se necessário.
+>>>>>>> origin/fix/next-image-legacy-prop
 };
 
 // *** ADICIONANDO FUNÇÕES AUXILIARES EXPORTADAS ***
@@ -347,6 +368,7 @@ export const vaccineProtocols: VaccineProtocolInfo[] = [
     notes: "Obrigatória por lei na maioria dos locais. Fundamental para saúde pública.",
     administrationNotes: "Via subcutânea ou intramuscular, dependendo do produto e espécie."
   },
+<<<<<<< HEAD
   // --- Vacinas para Outras Espécies (Exemplos) ---
   {
     id: "mixomatose_coelho",
@@ -412,3 +434,70 @@ export const petIdGenerator = (): string => {
   const randomPart = Math.random().toString(36).substring(2, 8); // 6 random chars
   return `pet_${timestamp}_${randomPart}`;
 };
+=======
+  // --- Opção Genérica ---
+  {
+    id: "outra",
+    name: "Outra (Especificar)",
+    species: petSpeciesList,
+    preventsDiseases: [] as string[],
+    importance: "Opcional",
+    recommendedDoses: ["Dose Única", "1ª Dose", "2ª Dose", "3ª Dose", "4ª Dose", "Reforço", "Reforço Anual", "Outra"],
+    boosterFrequencySuggestion: "Não se aplica",
+    notes: "Usar para vacinas não listadas ou específicas.",
+    administrationNotes: ""
+  }
+];
+
+export const vaccineCategories: VaccineCategory[] = ["Essencial", "Complementar", "Opcional"];
+
+export const vaccineBoosterFrequencies: VaccineBoosterFrequencySelected[] = [
+  "Dose Única",
+  "Reforço Semanal",
+  "Reforço Mensal",
+  "Reforço Anual",
+  "Reforço a cada 3 anos",
+  "Definir Próxima Data Manualmente",
+  "Não Aplicar Reforço",
+];
+
+export const genericVaccineDoses: string[] = [
+  "Dose Única",
+  "1ª Dose",
+  "2ª Dose",
+  "3ª Dose",
+  "4ª Dose",
+  "Reforço",
+  "Reforço Anual",
+  "Outra",
+];
+
+export const antipulgasProductTypes: AntipulgasProductType[] = ["Coleira", "Pipeta", "Spray", "Comprimido", "Outro"];
+
+export const medicalDocumentTypes: MedicalDocumentType[] = ["Exame de Sangue", "Raio-X", "Ultrassom", "Receita", "Atestado", "Outro"];
+
+export const petIdGenerator = (): string => {
+  const year = new Date().getFullYear();
+  const randomPart = Math.random().toString(36).substring(2, 13).toUpperCase();
+  return `${year}-${randomPart}`;
+};
+
+// Função para obter raças com base na espécie
+export const getBreedsForSpecies = (species: PetSpecies | undefined): string[] => {
+  if (!species) return [];
+  return breedsBySpecies[species] || sortBreeds(["SRD (Sem Raça Definida)", "Outra"]); // Retorna default se não mapeado
+};
+
+// Função para obter tipos de pelagem com base na espécie
+export const getFurTypesForSpecies = (species: PetSpecies | undefined): string[] => {
+  if (!species) return [];
+  return furTypesBySpecies[species] || []; // Retorna array vazio se não aplicável
+};
+
+// Função para obter cores com base na espécie
+export const getFurColorsForSpecies = (species: PetSpecies | undefined): string[] => {
+  if (!species) return [];
+  return furColorsBySpecies[species] || sortColors(["Outra"]); // Retorna default se não mapeado
+};
+
+>>>>>>> origin/fix/next-image-legacy-prop

@@ -21,7 +21,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/fix/next-image-legacy-prop
 // Import helper functions instead of individual breed lists
 import { petIdGenerator, petSpeciesList, petGendersList, yesNoOptions, petSizesList, acquisitionTypes, petPurposes, ufsBrasil, getBreedsForSpecies, getFurTypesForSpecies, getFurColorsForSpecies } from "@/lib/constants";
 import { formatDate, parseDateSafe, formatDateToBrasil, calculateAge, isValidDate } from "@/lib/date-utils";
@@ -157,7 +160,14 @@ export default function AdicionarPetPage() {
   const watchedDataNascimento = form.watch("dataNascimento");
   const isBirthDateUnknown = form.watch("birthDateUnknown");
   const hasSimPatinhas = form.watch("hasSimPatinhas");
+<<<<<<< HEAD
   
+=======
+
+  const [dateInputString, setDateInputString] = useState<string>("");
+  const [simPatinhasDateInputString, setSimPatinhasDateInputString] = useState<string>("");
+
+>>>>>>> origin/fix/next-image-legacy-prop
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -215,7 +225,47 @@ export default function AdicionarPetPage() {
     }
   };
 
+<<<<<<< HEAD
   const watchedSimPatinhasDate = form.watch("simPatinhasEmissionDate");
+=======
+
+  useEffect(() => {
+    if (watchedDataNascimento && isValidDate(watchedDataNascimento)) {
+      const formattedDate = formatDateToBrasil(watchedDataNascimento);
+      if (dateInputString !== formattedDate) {
+        setDateInputString(formattedDate);
+      }
+    } else if (!watchedDataNascimento && dateInputString !== "") {
+      // Clear input if date becomes invalid/empty
+      // setDateInputString(""); // Optional: Decide if you want to clear or keep invalid input
+    }
+  }, [watchedDataNascimento, dateInputString]);
+
+
+  const watchedSimPatinhasDate = form.watch("simPatinhasEmissionDate");
+  useEffect(() => {
+    if (watchedSimPatinhasDate && isValidDate(watchedSimPatinhasDate)) {
+      const formattedDate = formatDateToBrasil(watchedSimPatinhasDate);
+      if (simPatinhasDateInputString !== formattedDate) {
+        setSimPatinhasDateInputString(formattedDate);
+      }
+    } else if (!watchedSimPatinhasDate && simPatinhasDateInputString !== "") {
+        // Clear input if date becomes invalid/empty
+        // setSimPatinhasDateInputString(""); // Optional
+    }
+  }, [watchedSimPatinhasDate, simPatinhasDateInputString]);
+
+
+  useEffect(() => {
+    if (isBirthDateUnknown) {
+      form.setValue("dataNascimento", undefined);
+      setCalculatedAgeDisplay(null);
+      setDateInputString("");
+    } else {
+      form.setValue("ageInMonths", undefined, { shouldValidate: true });
+    }
+  }, [isBirthDateUnknown, form]);
+>>>>>>> origin/fix/next-image-legacy-prop
 
   useEffect(() => {
     if (!isBirthDateUnknown && watchedDataNascimento && isValidDate(watchedDataNascimento)) {
@@ -354,7 +404,64 @@ export default function AdicionarPetPage() {
     setFurColorSearchValue("");
   }, [especieSelecionada, form]);
 
+<<<<<<< HEAD
+=======
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: "dataNascimento" | "simPatinhasEmissionDate") => {
+    const typedValue = e.target.value;
+    if (fieldName === "dataNascimento") {
+      setDateInputString(typedValue);
+    } else {
+      setSimPatinhasDateInputString(typedValue);
+    }
 
+    // Basic regex to allow partial date input like dd, dd/mm, dd/mm/yyyy
+    const dateFormatRegex = /^(?:\d{1,2}(?:\/(?:\d{1,2}(?:\/\d{0,4})?)?)?)?$/;
+
+    if (typedValue.length <= 10) { // Max length dd/mm/yyyy
+        if (typedValue === "" || dateFormatRegex.test(typedValue)) {
+            // If the format is complete and valid, update the form state
+            if (typedValue.length === 10 && typedValue.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                 const parsedDate = parseDateFn(typedValue, "dd/MM/yyyy", new Date());
+                 if (isValidDate(parsedDate)) {
+                    const currentRHFDate = form.getValues(fieldName);
+                    // Only update if the date actually changed to avoid infinite loops
+                    if (!currentRHFDate || formatDate(currentRHFDate, "dd/MM/yyyy") !== typedValue) {
+                        form.setValue(fieldName, parsedDate, { shouldValidate: true });
+                    }
+                 } else {
+                    // Invalid date format, potentially clear RHF state or show error
+                    form.setValue(fieldName, undefined, { shouldValidate: true });
+                 }
+            } else {
+                // Incomplete date, don't update RHF state yet, just the input string
+                // Optionally clear RHF state if input becomes incomplete
+                 form.setValue(fieldName, undefined, { shouldValidate: true });
+            }
+        } // else: Invalid characters entered, do nothing or show feedback
+    }
+  };
+
+  const handleDateSelect = (date: Date | undefined, fieldName: "dataNascimento" | "simPatinhasEmissionDate") => {
+    if (date && isValidDate(date)) {
+      form.setValue(fieldName, date, { shouldValidate: true });
+      const formatted = formatDateToBrasil(date);
+      if (fieldName === "dataNascimento") {
+        setDateInputString(formatted);
+        setIsCalendarOpen(false);
+      } else {
+        setSimPatinhasDateInputString(formatted);
+        setIsSimPatinhasCalendarOpen(false);
+      }
+    } else {
+      form.setValue(fieldName, undefined, { shouldValidate: true });
+      if (fieldName === "dataNascimento") {
+        setDateInputString("");
+      } else {
+        setSimPatinhasDateInputString("");
+      }
+    }
+  };
+>>>>>>> origin/fix/next-image-legacy-prop
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -373,9 +480,14 @@ export default function AdicionarPetPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
+<<<<<<< HEAD
             <form onSubmit={form.handleSubmit(onSubmit, onFormErrors)} className="space-y-8">
 
 
+=======
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+
+>>>>>>> origin/fix/next-image-legacy-prop
               {/* Seção: Informações Básicas */}
               <section>
                 <h3 className="text-lg font-semibold mb-4 border-b pb-2">Informações Básicas</h3>
@@ -401,6 +513,147 @@ export default function AdicionarPetPage() {
                       <FormItem>
                         <FormLabel>Espécie *</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
+<<<<<<< HEAD
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione a espécie" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {petSpeciesList.map((specie) => (
+                              <SelectItem key={specie} value={specie}>{specie}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="raca"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Raça *</FormLabel>
+                        <Popover open={isBreedPopoverOpen} onOpenChange={setIsBreedPopoverOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                disabled={!especieSelecionada}
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value
+                                  ? (Array.isArray(baseRacas) && baseRacas.find(raca => raca === field.value)) ?? field.value // Show value even if not in list
+                                  : "Selecione a raça"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] p-0">
+                            <Command>
+                              <CommandInput
+                                placeholder="Buscar raça..."
+                                value={breedSearchValue}
+                                onValueChange={setBreedSearchValue}
+                              />
+                              <CommandList>
+                                <CommandEmpty>Nenhuma raça encontrada.</CommandEmpty>
+                                <CommandGroup>
+                                  {Array.isArray(filteredRacas) && filteredRacas.map((raca) => (
+                                    <CommandItem
+                                      value={raca}
+                                      key={raca}
+                                      onSelect={() => {
+                                        form.setValue("raca", raca);
+                                        setIsBreedPopoverOpen(false);
+                                        setBreedSearchValue("");
+                                      }}
+                                    >
+                                      <CheckIcon
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          raca === field.value ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {raca}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Conditional Rendering for Tipo de Pelagem - Added Array.isArray check */}
+                  {Array.isArray(tiposPelagemDisponiveis) && tiposPelagemDisponiveis.length > 0 && (
+                    <FormField
+                      control={form.control}
+                      name="tipoPelagem"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Tipo de Pelagem</FormLabel>
+                          <Popover open={isFurTypePopoverOpen} onOpenChange={setIsFurTypePopoverOpen}>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className={cn(
+                                    "w-full justify-between",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value
+                                    ? (Array.isArray(tiposPelagemDisponiveis) && tiposPelagemDisponiveis.find(tipo => tipo === field.value)) ?? field.value
+                                    : "Selecione o tipo de pelagem"}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] p-0">
+                              <Command>
+                                <CommandInput
+                                  placeholder="Buscar tipo..."
+                                  value={furTypeSearchValue}
+                                  onValueChange={setFurTypeSearchValue}
+                                />
+                                <CommandList>
+                                  <CommandEmpty>Nenhum tipo encontrado.</CommandEmpty>
+                                  <CommandGroup>
+                                    {/* Added Array.isArray check */} 
+                                    {Array.isArray(filteredTiposPelagem) && filteredTiposPelagem.map((tipo) => (
+                                      <CommandItem
+                                        value={tipo}
+                                        key={tipo}
+                                        onSelect={() => {
+                                          form.setValue("tipoPelagem", tipo);
+                                          setIsFurTypePopoverOpen(false);
+                                          setFurTypeSearchValue("");
+                                        }}
+                                      >
+                                        <CheckIcon
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            tipo === field.value ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        {tipo}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+=======
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione a espécie" />
@@ -671,15 +924,48 @@ export default function AdicionarPetPage() {
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormLabel>Data de Nascimento *</FormLabel>
-                            <FormControl>
-                                <DateSelectors
-                                  value={field.value}
-                                  onChange={field.onChange}
+                            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <Input
+                                      placeholder="dd/mm/aaaa"
+                                      value={dateInputString}
+                                      onChange={(e) => handleDateInputChange(e, "dataNascimento")}
+                                      onBlur={() => {
+                                        // Validate on blur if needed
+                                        const parsedDate = parseDateFn(dateInputString, "dd/MM/yyyy", new Date());
+                                        if (!isValidDate(parsedDate)) {
+                                            form.setValue("dataNascimento", undefined, { shouldValidate: true });
+                                        }
+                                      }}
+                                      className="border-none p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 flex-grow mr-2"
+                                    />
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={(date) => handleDateSelect(date, "dataNascimento")}
+                                  disabled={(date) =>
+                                    date > new Date() || date < new Date("1980-01-01")
+                                  }
+                                  initialFocus
+                                  captionLayout="dropdown-buttons"
                                   fromYear={1980}
                                   toYear={new Date().getFullYear()}
-                                  disabled={isBirthDateUnknown}
                                 />
-                            </FormControl>
+                              </PopoverContent>
+                            </Popover>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -949,6 +1235,524 @@ export default function AdicionarPetPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Data de Emissão *</FormLabel>
+                          <Popover open={isSimPatinhasCalendarOpen} onOpenChange={setIsSimPatinhasCalendarOpen}>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <Input
+                                    placeholder="dd/mm/aaaa"
+                                    value={simPatinhasDateInputString}
+                                    onChange={(e) => handleDateInputChange(e, "simPatinhasEmissionDate")}
+                                    onBlur={() => {
+                                      const parsedDate = parseDateFn(simPatinhasDateInputString, "dd/MM/yyyy", new Date());
+                                      if (!isValidDate(parsedDate)) {
+                                          form.setValue("simPatinhasEmissionDate", undefined, { shouldValidate: true });
+                                      }
+                                    }}
+                                    className="border-none p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 flex-grow mr-2"
+                                  />
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) => handleDateSelect(date, "simPatinhasEmissionDate")}
+                                disabled={(date) =>
+                                  date > new Date() || date < new Date("1980-01-01")
+                                }
+                                initialFocus
+                                captionLayout="dropdown-buttons"
+                                fromYear={1980}
+                                toYear={new Date().getFullYear()}
+                              />
+>>>>>>> origin/fix/next-image-legacy-prop
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+<<<<<<< HEAD
+                  )}
+
+                  <FormField
+                    control={form.control}
+                    name="corPelagem"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Cor (Pelagem/Plumagem/Escamas)</FormLabel>
+                        <Popover open={isFurColorPopoverOpen} onOpenChange={setIsFurColorPopoverOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                disabled={!especieSelecionada}
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value
+                                  ? (Array.isArray(baseCoresPelagem) && baseCoresPelagem.find(cor => cor === field.value)) ?? field.value
+                                  : "Selecione a cor"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] p-0">
+                            <Command>
+                              <CommandInput
+                                placeholder="Buscar cor..."
+                                value={furColorSearchValue}
+                                onValueChange={setFurColorSearchValue}
+                              />
+                              <CommandList>
+                                <CommandEmpty>Nenhuma cor encontrada.</CommandEmpty>
+                                <CommandGroup>
+                                  {Array.isArray(filteredCoresPelagem) && filteredCoresPelagem.map((cor) => (
+                                    <CommandItem
+                                      value={cor}
+                                      key={cor}
+                                      onSelect={() => {
+                                        form.setValue("corPelagem", cor);
+                                        setIsFurColorPopoverOpen(false);
+                                        setFurColorSearchValue("");
+                                      }}
+                                    >
+                                      <CheckIcon
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          cor === field.value ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {cor}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="sexo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sexo *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o sexo" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {petGendersList.map((gender) => (
+                              <SelectItem key={gender} value={gender}>{gender}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </section>
+
+              {/* Seção: Nascimento e Idade */}
+              <section>
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Nascimento e Idade</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="birthDateUnknown"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              Não sei a data de nascimento
+                            </FormLabel>
+                            <FormDescription>
+                              Marque esta opção se não souber a data exata.
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    {!isBirthDateUnknown && (
+                      <FormField
+                        control={form.control}
+                        name="dataNascimento"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Data de Nascimento *</FormLabel>
+                            <FormControl>
+                                <DateSelectors
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  fromYear={1980}
+                                  toYear={new Date().getFullYear()}
+                                  disabled={isBirthDateUnknown}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                    {isBirthDateUnknown && (
+                      <FormField
+                        control={form.control}
+                        name="ageInMonths"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Idade Estimada (em meses) *</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="Ex: 6" {...field} value={field.value ?? ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+                  {calculatedAgeDisplay && (
+                    <Alert>
+                      <AlertTitle>Idade Calculada</AlertTitle>
+                      <AlertDescription>
+                        {calculatedAgeDisplay}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </section>
+
+              {/* Seção: Características Físicas */}
+              <section>
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Características Físicas</h3>
+=======
+                    <FormField
+                      control={form.control}
+                      name="simPatinhasEmissionCity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cidade de Emissão</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: Natal" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="simPatinhasEmissionUF"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>UF de Emissão</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione a UF" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {ufsBrasil.map((uf) => (
+                                <SelectItem key={uf.sigla} value={uf.sigla}>{uf.sigla} - {uf.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </section>
+
+              {/* Seção: Segundo Tutor (Opcional) */}
+              <section>
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Segundo Tutor (Opcional)</h3>
+>>>>>>> origin/fix/next-image-legacy-prop
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="peso"
+                    render={({ field }) => (
+                      <FormItem>
+<<<<<<< HEAD
+                        <FormLabel>Peso (kg)</FormLabel>
+                        <FormControl>
+                          <Input type="text" inputMode="decimal" placeholder="Ex: 5,5" {...field} value={field.value ?? ""} />
+=======
+                        <FormLabel>Nome do 2º Tutor</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome completo" {...field} />
+>>>>>>> origin/fix/next-image-legacy-prop
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="porte"
+                    render={({ field }) => (
+                      <FormItem>
+<<<<<<< HEAD
+                        <FormLabel>Porte</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o porte" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {petSizesList.map((size) => (
+                              <SelectItem key={size} value={size}>{size}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="sinaisObservacoes"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Sinais Particulares / Observações</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Descreva manchas, cicatrizes, ou outras características únicas..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </section>
+
+              {/* Seção: Informações Adicionais */}
+              <section>
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Informações Adicionais</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="castrado"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Castrado? *</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex flex-col space-y-1"
+                          >
+                            {yesNoOptions.map(option => (
+                              <FormItem key={option} className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value={option} />
+                                </FormControl>
+                                <FormLabel className="font-normal">{option}</FormLabel>
+                              </FormItem>
+                            ))}
+                          </RadioGroup>
+=======
+                        <FormLabel>E-mail do 2º Tutor</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="email@exemplo.com" {...field} />
+>>>>>>> origin/fix/next-image-legacy-prop
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+<<<<<<< HEAD
+                    name="tipoAquisicao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Aquisição</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione como adquiriu o pet" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {acquisitionTypes.map((type) => (
+                              <SelectItem key={type} value={type}>{type}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="finalidade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Finalidade</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione a finalidade do pet" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {petPurposes.map((purpose) => (
+                              <SelectItem key={purpose} value={purpose}>{purpose}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+=======
+                    name="secondaryTutorCpf"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CPF do 2º Tutor</FormLabel>
+                        <FormControl>
+                          <Input placeholder="000.000.000-00" {...field} />
+                        </FormControl>
+                        <FormDescription>Apenas números serão considerados.</FormDescription>
+>>>>>>> origin/fix/next-image-legacy-prop
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </section>
+
+<<<<<<< HEAD
+              {/* Seção: Foto */}
+              <section>
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Foto do Pet</h3>
+                <FormField
+                  control={form.control}
+                  name="fotoUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Carregar Foto</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-4">
+                          <Input
+                            type="file"
+                            accept={ALLOWED_IMAGE_TYPES.join(",")}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            ref={fileInputRef}
+                            id="pet-photo-upload"
+                          />
+                          <label
+                            htmlFor="pet-photo-upload"
+                            className={cn(
+                              "cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+                              "border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                            )}
+                          >
+                            <UploadCloud className="mr-2 h-4 w-4" />
+                            Selecionar Arquivo
+                          </label>
+                          {imagePreview && (
+                            <div className="relative h-20 w-20 rounded-md overflow-hidden border">
+                              <Image src={imagePreview} alt="Pré-visualização" layout="fill" objectFit="cover" />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-0 right-0 h-5 w-5 rounded-full p-0.5"
+                                onClick={removeImage}
+                              >
+                                <XCircle className="h-4 w-4" />
+                                <span className="sr-only">Remover Imagem</span>
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Envie uma foto do seu pet (PNG, JPG, BMP, WEBP - Máx {MAX_FILE_SIZE_MB}MB).
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </section>
+
+              {/* Seção: SimPatinhas (Opcional) */}
+              <section>
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Registro Geral (SimPatinhas - Opcional)</h3>
+                <FormField
+                  control={form.control}
+                  name="hasSimPatinhas"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 mb-6">
+                      <FormLabel>Possui Registro Geral SimPatinhas?</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          {yesNoOptions.map(option => (
+                            <FormItem key={option} className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value={option} />
+                              </FormControl>
+                              <FormLabel className="font-normal">{option}</FormLabel>
+                            </FormItem>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {hasSimPatinhas === "Sim" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="simPatinhasId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Número do Registro *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Digite o número do registro" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="simPatinhasEmissionDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Data de Emissão *</FormLabel>
                           <FormControl>
                               <DateSelectors
                                 value={field.value}
@@ -1035,6 +1839,8 @@ export default function AdicionarPetPage() {
                 </div>
               </section>
 
+=======
+>>>>>>> origin/fix/next-image-legacy-prop
               <div className="flex justify-end space-x-4">
                 <Button type="button" variant="outline" onClick={() => router.back()}>Cancelar</Button>
                 <Button type="submit" disabled={form.formState.isSubmitting}>
